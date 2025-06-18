@@ -66,7 +66,7 @@ create table progress (
   id serial primary key,
   user_id int not null references users(id),
   video_id int not null references videos(id),
-  current_time int default 0,
+  current_seconds int default 0,
   is_completed boolean default false,
   updated_at timestamp default current_timestamp
 );
