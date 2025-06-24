@@ -273,3 +273,12 @@ CREATE TABLE dm_toast_chat_status (
     toast_sent  BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (user_id, message_id)
 );
+
+-- 인덱스 생성
+
+CREATE INDEX idx_point_histories_user_id ON point_histories (user_id);
+CREATE INDEX idx_subscriptions_user_id ON subscriptions (user_id);
+CREATE INDEX idx_subscriptions_instructor_id ON subscriptions (instructor_id);
+CREATE INDEX idx_posts_user_id ON posts (user_id);
+CREATE INDEX idx_comments_post_id ON comments (post_id);
+CREATE INDEX idx_comments_user_id ON comments (user_id);
