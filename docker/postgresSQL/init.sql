@@ -19,11 +19,12 @@ CREATE TABLE users (
     public_id         UUID          NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     created_at        TIMESTAMPTZ   DEFAULT CURRENT_TIMESTAMP,
     oauth_provider    VARCHAR(50),
-    oauth_id          VARCHAR(255)  UNIQUE,
+    oauth_id          VARCHAR(255),
     notif_marketing          BOOLEAN DEFAULT TRUE,
     notif_lecture_updates    BOOLEAN DEFAULT TRUE,
     notif_chat               BOOLEAN DEFAULT TRUE,
-    toast_enabled            BOOLEAN DEFAULT TRUE
+    toast_enabled            BOOLEAN DEFAULT TRUE,
+    UNIQUE (oauth_provider, oauth_id)
 );
 
 -- 강사 프로필
@@ -91,7 +92,8 @@ CREATE TABLE subscriptions (
     started_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     expired_at     TIMESTAMPTZ NOT NULL,
     is_auto_renew  BOOLEAN  DEFAULT FALSE,
-    price          NUMERIC(10, 2)      NOT NULL
+    price          NUMERIC(10, 2)      NOT NULL,
+    CHECK (user_id <> instructor_id)
 );
 
 CREATE TABLE lecture_purchases (
@@ -111,7 +113,8 @@ CREATE TABLE reviews (
     lecture_id INT NOT NULL REFERENCES lectures(id)  ON DELETE CASCADE,
     rating     INT CHECK (rating BETWEEN 1 AND 5),
     content    TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, lecture_id)
 );
 
 CREATE TABLE progress (
@@ -146,7 +149,9 @@ CREATE TABLE follows (
     id            SERIAL PRIMARY KEY,
     follower_id   INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     following_id  INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (follower_id, following_id),
+    CHECK (follower_id <> following_id)
 );
 
 -- 좋아요 : 타입별 개별 테이블로 분리
@@ -213,7 +218,8 @@ CREATE TABLE dm_chat_rooms (
     instructor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     room_name     VARCHAR(255),
     created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (lecture_id, student_id)
+    UNIQUE (lecture_id, student_id),
+    CHECK (student_id <> instructor_id)
 );
 
 CREATE TABLE lecture_chat_members (
@@ -254,9 +260,16 @@ CREATE TABLE dm_chat_messages (
     CHECK (message IS NOT NULL OR image_url IS NOT NULL)
 );
 
-CREATE TABLE toast_chat_status (
-    user_id     INT NOT NULL REFERENCES users(id)         ON DELETE CASCADE,
-    message_id  INT NOT NULL REFERENCES chat_messages(id) ON DELETE CASCADE,
+CREATE TABLE lecture_toast_chat_status (
+    user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    message_id  INT NOT NULL REFERENCES lecture_chat_messages(id) ON DELETE CASCADE,
+    toast_sent  BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (user_id, message_id)
+);
+
+CREATE TABLE dm_toast_chat_status (
+    user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    message_id  INT NOT NULL REFERENCES dm_chat_messages(id) ON DELETE CASCADE,
     toast_sent  BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (user_id, message_id)
 );
