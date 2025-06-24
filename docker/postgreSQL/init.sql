@@ -20,6 +20,7 @@ CREATE TABLE users (
     created_at        TIMESTAMPTZ   DEFAULT CURRENT_TIMESTAMP,
     oauth_provider    VARCHAR(50),
     oauth_id          VARCHAR(255),
+    is_verified BOOLEAN DEFAULT FALSE,
     notif_marketing          BOOLEAN DEFAULT TRUE,
     notif_lecture_updates    BOOLEAN DEFAULT TRUE,
     notif_chat               BOOLEAN DEFAULT TRUE,
