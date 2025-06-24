@@ -1,6 +1,9 @@
 -- UUID
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- 역할 (강사/수강생/관리자)
+CREATE TYPE user_role AS ENUM ('instructor', 'student', 'admin');
+
 -- 핵심 사용자 테이블
 
 CREATE TABLE users (
@@ -9,12 +12,12 @@ CREATE TABLE users (
     password          VARCHAR(255),
     name              VARCHAR(255)  NOT NULL,
     nickname          VARCHAR(255)  NOT NULL,
-    role              VARCHAR(255)  NOT NULL,                       -- 'instructor' / 'student' / 'admin'
-    phone             VARCHAR(255),
-    profile_image     VARCHAR(255),
+    role              user_role     NOT NULL,
+    phone             VARCHAR(30),
+    profile_image     TEXT,
     point_balance     INT           DEFAULT 0,
-    public_id         CHAR(36)      NOT NULL UNIQUE  DEFAULT (gen_random_uuid()::text),
-    created_at        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    public_id         UUID          NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    created_at        TIMESTAMPTZ   DEFAULT CURRENT_TIMESTAMP,
     oauth_provider    VARCHAR(50),
     oauth_id          VARCHAR(255)  UNIQUE,
     notif_marketing          BOOLEAN DEFAULT TRUE,
@@ -26,35 +29,35 @@ CREATE TABLE users (
 -- 강사 프로필
 
 CREATE TABLE instructor_profiles (
-    instructor_id     INT PRIMARY KEY REFERENCES users(id),
-    introduction      TEXT,
-    banner_image      VARCHAR(255),
-    sns_url           VARCHAR(255),
-    career            TEXT,
+    instructor_id      INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    introduction       TEXT,
+    banner_image       TEXT,
+    sns_url            TEXT,
+    career             TEXT,
     subscription_price INT  NOT NULL,
-    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at         TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 강좌, 강좌 영상
 
 CREATE TABLE lectures (
     id            SERIAL PRIMARY KEY,
-    public_id     CHAR(36)  NOT NULL UNIQUE DEFAULT (gen_random_uuid()::text),
-    instructor_id INT       NOT NULL REFERENCES users(id),
+    public_id     UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    instructor_id INT  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title         VARCHAR(255) NOT NULL,
     description   TEXT,
     price         INT DEFAULT 0,
     category      VARCHAR(255) NOT NULL,
-    thumbnail     VARCHAR(255),
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    thumbnail     TEXT,
+    created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE videos (
     id            SERIAL PRIMARY KEY,
     lecture_id    INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
     title         VARCHAR(255) NOT NULL,
-    video_url     VARCHAR(255) NOT NULL,
-    thumbnail     VARCHAR(255),
+    video_url     TEXT NOT NULL,
+    thumbnail     TEXT,
     order_index   INT NOT NULL,
     duration_sec  INT,
     UNIQUE (lecture_id, order_index)
@@ -65,8 +68,8 @@ CREATE TABLE videos (
 CREATE TABLE point_packages (
     id       SERIAL PRIMARY KEY,
     name     VARCHAR(255) NOT NULL,
-    price    INT NOT NULL,        -- 원 단위
-    amount   INT NOT NULL,        -- 지급 포인트
+    price    INT NOT NULL,
+    amount   INT NOT NULL,
     bonus    INT DEFAULT 0
 );
 
@@ -74,9 +77,9 @@ CREATE TABLE point_histories (
     id            SERIAL PRIMARY KEY,
     user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     change_amount INT NOT NULL,
-    source        VARCHAR(255) NOT NULL,   -- 'charge' / 'lecture_purchase' 등
+    source        VARCHAR(255) NOT NULL,
     detail        VARCHAR(255),
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 구독, 강좌 구매
@@ -84,9 +87,9 @@ CREATE TABLE point_histories (
 CREATE TABLE subscriptions (
     id             SERIAL PRIMARY KEY,
     user_id        INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    instructor_id  INT NOT NULL REFERENCES users(id),
-    started_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expired_at     TIMESTAMP NOT NULL,
+    instructor_id  INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    started_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    expired_at     TIMESTAMPTZ NOT NULL,
     is_auto_renew  BOOLEAN  DEFAULT FALSE,
     price          INT      NOT NULL
 );
@@ -94,9 +97,9 @@ CREATE TABLE subscriptions (
 CREATE TABLE lecture_purchases (
     id            SERIAL PRIMARY KEY,
     user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    lecture_id    INT NOT NULL REFERENCES lectures(id),
+    lecture_id    INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
     price         INT NOT NULL,
-    purchased_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    purchased_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, lecture_id)
 );
 
@@ -104,55 +107,80 @@ CREATE TABLE lecture_purchases (
 
 CREATE TABLE reviews (
     id         SERIAL PRIMARY KEY,
-    user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    lecture_id INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
+    user_id    INT NOT NULL REFERENCES users(id)     ON DELETE CASCADE,
+    lecture_id INT NOT NULL REFERENCES lectures(id)  ON DELETE CASCADE,
     rating     INT CHECK (rating BETWEEN 1 AND 5),
     content    TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE progress (
-    id               SERIAL PRIMARY KEY,
-    user_id          INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    video_id         INT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
-    current_seconds  INT DEFAULT 0,
-    is_completed     BOOLEAN DEFAULT FALSE,
-    updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id              SERIAL PRIMARY KEY,
+    user_id         INT NOT NULL REFERENCES users(id)  ON DELETE CASCADE,
+    video_id        INT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+    current_seconds INT DEFAULT 0,
+    is_completed    BOOLEAN DEFAULT FALSE,
+    updated_at      TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, video_id)
 );
 
 CREATE TABLE posts (
     id         SERIAL PRIMARY KEY,
-    public_id  CHAR(36) NOT NULL UNIQUE DEFAULT (gen_random_uuid()::text),
+    public_id  UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category   VARCHAR(255) NOT NULL,
     title      VARCHAR(255) NOT NULL,
     content    TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE comments (
     id         SERIAL PRIMARY KEY,
-    post_id    INT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    post_id    INT NOT NULL REFERENCES posts(id)  ON DELETE CASCADE,
+    user_id    INT NOT NULL REFERENCES users(id)  ON DELETE CASCADE,
     content    TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE follows (
     id            SERIAL PRIMARY KEY,
     follower_id   INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    following_id  INT NOT NULL REFERENCES users(id),
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    following_id  INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE likes (
-    id           SERIAL PRIMARY KEY,
-    user_id      INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    target_type  VARCHAR(255) NOT NULL CHECK (target_type IN ('lecture','review','post','comment')),
-    target_id    INT  NOT NULL,
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, target_type, target_id)
+-- 좋아요 : 타입별 개별 테이블로 분리
+
+CREATE TABLE lecture_likes (
+    id          SERIAL PRIMARY KEY,
+    user_id     INT NOT NULL REFERENCES users(id)     ON DELETE CASCADE,
+    lecture_id  INT NOT NULL REFERENCES lectures(id)  ON DELETE CASCADE,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, lecture_id)
+);
+
+CREATE TABLE review_likes (
+    id          SERIAL PRIMARY KEY,
+    user_id     INT NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
+    review_id   INT NOT NULL REFERENCES reviews(id)  ON DELETE CASCADE,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, review_id)
+);
+
+CREATE TABLE post_likes (
+    id          SERIAL PRIMARY KEY,
+    user_id     INT NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
+    post_id     INT NOT NULL REFERENCES posts(id)   ON DELETE CASCADE,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, post_id)
+);
+
+CREATE TABLE comment_likes (
+    id          SERIAL PRIMARY KEY,
+    user_id     INT NOT NULL REFERENCES users(id)      ON DELETE CASCADE,
+    comment_id  INT NOT NULL REFERENCES comments(id)   ON DELETE CASCADE,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, comment_id)
 );
 
 -- 알림
@@ -162,45 +190,54 @@ CREATE TABLE notifications (
     user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type        VARCHAR(255) NOT NULL,
     message     TEXT NOT NULL,
-    link_url    VARCHAR(255),
+    link_url    TEXT,
     is_read     BOOLEAN DEFAULT FALSE,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     toast_sent  BOOLEAN DEFAULT FALSE
 );
 
 -- 채팅: 방 / 멤버 / 메시지 / 토스트 상태
 
-CREATE TABLE chat_rooms (
+CREATE TABLE lecture_chat_rooms (
     id          SERIAL PRIMARY KEY,
-    room_type   VARCHAR(255) NOT NULL,       -- 'class' / 'dm'
-    target_id   INT NOT NULL,
-    student_id  INT REFERENCES users(id),
+    lecture_id  INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
     room_name   VARCHAR(255),
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (room_type, target_id),
-    UNIQUE (room_type, target_id, student_id)
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (lecture_id)
+);
+
+CREATE TABLE dm_chat_rooms (
+    id          SERIAL PRIMARY KEY,
+    lecture_id  INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
+    student_id  INT NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
+    room_name   VARCHAR(255),
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (lecture_id, student_id)
 );
 
 CREATE TABLE chat_members (
-    room_id       INT NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+    room_id       INT NOT NULL REFERENCES lecture_chat_rooms(id) ON DELETE CASCADE
+                       DEFERRABLE INITIALLY DEFERRED,
     user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    joined_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    joined_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     is_muted      BOOLEAN DEFAULT FALSE,
-    last_read_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_read_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (room_id, user_id)
 );
 
 CREATE TABLE chat_messages (
     id         SERIAL PRIMARY KEY,
-    room_id    INT NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+    room_id    INT NOT NULL REFERENCES lecture_chat_rooms(id) ON DELETE CASCADE
+                   DEFERRABLE INITIALLY DEFERRED,
     user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     message    TEXT,
-    image_url  VARCHAR(255),
-    sent_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    image_url  TEXT,
+    sent_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CHECK (message IS NOT NULL OR image_url IS NOT NULL)
 );
 
 CREATE TABLE toast_chat_status (
-    user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id     INT NOT NULL REFERENCES users(id)         ON DELETE CASCADE,
     message_id  INT NOT NULL REFERENCES chat_messages(id) ON DELETE CASCADE,
     toast_sent  BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (user_id, message_id)
