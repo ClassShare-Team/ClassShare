@@ -1,6 +1,6 @@
 services:
-  postgres-db:
-    image: postgres:16.9
+  supabase-db:
+    image: supabase/postgres:15.8.1.100
     restart: always
     ports:
       - '54322:5432'
