@@ -8,14 +8,14 @@ CREATE TYPE user_role AS ENUM ('instructor', 'student', 'admin');
 
 CREATE TABLE users (
     id                SERIAL PRIMARY KEY,
-    email             VARCHAR(255)  NOT NULL UNIQUE,
+    email             VARCHAR(320)  NOT NULL UNIQUE,
     password          VARCHAR(255),
     name              VARCHAR(255)  NOT NULL,
     nickname          VARCHAR(255)  NOT NULL,
     role              user_role     NOT NULL,
     phone             VARCHAR(30),
     profile_image     TEXT,
-    point_balance     INT           DEFAULT 0,
+    point_balance     NUMERIC(10, 2)           DEFAULT 0,
     public_id         UUID          NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     created_at        TIMESTAMPTZ   DEFAULT CURRENT_TIMESTAMP,
     oauth_provider    VARCHAR(50),
@@ -34,7 +34,7 @@ CREATE TABLE instructor_profiles (
     banner_image       TEXT,
     sns_url            TEXT,
     career             TEXT,
-    subscription_price INT  NOT NULL,
+    subscription_price NUMERIC(10, 2)  NOT NULL,
     created_at         TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -46,7 +46,7 @@ CREATE TABLE lectures (
     instructor_id INT  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title         VARCHAR(255) NOT NULL,
     description   TEXT,
-    price         INT DEFAULT 0,
+    price         NUMERIC(10, 2) DEFAULT 0,
     category      VARCHAR(255) NOT NULL,
     thumbnail     TEXT,
     created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -68,7 +68,7 @@ CREATE TABLE videos (
 CREATE TABLE point_packages (
     id       SERIAL PRIMARY KEY,
     name     VARCHAR(255) NOT NULL,
-    price    INT NOT NULL,
+    price    NUMERIC(10, 2) NOT NULL,
     amount   INT NOT NULL,
     bonus    INT DEFAULT 0
 );
@@ -91,14 +91,14 @@ CREATE TABLE subscriptions (
     started_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     expired_at     TIMESTAMPTZ NOT NULL,
     is_auto_renew  BOOLEAN  DEFAULT FALSE,
-    price          INT      NOT NULL
+    price          NUMERIC(10, 2)      NOT NULL
 );
 
 CREATE TABLE lecture_purchases (
     id            SERIAL PRIMARY KEY,
     user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     lecture_id    INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
-    price         INT NOT NULL,
+    price         NUMERIC(10, 2) NOT NULL,
     purchased_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, lecture_id)
 );
@@ -207,28 +207,46 @@ CREATE TABLE lecture_chat_rooms (
 );
 
 CREATE TABLE dm_chat_rooms (
-    id          SERIAL PRIMARY KEY,
-    lecture_id  INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
-    student_id  INT NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
-    room_name   VARCHAR(255),
-    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    id            SERIAL PRIMARY KEY,
+    lecture_id    INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
+    student_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    instructor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    room_name     VARCHAR(255),
+    created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (lecture_id, student_id)
 );
 
-CREATE TABLE chat_members (
-    room_id       INT NOT NULL REFERENCES lecture_chat_rooms(id) ON DELETE CASCADE
-                       DEFERRABLE INITIALLY DEFERRED,
-    user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    joined_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    is_muted      BOOLEAN DEFAULT FALSE,
-    last_read_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE lecture_chat_members (
+    room_id     INT NOT NULL REFERENCES lecture_chat_rooms(id) ON DELETE CASCADE,
+    user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    joined_at   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    is_muted    BOOLEAN DEFAULT FALSE,
+    last_read_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (room_id, user_id)
 );
 
-CREATE TABLE chat_messages (
+CREATE TABLE lecture_chat_messages (
     id         SERIAL PRIMARY KEY,
-    room_id    INT NOT NULL REFERENCES lecture_chat_rooms(id) ON DELETE CASCADE
-                   DEFERRABLE INITIALLY DEFERRED,
+    room_id    INT NOT NULL REFERENCES lecture_chat_rooms(id) ON DELETE CASCADE,
+    user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    message    TEXT,
+    image_url  TEXT,
+    sent_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CHECK (message IS NOT NULL OR image_url IS NOT NULL)
+);
+
+CREATE TABLE dm_chat_members (
+    room_id     INT NOT NULL REFERENCES dm_chat_rooms(id) ON DELETE CASCADE,
+    user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    joined_at   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    is_muted    BOOLEAN DEFAULT FALSE,
+    last_read_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (room_id, user_id)
+);
+
+CREATE TABLE dm_chat_messages (
+    id         SERIAL PRIMARY KEY,
+    room_id    INT NOT NULL REFERENCES dm_chat_rooms(id) ON DELETE CASCADE,
     user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     message    TEXT,
     image_url  TEXT,
