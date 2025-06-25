@@ -7,7 +7,7 @@ CREATE TYPE user_role AS ENUM ('instructor', 'student', 'admin');
 -- 핵심 사용자 테이블
 
 CREATE TABLE users (
-    id                SERIAL PRIMARY KEY,
+    id                INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email             VARCHAR(320)  NOT NULL UNIQUE,
     password          VARCHAR(255),
     name              VARCHAR(255)  NOT NULL UNIQUE,
@@ -43,7 +43,7 @@ CREATE TABLE instructor_profiles (
 -- 강좌, 강좌 영상
 
 CREATE TABLE lectures (
-    id            SERIAL PRIMARY KEY,
+    id            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     public_id     UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     instructor_id INT  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title         VARCHAR(255) NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE lectures (
 );
 
 CREATE TABLE videos (
-    id            SERIAL PRIMARY KEY,
+    id            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     lecture_id    INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
     title         VARCHAR(255) NOT NULL,
     video_url     TEXT NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE videos (
 -- 포인트 상품 / 이력
 
 CREATE TABLE point_packages (
-    id       SERIAL PRIMARY KEY,
+    id       INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name     VARCHAR(255) NOT NULL,
     price    NUMERIC(10, 2) NOT NULL,
     amount   INT NOT NULL,
@@ -76,7 +76,7 @@ CREATE TABLE point_packages (
 );
 
 CREATE TABLE point_histories (
-    id            SERIAL PRIMARY KEY,
+    id            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     change_amount INT NOT NULL,
     source        VARCHAR(255) NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE point_histories (
 -- 구독, 강좌 구매
 
 CREATE TABLE subscriptions (
-    id             SERIAL PRIMARY KEY,
+    id             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id        INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     instructor_id  INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     started_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -98,7 +98,7 @@ CREATE TABLE subscriptions (
 );
 
 CREATE TABLE lecture_purchases (
-    id            SERIAL PRIMARY KEY,
+    id            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     lecture_id    INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
     price         NUMERIC(10, 2) NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE lecture_purchases (
 -- 커뮤니티: 리뷰 / 진행도 / 게시글 / 댓글 / 팔로우 / 좋아요
 
 CREATE TABLE reviews (
-    id         SERIAL PRIMARY KEY,
+    id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id    INT NOT NULL REFERENCES users(id)     ON DELETE CASCADE,
     lecture_id INT NOT NULL REFERENCES lectures(id)  ON DELETE CASCADE,
     rating     INT CHECK (rating BETWEEN 1 AND 5),
@@ -119,7 +119,7 @@ CREATE TABLE reviews (
 );
 
 CREATE TABLE progress (
-    id              SERIAL PRIMARY KEY,
+    id              INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id         INT NOT NULL REFERENCES users(id)  ON DELETE CASCADE,
     video_id        INT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
     current_seconds INT DEFAULT 0,
@@ -129,7 +129,7 @@ CREATE TABLE progress (
 );
 
 CREATE TABLE posts (
-    id         SERIAL PRIMARY KEY,
+    id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     public_id  UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
     user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category   VARCHAR(255) NOT NULL,
@@ -139,7 +139,7 @@ CREATE TABLE posts (
 );
 
 CREATE TABLE comments (
-    id         SERIAL PRIMARY KEY,
+    id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     post_id    INT NOT NULL REFERENCES posts(id)  ON DELETE CASCADE,
     user_id    INT NOT NULL REFERENCES users(id)  ON DELETE CASCADE,
     content    TEXT NOT NULL,
@@ -147,7 +147,7 @@ CREATE TABLE comments (
 );
 
 CREATE TABLE follows (
-    id            SERIAL PRIMARY KEY,
+    id            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     follower_id   INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     following_id  INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -158,7 +158,7 @@ CREATE TABLE follows (
 -- 좋아요 : 타입별 개별 테이블로 분리
 
 CREATE TABLE lecture_likes (
-    id          SERIAL PRIMARY KEY,
+    id          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id     INT NOT NULL REFERENCES users(id)     ON DELETE CASCADE,
     lecture_id  INT NOT NULL REFERENCES lectures(id)  ON DELETE CASCADE,
     created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -166,7 +166,7 @@ CREATE TABLE lecture_likes (
 );
 
 CREATE TABLE review_likes (
-    id          SERIAL PRIMARY KEY,
+    id          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id     INT NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
     review_id   INT NOT NULL REFERENCES reviews(id)  ON DELETE CASCADE,
     created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -174,7 +174,7 @@ CREATE TABLE review_likes (
 );
 
 CREATE TABLE post_likes (
-    id          SERIAL PRIMARY KEY,
+    id          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id     INT NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
     post_id     INT NOT NULL REFERENCES posts(id)   ON DELETE CASCADE,
     created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -182,7 +182,7 @@ CREATE TABLE post_likes (
 );
 
 CREATE TABLE comment_likes (
-    id          SERIAL PRIMARY KEY,
+    id          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id     INT NOT NULL REFERENCES users(id)      ON DELETE CASCADE,
     comment_id  INT NOT NULL REFERENCES comments(id)   ON DELETE CASCADE,
     created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -192,7 +192,7 @@ CREATE TABLE comment_likes (
 -- 알림
 
 CREATE TABLE notifications (
-    id          SERIAL PRIMARY KEY,
+    id          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type        VARCHAR(255) NOT NULL,
     message     TEXT NOT NULL,
@@ -205,7 +205,7 @@ CREATE TABLE notifications (
 -- 채팅: 방 / 멤버 / 메시지 / 토스트 상태
 
 CREATE TABLE lecture_chat_rooms (
-    id          SERIAL PRIMARY KEY,
+    id          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     lecture_id  INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
     room_name   VARCHAR(255),
     created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -213,7 +213,7 @@ CREATE TABLE lecture_chat_rooms (
 );
 
 CREATE TABLE dm_chat_rooms (
-    id            SERIAL PRIMARY KEY,
+    id            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     lecture_id    INT NOT NULL REFERENCES lectures(id) ON DELETE CASCADE,
     student_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     instructor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -233,7 +233,7 @@ CREATE TABLE lecture_chat_members (
 );
 
 CREATE TABLE lecture_chat_messages (
-    id         SERIAL PRIMARY KEY,
+    id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     room_id    INT NOT NULL REFERENCES lecture_chat_rooms(id) ON DELETE CASCADE,
     user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     message    TEXT,
@@ -252,7 +252,7 @@ CREATE TABLE dm_chat_members (
 );
 
 CREATE TABLE dm_chat_messages (
-    id         SERIAL PRIMARY KEY,
+    id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     room_id    INT NOT NULL REFERENCES dm_chat_rooms(id) ON DELETE CASCADE,
     user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     message    TEXT,
