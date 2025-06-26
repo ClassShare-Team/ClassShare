@@ -204,15 +204,17 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
     throw { status: 400, message: '임시 회원가입 정보가 만료되었거나 없습니다.' };
   }
 
-  let userData;
+  let email, oauthId, name, profile_image;
   try {
-    userData = JSON.parse(raw);
+    const userData = JSON.parse(raw);
+    email = userData.email;
+    oauthId = userData.oauthId;
+    name = userData.name;
+    profile_image = userData.profile_image;
   } catch (e) {
     console.error('authService 오류:', e);
     throw { status: 400, message: '임시 정보 파싱 오류' };
   }
-
-  const { email, oauthId, name, profile_image } = userData;
 
   if (!email || !oauthId || !name) {
     throw { status: 400, message: '임시 정보가 불완전합니다. 다시 시도해 주세요.' };
@@ -223,42 +225,55 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
     throw { status: 400, message: 'role은 instructor 또는 student여야 합니다.' };
   }
 
-  const dupNickname = await db.query(`SELECT 1 FROM users WHERE nickname = $1`, [nickname]);
-  if (dupNickname.rowCount > 0) {
-    throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
+  const client = await db.pool.connect(); // 트랜잭션을 위한 커넥션 확보
+
+  try {
+    await client.query('BEGIN');
+
+    const dupNickname = await client.query(`SELECT 1 FROM users WHERE nickname = $1`, [nickname]);
+    if (dupNickname.rowCount > 0) {
+      throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
+    }
+
+    // 삽입
+    const result = await client.query(
+      `INSERT INTO users (email, name, nickname, role, profile_image, oauth_provider, oauth_id, is_verified)
+       VALUES ($1, $2, $3, $4, $5, 'google', $6, TRUE)
+       RETURNING id, public_id`,
+      [email, name, nickname, role, profile_image, oauthId]
+    );
+
+    await client.query('COMMIT');
+    const user = result.rows[0];
+
+    // Redis에서 임시 정보 삭제
+    await redis.del(`temp-oauth:${key}`);
+
+    // JWT 발급
+    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        public_id: user.public_id,
+        email,
+        name,
+        nickname,
+        role,
+        profile_image,
+      },
+      profileComplete: true,
+    };
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error('Google 최종 회원가입 트랜잭션 오류:', e);
+    throw e;
+  } finally {
+    client.release();
   }
-
-  // 삽입
-  const result = await db.query(
-    `INSERT INTO users (email, name, nickname, role, profile_image, oauth_provider, oauth_id, is_verified)
-     VALUES ($1, $2, $3, $4, $5, 'google', $6, TRUE)
-     RETURNING id, public_id`,
-    [email, name, nickname, role, profile_image, oauthId]
-  );
-
-  const user = result.rows[0];
-
-  // Redis에서 임시 정보 삭제
-  await redis.del(`temp-oauth:${key}`);
-
-  // JWT 발급
-  const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
-  });
-
-  return {
-    accessToken,
-    user: {
-      id: user.id,
-      public_id: user.public_id,
-      email,
-      name,
-      nickname,
-      role,
-      profile_image,
-    },
-    profileComplete: true,
-  };
 };
 
 // 일반 로그인
