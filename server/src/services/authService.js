@@ -1,5 +1,8 @@
 const db = require('../db');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const redis = require('../db/redisClient');
+const validator = require('validator');
 const mailService = require('./mailService');
 const { google } = require('googleapis');
 const jwt = require('jsonwebtoken');
@@ -13,8 +16,9 @@ const oauth2Client = new google.auth.OAuth2(
 
 // 인증 코드 발송
 exports.sendCode = async (email) => {
-  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email))
+  if (!validator.isEmail(email)) {
     throw { status: 400, message: '이메일 형식이 올바르지 않습니다.' };
+  } // 이메일 검증 방식 변경
 
   // 중복 발송 방지
   const { rowCount } = await db.query(`SELECT 1 FROM users WHERE email = $1`, [email]);
@@ -57,7 +61,13 @@ exports.verifyCode = async (email, inputCode) => {
 
   if (ageMin > CODE_TTL_MIN) throw { status: 400, message: '인증코드가 만료되었습니다.' };
 
-  if (code !== inputCode) throw { status: 400, message: '인증코드가 일치하지 않습니다.' };
+  if (inputCode.length !== code.length) {
+    throw { status: 400, message: '인증코드가 일치하지 않습니다.' };
+  }
+  const isMatch = crypto.timingSafeEqual(Buffer.from(inputCode), Buffer.from(code));
+  if (!isMatch) {
+    throw { status: 400, message: '인증코드가 일치하지 않습니다.' };
+  } // 보안 강화
 
   // 검증 통과
   await db.query(
@@ -88,9 +98,6 @@ exports.signup = async ({ email, password, name, nickname, role }) => {
   // 중복 검사
   const dupEmail = await db.query(`SELECT 1 FROM users WHERE email = $1`, [email]);
   if (dupEmail.rowCount) throw { status: 409, message: '이미 가입된 이메일입니다.' };
-
-  const dupName = await db.query(`SELECT 1 FROM users WHERE name  = $1`, [name]);
-  if (dupName.rowCount) throw { status: 409, message: '이미 사용 중인 이름입니다.' };
 
   const dupNickname = await db.query(`SELECT 1 FROM users WHERE nickname = $1`, [nickname]);
   if (dupNickname.rowCount) throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
@@ -148,12 +155,17 @@ exports.handleGoogleOAuth = async (code) => {
     };
   }
 
-  // 신규 유저면 회원가입용 tempToken 발급
-  const tempToken = jwt.sign(
-    { email, oauthId, name, profile_image: picture },
-    process.env.JWT_SECRET,
-    { expiresIn: '15m' }
-  );
+  // 신규 유저면 Redis에 정보 저장하고 UUID 기반 tempToken 발급
+  const uuid = crypto.randomUUID();
+  const tempUser = { email, oauthId, name, profile_image: picture };
+
+  await redis.set(`temp-oauth:${uuid}`, JSON.stringify(tempUser), {
+    EX: 900, // 15분 TTL
+  });
+
+  const tempToken = jwt.sign({ key: uuid }, process.env.JWT_SECRET, {
+    expiresIn: '15m',
+  });
 
   return {
     needsSignup: true,
@@ -167,7 +179,31 @@ exports.handleGoogleOAuth = async (code) => {
 };
 
 // Google OAuth 최종 회원가입
-exports.finalizeGoogleUser = async ({ email, oauthId, name, profile_image, nickname, role }) => {
+exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
+  // 토큰 디코딩
+  const decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+  const { key } = decoded;
+
+  // Redis에서 임시 정보 조회
+  const raw = await redis.get(`temp-oauth:${key}`);
+  if (!raw) {
+    throw { status: 400, message: '임시 회원가입 정보가 만료되었거나 없습니다.' };
+  }
+
+  let userData;
+  try {
+    userData = JSON.parse(raw);
+  } catch (e) {
+    console.error('authService 오류:', e);
+    throw { status: 400, message: '임시 정보 파싱 오류' };
+  }
+
+  const { email, oauthId, name, profile_image } = userData;
+
+  if (!email || !oauthId || !name) {
+    throw { status: 400, message: '임시 정보가 불완전합니다. 다시 시도해 주세요.' };
+  }
+
   // 필드 유효성 검사
   if (!['instructor', 'student'].includes(role)) {
     throw { status: 400, message: 'role은 instructor 또는 student여야 합니다.' };
@@ -187,6 +223,9 @@ exports.finalizeGoogleUser = async ({ email, oauthId, name, profile_image, nickn
   );
 
   const user = result.rows[0];
+
+  // Redis에서 임시 정보 삭제
+  await redis.del(`temp-oauth:${key}`);
 
   // JWT 발급
   const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {

@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const redis = require('../db/redisClient');
 const authService = require('../services/authService');
 
@@ -77,18 +76,11 @@ exports.finalizeGoogleSignup = async (req, res) => {
   }
 
   try {
-    // tempToken 디코딩
-    const decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
-    const { email, oauthId, name, profile_image } = decoded;
-
-    // 서비스 호출
+    // 직접 디코딩하지 않고 토큰만 서비스로 넘김
     const result = await authService.finalizeGoogleUser({
-      email,
-      oauthId,
-      name,
-      profile_image,
       nickname,
       role,
+      tempToken,
     });
 
     return res.status(201).json(result);
@@ -119,18 +111,17 @@ exports.logout = async (req, res) => {
   if (!token) return res.status(400).json({ message: '토큰이 없습니다.' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const exp = decoded.exp;
+    const { exp } = req.user; // authMiddleware에서 검증된 JWT payload 사용
     const now = Math.floor(Date.now() / 1000);
     const ttl = exp - now;
 
     if (ttl > 0) {
-      await redis.set(`blacklist:${token}`, 1, 'EX', ttl);
+      await redis.set(`blacklist:${token}`, '1', { EX: ttl });
     }
 
     res.status(200).json({ message: '로그아웃이 완료되었습니다.' });
   } catch (e) {
-    console.error('로그아웃 시 JWT 오류:', e);
-    res.status(401).json({ message: '유효하지 않은 토큰입니다.' });
-  }
+    console.error('로그아웃 처리 중 Redis 오류:', e);
+    res.status(200).json({ message: '로그아웃이 완료되었습니다.' });
+  } // 서버 오류 있어도 200으로 처리 완료
 };

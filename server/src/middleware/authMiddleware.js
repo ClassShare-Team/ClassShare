@@ -29,18 +29,18 @@ exports.authMiddleware = async (req, res, next) => {
     return res.status(401).json({ message: '토큰이 없습니다.' });
   }
 
-  const blacklisted = await redis.get(`blacklist:${token}`);
-  if (blacklisted) {
-    console.warn('authMiddleware: 블랙리스트 토큰 차단');
-    return res.status(401).json({ message: '블랙리스트 토큰입니다.' });
-  }
+  try { // redis.get()을 try 안쪽으로 옮김
+    const blacklisted = await redis.get(`blacklist:${token}`);
+    if (blacklisted) {
+      console.warn('authMiddleware: 블랙리스트 토큰 차단');
+      return res.status(401).json({ message: '블랙리스트 토큰입니다.' });
+    }
 
-  try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (e) {
-    console.error('authMiddleware: 토큰 검증 실패', e);
-    res.status(401).json({ message: '유효하지 않은 토큰입니다.' });
+    console.error('authMiddleware: 토큰 검증 또는 Redis 오류', e);
+    res.status(401).json({ message: '인증에 실패했습니다.' });
   }
 };
