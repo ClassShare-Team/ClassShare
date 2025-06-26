@@ -4,14 +4,23 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- 역할 (강사/수강생/관리자)
 CREATE TYPE user_role AS ENUM ('instructor', 'student', 'admin');
 
+-- 회원가입 인증 코드
+
+CREATE TABLE email_verification_codes (
+    email       VARCHAR(320) PRIMARY KEY,
+    code        VARCHAR(6) NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    verified    BOOLEAN DEFAULT FALSE
+);
+
 -- 핵심 사용자 테이블
 
 CREATE TABLE users (
     id                INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email             VARCHAR(320)  NOT NULL UNIQUE,
     password          VARCHAR(255),
-    name              VARCHAR(255)  NOT NULL UNIQUE,
-    nickname          VARCHAR(255)  NOT NULL,
+    name              VARCHAR(255)  NOT NULL,
+    nickname          VARCHAR(255)  NOT NULL UNIQUE,
     role              user_role     NOT NULL,
     phone             VARCHAR(30),
     profile_image     TEXT,
@@ -280,6 +289,8 @@ CREATE TABLE dm_toast_chat_status (
 CREATE INDEX idx_point_histories_user_id ON point_histories (user_id);
 CREATE INDEX idx_subscriptions_user_id ON subscriptions (user_id);
 CREATE INDEX idx_subscriptions_instructor_id ON subscriptions (instructor_id);
+CREATE INDEX IF NOT EXISTS idx_users_public_id ON users(public_id);
+CREATE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_provider, oauth_id);
 CREATE INDEX idx_posts_user_id ON posts (user_id);
 CREATE INDEX idx_comments_post_id ON comments (post_id);
 CREATE INDEX idx_comments_user_id ON comments (user_id);
