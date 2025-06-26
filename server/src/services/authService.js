@@ -86,32 +86,46 @@ exports.signup = async ({ email, password, name, nickname, role }) => {
   if (!['instructor', 'student'].includes(role))
     throw { status: 400, message: 'role은 instructor 또는 student여야 합니다.' };
 
-  // 이메일 검증 여부 확인
-  const verifiedRow = await db.query(
-    `SELECT verified FROM email_verification_codes
-    WHERE email = $1 AND verified = TRUE`,
-    [email]
-  );
+  const client = await db.pool.connect(); // 트랜잭션 시작을 위한 커넥션 확보
 
-  if (!verifiedRow.rowCount) throw { status: 400, message: '이메일 인증이 완료되지 않았습니다.' };
+  try {
+    await client.query('BEGIN');
 
-  // 중복 검사
-  const dupEmail = await db.query(`SELECT 1 FROM users WHERE email = $1`, [email]);
-  if (dupEmail.rowCount) throw { status: 409, message: '이미 가입된 이메일입니다.' };
+    // 이메일 검증 여부 확인
+    const verifiedRow = await client.query(
+      `SELECT verified FROM email_verification_codes
+       WHERE email = $1 AND verified = TRUE`,
+      [email]
+    );
 
-  const dupNickname = await db.query(`SELECT 1 FROM users WHERE nickname = $1`, [nickname]);
-  if (dupNickname.rowCount) throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
+    if (!verifiedRow.rowCount) throw { status: 400, message: '이메일 인증이 완료되지 않았습니다.' };
 
-  // 삽입
-  const hashed = await bcrypt.hash(password, 10);
-  await db.query(
-    `INSERT INTO users (email, password, name, nickname, role, is_verified)
-    VALUES ($1, $2, $3, $4, $5, TRUE)`,
-    [email, hashed, name, nickname, role]
-  );
+    // 중복 검사
+    const dupEmail = await client.query(`SELECT 1 FROM users WHERE email = $1`, [email]);
+    if (dupEmail.rowCount) throw { status: 409, message: '이미 가입된 이메일입니다.' };
 
-  // 인증 기록 제거
-  await db.query(`DELETE FROM email_verification_codes WHERE email = $1`, [email]);
+    const dupNickname = await client.query(`SELECT 1 FROM users WHERE nickname = $1`, [nickname]);
+    if (dupNickname.rowCount) throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
+
+    // 삽입
+    const hashed = await bcrypt.hash(password, 10);
+    await client.query(
+      `INSERT INTO users (email, password, name, nickname, role, is_verified)
+       VALUES ($1, $2, $3, $4, $5, TRUE)`,
+      [email, hashed, name, nickname, role]
+    );
+
+    // 인증 기록 제거
+    await client.query(`DELETE FROM email_verification_codes WHERE email = $1`, [email]);
+
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error('회원가입 중 오류 발생:', e);
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 // Google OAuth 로그인 또는 회원가입
