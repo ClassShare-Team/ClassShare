@@ -11,5 +11,6 @@ router.patch(
   upload.single('profile_image'),
   userController.updateMyPageInfo
 );
+router.patch('/notification-settings', authMiddleware, userController.updateNotificationSettings);
 
 module.exports = router;

@@ -60,3 +60,29 @@ exports.updateMyPageInfo = async (req, res) => {
     res.status(e.status || 500).json({ message: e.message || '서버 오류' });
   }
 };
+
+// 알림 설정 변경 (임시 구현)
+exports.updateNotificationSettings = async (req, res) => {
+  try {
+    const { marketing, lecture_updates, chat_messages } = req.body;
+
+    // 모든 필드가 boolean인지 확인
+    if (
+      typeof marketing !== 'boolean' ||
+      typeof lecture_updates !== 'boolean' ||
+      typeof chat_messages !== 'boolean'
+    ) {
+      return res.status(400).json({ message: '형식 오류: 모든 필드는 boolean 타입이어야 합니다.' });
+    }
+
+    // TODO: 실제 DB 저장 로직은 추후 구현 예정
+    console.log(
+      `[알림 설정] userId=${req.user.id}, marketing=${marketing}, lecture_updates=${lecture_updates}, chat_messages=${chat_messages}`
+    );
+
+    res.status(200).json({ message: '알림 설정이 저장되었습니다.' });
+  } catch (e) {
+    console.error('[알림 설정 오류]', e);
+    res.status(500).json({ message: '서버 오류' });
+  }
+};
