@@ -19,7 +19,7 @@ CREATE TABLE users (
     id                INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email             VARCHAR(320)  NOT NULL UNIQUE,
     password          VARCHAR(255),
-    name              VARCHAR(255)  NOT NULL UNIQUE,
+    name              VARCHAR(255)  NOT NULL,
     nickname          VARCHAR(255)  NOT NULL UNIQUE,
     role              user_role     NOT NULL,
     phone             VARCHAR(30),
