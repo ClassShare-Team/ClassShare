@@ -78,3 +78,69 @@ exports.getUserById = async (userId) => {
   const { rows } = await db.query('SELECT id, profile_image FROM users WHERE id = $1', [userId]);
   return rows[0];
 };
+
+// 비밀번호까지 포함된 사용자 조회
+exports.getUserWithPassword = async (userId) => {
+  const { rows } = await db.query('SELECT id, password FROM users WHERE id = $1', [userId]);
+  return rows[0];
+};
+
+// 비밀번호 업데이트
+exports.updateUserPassword = async (userId, hashedPassword) => {
+  await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+};
+
+// 1:1 문의 등록
+exports.createInquiry = async (userId, title, content) => {
+  if (!title || !content) {
+    throw { status: 400, code: 'MISSING_FIELD', message: '제목과 내용을 모두 입력해주세요.' };
+  }
+
+  const insertSQL = `
+    INSERT INTO inquiries (user_id, title, content)
+    VALUES ($1, $2, $3)
+    RETURNING id
+  `;
+  const { rows } = await db.query(insertSQL, [userId, title.trim(), content.trim()]);
+  return rows[0].id; // 생성된 inquiryId 반환
+};
+
+// 내가 구독한 강사 목록 조회
+exports.getMySubscriptions = async (userId, page, size) => {
+  const offset = (page - 1) * size;
+
+  // 전체 구독 수 조회
+  const totalResult = await db.query(
+    `SELECT COUNT(*) AS total
+     FROM subscriptions
+     WHERE user_id = $1`,
+    [userId]
+  );
+  const total = parseInt(totalResult.rows[0].total);
+
+  // 구독 목록 조회 (instructor_profiles 조인)
+  const subscriptionsResult = await db.query(
+    `SELECT
+        u.id AS "instructorId",
+        u.nickname,
+        u.profile_image,
+        ip.subscription_price,
+        s.subscribed_at,
+        s.subscribed_until,
+        s.is_auto_renew
+     FROM subscriptions s
+     JOIN users u ON s.instructor_id = u.id
+     JOIN instructor_profiles ip ON ip.instructor_id = u.id
+     WHERE s.user_id = $1
+     ORDER BY s.subscribed_at DESC
+     LIMIT $2 OFFSET $3`,
+    [userId, size, offset]
+  );
+
+  return {
+    page,
+    size,
+    total,
+    subscriptions: subscriptionsResult.rows,
+  };
+};

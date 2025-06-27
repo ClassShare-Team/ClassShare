@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcrypt');
 const userService = require('../services/userService');
 
 // 마이페이지 정보 조회
@@ -86,3 +87,89 @@ exports.updateNotificationSettings = async (req, res) => {
     res.status(500).json({ message: '서버 오류' });
   }
 };
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+
+    // 형식 검사
+    if (
+      typeof current_password !== 'string' ||
+      typeof new_password !== 'string' ||
+      new_password.length < 8
+    ) {
+      return res
+        .status(400)
+        .json({ code: 'INVALID_FORMAT', message: '비밀번호 형식이 올바르지 않습니다.' });
+    }
+
+    // DB에서 현재 비밀번호 해시 조회
+    const user = await userService.getUserWithPassword(req.user.id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ code: 'USER_NOT_FOUND', message: '사용자를 찾을 수 없습니다.' });
+    }
+    const currentHash = user.password;
+
+    // 현재 비밀번호 일치 확인
+    const isMatch = await bcrypt.compare(current_password, currentHash);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ code: 'INVALID_CURRENT_PASSWORD', message: '현재 비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 새 비밀번호가 기존과 동일한지 확인
+    const isSame = await bcrypt.compare(new_password, currentHash);
+    if (isSame) {
+      return res
+        .status(400)
+        .json({ code: 'PASSWORD_UNCHANGED', message: '새 비밀번호가 기존 비밀번호와 동일합니다.' });
+    }
+
+    // 새 비밀번호 해시 후 저장
+    const newHash = await bcrypt.hash(new_password, 10);
+    await userService.updateUserPassword(req.user.id, newHash);
+
+    res.status(200).json({ message: '비밀번호가 변경되었습니다.' });
+  } catch (e) {
+    console.error('[비밀번호 변경 오류]', e);
+    res.status(e.status || 500).json({ code: 'SERVER_ERROR', message: e.message || '서버 오류' });
+  }
+};
+
+// 1:1 문의 등록
+exports.createInquiry = async (req, res) => {
+  try {
+    const { title, content } = req.body;
+
+    const inquiryId = await userService.createInquiry(req.user.id, title, content);
+
+    res.status(201).json({
+      message: '문의가 등록되었습니다.',
+      inquiryId,
+    });
+  } catch (e) {
+    console.error('[문의 등록 오류]', e);
+    res
+      .status(e.status || 500)
+      .json({ code: e.code || 'SERVER_ERROR', message: e.message || '서버 오류' });
+  }
+};
+
+// 내가 구독한 강사 보기
+exports.getMySubscriptions = async (req, res, next) => {
+  try {
+    const userId = req.user.id; // JWT로부터 추출된 사용자 ID
+    const page = parseInt(req.query.page) || 1;
+    const size = parseInt(req.query.size) || 20;
+
+    const result = await userService.getMySubscriptions(userId, page, size);
+
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+

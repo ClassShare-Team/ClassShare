@@ -12,5 +12,8 @@ router.patch(
   userController.updateMyPageInfo
 );
 router.patch('/notification-settings', authMiddleware, userController.updateNotificationSettings);
+router.patch('/me/password', authMiddleware, userController.updatePassword);
+router.post('/inquiries', authMiddleware, userController.createInquiry);
+router.get('/subscriptions', authMiddleware, userController.getMySubscriptions);
 
 module.exports = router;
