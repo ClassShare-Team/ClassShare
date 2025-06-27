@@ -1,6 +1,31 @@
 import React from 'react';
 import styled from 'styled-components';
 
+export const RegisterPage = () => {
+  return (
+    <PageContainer>
+      <Frame>
+        <Title>회원가입</Title>
+        <RoleContainer>
+          <RoleOption>
+            <input type="radio" name="role" value="teacher" defaultChecked /> 강사용
+          </RoleOption>
+          <RoleOption>
+            <input type="radio" name="role" value="student" /> 학생용
+          </RoleOption>
+        </RoleContainer>
+        <Input type="email" placeholder="이메일" />
+        <Input type="password" placeholder="비밀번호" />
+        <InputRow>
+          <HalfInput type="text" placeholder="이름" />
+          <HalfInput type="text" placeholder="닉네임" />
+        </InputRow>
+        <SubmitButton>회원가입</SubmitButton>
+      </Frame>
+    </PageContainer>
+  );
+};
+
 const PageContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.white};
   width: 100%;
@@ -11,7 +36,7 @@ const PageContainer = styled.div`
 `;
 
 const Frame = styled.div`
-  border: 1px solid #e0e0e0;
+  border: 1px solid ${({ theme }) => theme.colors.gray100};
   border-radius: 20px;
   width: 525px;
   padding: 40px;
@@ -28,7 +53,7 @@ const Title = styled.div`
 `;
 
 const Input = styled.input`
-  border: 1px solid #ccc;
+  border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 10px;
   padding: 16px;
   font-size: 16px;
@@ -69,28 +94,3 @@ const SubmitButton = styled.button`
   font-size: 16px;
   cursor: pointer;
 `;
-
-export const RegisterPage = () => {
-  return (
-    <PageContainer>
-      <Frame>
-        <Title>회원가입</Title>
-        <RoleContainer>
-          <RoleOption>
-            <input type="radio" name="role" value="teacher" defaultChecked /> 강사용
-          </RoleOption>
-          <RoleOption>
-            <input type="radio" name="role" value="student" /> 학생용
-          </RoleOption>
-        </RoleContainer>
-        <Input type="email" placeholder="이메일" />
-        <Input type="password" placeholder="비밀번호" />
-        <InputRow>
-          <HalfInput type="text" placeholder="이름" />
-          <HalfInput type="text" placeholder="닉네임" />
-        </InputRow>
-        <SubmitButton>회원가입</SubmitButton>
-      </Frame>
-    </PageContainer>
-  );
-};
