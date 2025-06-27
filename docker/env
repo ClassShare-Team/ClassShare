@@ -1,5 +1,0 @@
-# ../docker/.env
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=programmers
-POSTGRES_DB=classshare
-
