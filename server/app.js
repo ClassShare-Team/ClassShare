@@ -1,18 +1,16 @@
-import express from 'express';
-import pool from './db.js';
-
+require('dotenv').config();
+require('./src/db');
+const express = require('express');
 const app = express();
+const path = require('path');
 const port = 5000;
+const authRoutes = require('./src/routes/authRoutes');
+const userRoutes = require('./src/routes/userRoutes');
 
-app.get('/health', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT NOW()');
-    res.send(`DB 연결 성공: ${result.rows[0].now}`);
-  } catch (err) {
-    console.error('DB 연결 실패:', err);
-    res.status(500).send('DB 연결 실패');
-  }
-});
+app.use(express.json());
+app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
 
 app.listen(port, () => {
   console.log(`Express 서버 실행 중: http://localhost:${port}`);
