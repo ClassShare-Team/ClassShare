@@ -284,6 +284,18 @@ CREATE TABLE dm_toast_chat_status (
     PRIMARY KEY (user_id, message_id)
 );
 
+-- 사용자용 문의
+
+CREATE TABLE inquiries (
+    id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id    INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title      VARCHAR(255) NOT NULL,
+    content    TEXT NOT NULL,
+    is_answered BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    answered_at TIMESTAMPTZ
+);
+
 -- 인덱스 생성
 
 CREATE INDEX idx_point_histories_user_id ON point_histories (user_id);
