@@ -1,8 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { Logo } from '@/components/nav/Logo';
+import { NavMenu } from '@/components/nav/NavMenu';
 import { SearchBar } from './SearchBar';
-import UserMenu from '../common/UserMenu';
+import UserMenu from '@/components/common/UserMenu';
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -13,7 +15,9 @@ export const Header = () => {
   return (
     <HeaderWrapper>
       <TopRow>
-        <LeftArea></LeftArea>
+        <LeftArea>
+          <Logo onClick={() => navigate('/')} />
+        </LeftArea>
         <CenterArea>
           <SearchBar />
         </CenterArea>
@@ -30,7 +34,9 @@ export const Header = () => {
           )}
         </RightArea>
       </TopRow>
-      <BottomRow></BottomRow>
+      <BottomRow>
+        <NavMenu />
+      </BottomRow>
     </HeaderWrapper>
   );
 };
