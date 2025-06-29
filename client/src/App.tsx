@@ -3,14 +3,14 @@ import { Outlet } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ToastContainer } from 'react-toastify';
-// import { Notification } from '@/components/layout/Notification';
+import { Notification } from '@/components/layout/Notification';
 
 const App = () => {
   return (
     <>
       <Header />
       <Outlet />
-      {/* <Notification /> */}
+      <Notification />
       <Footer />
       <ToastContainer
         position="top-center"
