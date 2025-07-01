@@ -1,16 +1,14 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import CreateLecturePage from './pages/CreateLecturePage';
 
-const App = () => {
-  return (
-    <>
-      <Header />
-      <Outlet />
-      <Footer />
-    </>
-  );
-};
+const App: React.FC = () => (
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<CreateLecturePage />} />
+      <Route path="/create-lecture" element={<CreateLecturePage />} />
+    </Routes>
+  </BrowserRouter>
+);
 
 export default App;
