@@ -93,3 +93,4 @@ const LoginButton = styled.button`
   font-weight: 500;
   cursor: pointer;
 `;
+export default Header;
