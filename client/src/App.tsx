@@ -1,16 +1,19 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
+import React from "react";
+import { ThemeProvider } from "styled-components";
+import { theme } from "./theme";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import CreateLecturePage from "./pages/CreateLecturePage";
 
-const App = () => {
+function App() {
   return (
-    <>
-      <Header />
-      <Outlet />
-      <Footer />
-    </>
+    <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<CreateLecturePage />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
-};
+}
 
 export default App;

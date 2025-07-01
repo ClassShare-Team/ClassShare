@@ -90,3 +90,4 @@ const GithubIcon = styled.img`
   width: 32px;
   height: 32px;
 `;
+export default Footer;
