@@ -210,3 +210,38 @@ exports.getMyReviews = async (req, res) => {
     });
   }
 };
+
+// 내가 쓴 댓글 전체 조회
+exports.getMyComments = async (req, res) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({
+      message: '인증 정보가 없습니다. 다시 로그인해 주세요.',
+    });
+  }
+  const userId = req.user.id;
+
+  const page = parseInt(req.query.page, 10) || 1;
+  const size = parseInt(req.query.size, 10) || 20;
+  if (page < 1 || size < 1) {
+    return res.status(400).json({
+      message: 'page·size는 1 이상의 정수여야 합니다.',
+    });
+  }
+
+  try {
+    const result = await userService.getMyComments(userId, page, size);
+
+    if (result.comments.length === 0) {
+      return res.status(200).json({
+        message: '작성한 댓글이 없습니다.',
+      });
+    }
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('[GET /users/my-comments] error:', err);
+    return res.status(500).json({
+      message: '서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+    });
+  }
+};

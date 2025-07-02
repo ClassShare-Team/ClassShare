@@ -178,3 +178,36 @@ exports.getMyReviews = async (userId, page, size) => {
 
   return { page, size, total, reviews };
 };
+
+// 내가 쓴 댓글 전체 조회
+exports.getMyComments = async (userId, page, size) => {
+  const offset = (page - 1) * size;
+
+  // 총 개수
+  const {
+    rows: [{ total }],
+  } = await db.query(
+    `SELECT COUNT(*)::INT AS total
+       FROM comments
+      WHERE user_id = $1`,
+    [userId]
+  );
+
+  // 댓글 조회
+  const { rows: comments } = await db.query(
+    `SELECT
+        c.id,
+        c.post_id            AS "postId",
+        p.title              AS "postTitle",
+        c.content,
+        c.created_at
+     FROM comments c
+     JOIN posts p ON p.id = c.post_id
+    WHERE c.user_id = $1
+    ORDER BY c.created_at DESC
+    LIMIT $2 OFFSET $3`,
+    [userId, size, offset]
+  );
+
+  return { page, size, total, comments };
+};
