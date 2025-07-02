@@ -144,3 +144,37 @@ exports.getMySubscriptions = async (userId, page, size) => {
     subscriptions: subscriptionsResult.rows,
   };
 };
+
+// 내 리뷰 조회
+exports.getMyReviews = async (userId, page, size) => {
+  const offset = (page - 1) * size;
+
+  // 총 개수
+  const {
+    rows: [{ total }],
+  } = await db.query(
+    `SELECT COUNT(*)::INT AS total
+       FROM reviews
+      WHERE user_id = $1`,
+    [userId]
+  );
+
+  // 리뷰 목록
+  const { rows: reviews } = await db.query(
+    `SELECT
+        r.id,
+        r.lecture_id               AS "lectureId",
+        l.title                     AS "lectureTitle",
+        r.rating,
+        r.content,
+        r.created_at
+     FROM reviews r
+     JOIN lectures l ON l.id = r.lecture_id
+    WHERE r.user_id = $1
+    ORDER BY r.created_at DESC
+    LIMIT $2 OFFSET $3`,
+    [userId, size, offset]
+  );
+
+  return { page, size, total, reviews };
+};

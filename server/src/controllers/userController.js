@@ -88,6 +88,7 @@ exports.updateNotificationSettings = async (req, res) => {
   }
 };
 
+// 비밀번호 변경
 exports.updatePassword = async (req, res) => {
   try {
     const { current_password, new_password } = req.body;
@@ -173,3 +174,39 @@ exports.getMySubscriptions = async (req, res, next) => {
   }
 };
 
+// 내가 쓴 리뷰 조회
+exports.getMyReviews = async (req, res) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({
+      message: '인증 정보가 없습니다. 다시 로그인해 주세요.'
+    });
+  }
+
+  const userId = req.user.id;
+  const page = parseInt(req.query.page, 10) || 1;
+  const size = parseInt(req.query.size, 10) || 20;
+
+  if (page < 1 || size < 1) {
+    return res.status(400).json({
+      message: 'page·size는 1 이상의 정수여야 합니다.'
+    });
+  }
+
+  try {
+    const result = await userService.getMyReviews(userId, page, size);
+
+    if (result.reviews.length === 0) {
+      return res.status(200).json({
+        message: '작성한 리뷰가 없습니다.'
+      });
+    }
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('[GET /users/my-reviews] error:', err);
+
+    return res.status(500).json({
+      message: '서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'
+    });
+  }
+};
