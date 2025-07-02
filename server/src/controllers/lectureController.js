@@ -13,6 +13,7 @@ exports.createLecture = async (req, res) => {
   try {
     lecturesMeta = JSON.parse(req.body.lectures || '[]');
   } catch (e) {
+    console.error('[JSON parse error] lectures field:', e);
     return res.status(401).json({ message: 'lectures 필드는 JSON 배열이어야 합니다.' });
   }
   if (!Array.isArray(lecturesMeta) || lecturesMeta.length === 0) {
