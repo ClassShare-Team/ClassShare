@@ -1,22 +1,6 @@
 const redis = require('../db/redisClient');
 const authService = require('../services/authService');
 
-// 이메일 인증코드 발송
-exports.sendVerificationCode = async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ message: '이메일이 누락되었습니다.' });
-  }
-
-  try {
-    await authService.sendCode(email);
-    return res.status(200).json({ message: '인증코드가 발송되었습니다.' });
-  } catch (e) {
-    return res.status(e.status || 500).json({ message: e.message || '서버 오류' });
-  }
-};
-
 // 인증코드 검증
 exports.verifyCode = async (req, res) => {
   const { email, code } = req.body;
@@ -42,9 +26,13 @@ exports.signup = async (req, res) => {
   }
 
   try {
-    await authService.signup({ email, password, name, nickname, role });
-    return res.status(201).json({ message: '회원가입이 완료되었습니다.' });
+    await authService.signupAndSendCode({ email, password, name, nickname, role });
+
+    return res.status(201).json({
+      message: '회원가입이 완료되었으며, 인증코드가 이메일로 발송되었습니다.',
+    });
   } catch (e) {
+    console.error('[signup error]', e);
     return res.status(e.status || 500).json({ message: e.message || '서버 오류' });
   }
 };

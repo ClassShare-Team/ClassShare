@@ -14,115 +14,104 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_REDIRECT_URI
 );
 
-// 인증 코드 발송
-exports.sendCode = async (email) => {
-  if (!validator.isEmail(email)) {
-    throw { status: 400, message: '이메일 형식이 올바르지 않습니다.' };
-  } // 이메일 검증 방식 변경
-
-  // 중복 발송 방지
-  const { rowCount } = await db.query(`SELECT 1 FROM users WHERE email = $1`, [email]);
-  if (rowCount > 0) {
-    throw { status: 409, message: '이미 가입된 이메일입니다.' };
-  }
-
-  // 숫자 + 영문 6자리
-  const code = [...Array(6)]
-    .map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.floor(Math.random() * 36)))
-    .join('');
-
-  await db.query(
-    `
-    INSERT INTO email_verification_codes (email, code, verified)
-    VALUES ($1, $2, FALSE)
-    ON CONFLICT (email)
-         DO UPDATE SET code = EXCLUDED.code,
-                       verified = FALSE,
-                       created_at = CURRENT_TIMESTAMP
-  `,
-    [email, code]
-  );
-
-  await mailService.sendVerificationEmail(email, code);
-};
-
 // 이메일 코드 검증
 exports.verifyCode = async (email, inputCode) => {
-  const { rows } = await db.query(
-    `SELECT code, created_at FROM email_verification_codes
-    WHERE email = $1`,
+  const {
+    rows: [row],
+  } = await db.query(
+    `SELECT code, created_at, verified
+       FROM email_verification_codes
+      WHERE email = $1`,
     [email]
   );
 
-  if (!rows.length) throw { status: 400, message: '인증코드를 먼저 발급받아 주세요.' };
+  if (!row) throw { status: 400, message: '인증코드를 먼저 발급받아 주세요.' };
+  if (row.verified) throw { status: 400, message: '이미 인증이 완료된 이메일입니다.' };
 
-  const { code, created_at } = rows[0];
-  const ageMin = (Date.now() - new Date(created_at)) / 60000;
-
+  const ageMin = (Date.now() - row.created_at.getTime()) / 60000;
   if (ageMin > CODE_TTL_MIN) throw { status: 400, message: '인증코드가 만료되었습니다.' };
 
-  if (inputCode.length !== code.length) {
-    throw { status: 400, message: '인증코드가 일치하지 않습니다.' };
-  }
-  const isMatch = crypto.timingSafeEqual(Buffer.from(inputCode), Buffer.from(code));
-  if (!isMatch) {
-    throw { status: 400, message: '인증코드가 일치하지 않습니다.' };
-  } // 보안 강화
+  const isMatch = crypto.timingSafeEqual(Buffer.from(inputCode), Buffer.from(row.code));
+  if (!isMatch) throw { status: 400, message: '인증코드가 일치하지 않습니다.' };
 
-  // 검증 통과
-  await db.query(
-    `UPDATE email_verification_codes SET verified = TRUE
-    WHERE email = $1`,
-    [email]
-  );
+  await db.query('UPDATE email_verification_codes SET verified = true WHERE email = $1', [email]);
+  await db.query('UPDATE users SET is_verified = true WHERE email = $1', [email]);
 };
 
-// 최종 회원가입
-exports.signup = async ({ email, password, name, nickname, role }) => {
-  // 필드 체크
-  if (!email || !password || !name || !nickname || !role)
+// 회원가입 및 이메일 전송
+exports.signupAndSendCode = async ({ email, password, name, nickname, role }) => {
+  // 기본 검증
+  if (!email || !password || !name || !nickname || !role) {
     throw { status: 400, message: '필수 항목이 누락되었습니다.' };
-
-  if (!['instructor', 'student'].includes(role))
+  }
+  if (!validator.isEmail(email)) {
+    throw { status: 400, message: '이메일 형식이 올바르지 않습니다.' };
+  }
+  if (!['instructor', 'student'].includes(role)) {
     throw { status: 400, message: 'role은 instructor 또는 student여야 합니다.' };
+  }
 
-  const client = await db.pool.connect(); // 트랜잭션 시작을 위한 커넥션 확보
-
+  const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
 
-    // 이메일 검증 여부 확인
-    const verifiedRow = await client.query(
-      `SELECT verified FROM email_verification_codes
-       WHERE email = $1 AND verified = TRUE`,
-      [email]
-    );
+    // 이메일·닉네임 중복 검사
+    const { rows: exist } = await client.query('SELECT is_verified FROM users WHERE email = $1', [
+      email,
+    ]);
+    if (exist.length && exist[0].is_verified) {
+      throw { status: 409, message: '이미 가입된 이메일입니다.' };
+    }
+    const { rowCount: dupNick } = await client.query('SELECT 1 FROM users WHERE nickname = $1', [
+      nickname,
+    ]);
+    if (dupNick) {
+      throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
+    }
 
-    if (!verifiedRow.rowCount) throw { status: 400, message: '이메일 인증이 완료되지 않았습니다.' };
+    // 사용자 삽입 또는 갱신
+    const hash = await bcrypt.hash(password, 10);
+    if (exist.length) {
+      await client.query(
+        `UPDATE users
+           SET password = $2,
+               name     = $3,
+               nickname = $4,
+               role     = $5
+         WHERE email = $1`,
+        [email, hash, name, nickname, role]
+      );
+    } else {
+      await client.query(
+        `INSERT INTO users (email, password, name, nickname, role, is_verified)
+         VALUES ($1, $2, $3, $4, $5, FALSE)`,
+        [email, hash, name, nickname, role]
+      );
+    }
 
-    // 중복 검사
-    const dupEmail = await client.query(`SELECT 1 FROM users WHERE email = $1`, [email]);
-    if (dupEmail.rowCount) throw { status: 409, message: '이미 가입된 이메일입니다.' };
+    // 6자리 영문+숫자 코드 생성
+    const code = [...Array(6)]
+      .map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.floor(Math.random() * 36)))
+      .join('');
 
-    const dupNickname = await client.query(`SELECT 1 FROM users WHERE nickname = $1`, [nickname]);
-    if (dupNickname.rowCount) throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
-
-    // 삽입
-    const hashed = await bcrypt.hash(password, 10);
+    // 코드 upsert
     await client.query(
-      `INSERT INTO users (email, password, name, nickname, role, is_verified)
-       VALUES ($1, $2, $3, $4, $5, TRUE)`,
-      [email, hashed, name, nickname, role]
+      `INSERT INTO email_verification_codes (email, code, verified)
+       VALUES ($1,$2,false)
+       ON CONFLICT (email) DO UPDATE
+         SET code=EXCLUDED.code,
+             verified=false,
+             created_at=CURRENT_TIMESTAMP`,
+      [email, code]
     );
-
-    // 인증 기록 제거
-    await client.query(`DELETE FROM email_verification_codes WHERE email = $1`, [email]);
 
     await client.query('COMMIT');
-  } catch (e) {
+
+    // 이메일 발송 (트랜잭션 밖)
+    await mailService.sendVerificationEmail(email, code); // ★ 변경
+  } catch (err) {
     await client.query('ROLLBACK');
-    console.error('회원가입 중 오류 발생:', e);
-    throw e;
+    throw err;
   } finally {
     client.release();
   }
