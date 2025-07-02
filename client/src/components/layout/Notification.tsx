@@ -27,7 +27,7 @@ export const Notification = () => {
   return (
     <div className="notification-container">
       <button className="notify-btn" onClick={() => setOpen(!open)}>
-        🔔
+        <img src="/assets/bell.png" alt="알림" className="bell-icon" />
       </button>
 
       {open && (

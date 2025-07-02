@@ -1,40 +1,55 @@
 .notification-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 9999;
+  position: relative;
+  display: inline-block;
 }
 
 .notify-btn {
-  background-color: #a58cff;
+  background-color: #a259ff;
   border: none;
-  color: white;
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  font-size: 20px;
+  padding: 12px;
   cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.bell-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.15));
 }
 
 .notify-list {
   position: absolute;
-  bottom: 60px;
+  top: 60px;
   right: 0;
-  width: 280px;
-  max-height: 400px;
-  overflow-y: auto;
+  width: 250px;
   background: white;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.notify-list h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
 }
 
 .notify-item {
-  border-bottom: 1px solid #eee;
-  padding: 8px 0;
+  margin-bottom: 12px;
 }
+
+.notify-item strong {
+  display: block;
+  color: #a259ff;
+}
+
 .empty {
-  color: #999;
-  font-size: 14px;
+  text-align: center;
+  color: #aaa;
 }
