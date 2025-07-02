@@ -211,3 +211,38 @@ exports.getMyComments = async (userId, page, size) => {
 
   return { page, size, total, comments };
 };
+
+// 내가 구매한 강의 조회
+exports.getMyLectures = async (userId, page, size) => {
+  const offset = (page - 1) * size;
+
+  const {
+    rows: [{ total }],
+  } = await db.query(
+    `SELECT COUNT(*)::INT AS total
+       FROM lecture_purchases
+      WHERE user_id = $1`,
+    [userId]
+  );
+
+  const { rows: lectures } = await db.query(
+    `SELECT
+        l.id,
+        l.public_id            AS "publicId",
+        l.title,
+        l.category,
+        l.price,
+        l.thumbnail,
+        lp.purchased_at        AS "purchasedAt",
+        u.nickname             AS "instructorNickname"
+     FROM lecture_purchases lp
+     JOIN lectures        l ON l.id = lp.lecture_id
+     JOIN users           u ON u.id = l.instructor_id
+    WHERE lp.user_id = $1
+    ORDER BY lp.purchased_at DESC
+    LIMIT $2 OFFSET $3`,
+    [userId, size, offset]
+  );
+
+  return { page, size, total, lectures };
+};

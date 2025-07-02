@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { authMiddleware } = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+const { uploadProfileImage } = require('../middleware/uploadMiddleware');
 
 router.get('/me', authMiddleware, userController.getMyPageInfo);
 router.patch(
-  '/me',
+  '/profile-image',
   authMiddleware,
-  upload.single('profile_image'),
+  uploadProfileImage.single('profile_image'),
   userController.updateMyPageInfo
 );
 router.patch('/notification-settings', authMiddleware, userController.updateNotificationSettings);
@@ -17,5 +17,6 @@ router.post('/inquiries', authMiddleware, userController.createInquiry);
 router.get('/subscriptions', authMiddleware, userController.getMySubscriptions);
 router.get('/my-reviews', authMiddleware, userController.getMyReviews);
 router.get('/my-comments', authMiddleware, userController.getMyComments);
+router.get('/my-lectures', authMiddleware, userController.getMyLectures);
 
 module.exports = router;
