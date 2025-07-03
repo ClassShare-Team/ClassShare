@@ -1,9 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 
-// Styled Components
+// =======================
+// styled-components
+// =======================
 const PageWrapper = styled.div`
   min-height: 100vh;
   display: flex;
@@ -221,161 +221,49 @@ const ThumbnailText = styled.span`
   text-align: center;
 `;
 
-const StartTimePickerWrapper = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const StartTimeButton = styled.button`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  border: 1px solid #d1d5db;
+// 강의 영상 삭제 버튼
+const RemoveButton = styled.button`
+  margin-left: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  border: none;
+  background: #f87171;
+  color: #fff;
   border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  color: #374151;
-  background: #fff;
-  justify-content: space-between;
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #c7d2fe;
-    border-color: #6366f1;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover {
+    background: #ef4444;
   }
 `;
 
-const StartTimeDropdown = styled.div`
-  position: absolute;
-  left: 0;
-  margin-top: 0.5rem;
-  width: 100%;
-  background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
-  border: 1px solid #e5e7eb;
-  padding: 1.25rem;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-`;
-
-const StartTimeInput = styled.input<{ hasError?: boolean }>`
-  width: 100%;
-  border: 1px solid ${({ hasError }) => (hasError ? "#f87171" : "#d1d5db")};
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
-`;
-
-const StartTimeDropdownButton = styled.button<{ disabled?: boolean }>`
-  width: 100%;
-  margin-top: 0.5rem;
-  padding: 0.5rem 0;
-  border-radius: 0.75rem;
-  font-weight: bold;
-  background: ${({ disabled }) => (disabled ? "#d1d5db" : "#6366f1")};
-  color: ${({ disabled }) => (disabled ? "#f3f4f6" : "#fff")};
-  border: none;
-  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-`;
-
-
-// StartTimePicker
-function StartTimePicker() {
-  const [open, setOpen] = useState(false);
-  const [date, setDate] = useState("");
-  const [hour, setHour] = useState("");
-  const [minute, setMinute] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [open]);
-  const hourValid =
-    hour === "" || (/^\d{1,2}$/.test(hour) && Number(hour) >= 1 && Number(hour) <= 24);
-  const minValid =
-    minute === "" || (/^\d{1,2}$/.test(minute) && Number(minute) >= 1 && Number(minute) <= 60);
-  return (
-    <StartTimePickerWrapper>
-      <StartTimeButton
-        type="button"
-        onClick={() => setOpen(!open)}
-      >
-        {date && hour && minute
-          ? `${date} ${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`
-          : "진행할 실시간 강의 시간을 선택해 주세요"}
-        <span style={{ marginLeft: 8 }}>
-          <svg width="22" height="22" fill="none" stroke="#bbb" strokeWidth="1.5" viewBox="0 0 24 24">
-            <rect x="3" y="5" width="18" height="16" rx="3" fill="#fff" stroke="#bbb" />
-            <path d="M8 3v4M16 3v4" stroke="#bbb" strokeLinecap="round" />
-            <circle cx="12" cy="14" r="3.2" fill="none" stroke="#bbb" />
-          </svg>
-        </span>
-      </StartTimeButton>
-      {open && (
-        <StartTimeDropdown ref={ref}>
-          <div>
-            <Label className="block text-xs text-gray-500 mb-1">날짜</Label>
-            <StartTimeInput
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-          <Row>
-            <div style={{ flex: 1 }}>
-              <Label className="block text-xs text-gray-500 mb-1">시간 (1~24)</Label>
-              <StartTimeInput
-                type="number"
-                min={1}
-                max={24}
-                hasError={!hourValid}
-                placeholder="시"
-                value={hour}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "");
-                  if (val === "" || (Number(val) >= 1 && Number(val) <= 24)) setHour(val);
-                }}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <Label className="block text-xs text-gray-500 mb-1">분 (1~60)</Label>
-              <StartTimeInput
-                type="number"
-                min={1}
-                max={60}
-                hasError={!minValid}
-                placeholder="분"
-                value={minute}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "");
-                  if (val === "" || (Number(val) >= 1 && Number(val) <= 60)) setMinute(val);
-                }}
-              />
-            </div>
-          </Row>
-          <StartTimeDropdownButton
-            disabled={!(date && hour && minute && hourValid && minValid)}
-            onClick={() => setOpen(false)}
-            type="button"
-          >
-            입력 완료
-          </StartTimeDropdownButton>
-        </StartTimeDropdown>
-      )}
-    </StartTimePickerWrapper>
-  );
-}
-
-
-// CreateLecturePage
+// =======================
+// Main Component
+// =======================
 const CreateLecturePage: React.FC = () => {
+  // 여러 영상 관리 state
+  const [videos, setVideos] = useState([{ title: "", file: null as File | null }]);
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("교육");
+
+  // 영상 추가
+  const handleAddVideo = () => {
+    setVideos([...videos, { title: "", file: null }]);
+  };
+
+  // 영상 필드 입력 변경
+  const handleVideoChange = (idx: number, field: "title" | "file", value: any) => {
+    setVideos(videos.map((v, i) =>
+      i === idx ? { ...v, [field]: value } : v
+    ));
+  };
+
+  // 영상 삭제
+  const handleRemoveVideo = (idx: number) => {
+    if (videos.length === 1) return;
+    setVideos(videos.filter((_, i) => i !== idx));
+  };
+
   return (
     <PageWrapper>
       <MainContent>
@@ -386,8 +274,7 @@ const CreateLecturePage: React.FC = () => {
               {[
                 "강의 제목",
                 "강의 설명",
-                "강의 목록",
-                "강의 시작 시간",
+                "강의 영상",
                 "가격",
                 "카테고리",
                 "강의 썸네일"
@@ -395,7 +282,7 @@ const CreateLecturePage: React.FC = () => {
                 <StepItem key={step}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "1rem" }}>
                     <StepCircle active={idx === 0}>{idx + 1}</StepCircle>
-                    {idx !== 6 && <StepLine />}
+                    {idx !== 5 && <StepLine />}
                   </div>
                   <StepText active={idx === 0}>{step}</StepText>
                 </StepItem>
@@ -405,8 +292,8 @@ const CreateLecturePage: React.FC = () => {
           <FormCard>
             <FormTitleRow>
               <FormTitle>내 강의 만들기</FormTitle>
-              <Button variant="default">뒤로 가기</Button>
-              <Button variant="primary">저장</Button>
+              <Button variant="default" type="button">뒤로 가기</Button>
+              <Button variant="primary" type="button">저장</Button>
             </FormTitleRow>
             <div>
               {/* 강의 제목 */}
@@ -414,7 +301,7 @@ const CreateLecturePage: React.FC = () => {
                 <Label>강의 제목</Label>
                 <Input
                   type="text"
-                  placeholder="진행할 실시간 강의 제목을 입력해 주세요"
+                  placeholder="강의 제목을 입력해 주세요"
                 />
               </FormSection>
               {/* 강의 설명 */}
@@ -422,20 +309,47 @@ const CreateLecturePage: React.FC = () => {
                 <Label>강의 설명</Label>
                 <TextArea
                   rows={7}
-                  placeholder="진행할 실시간 강의 내용을 입력해 주세요"
+                  placeholder="강의 내용을 입력해 주세요"
                 />
               </FormSection>
-              {/* 강의 목록 */}
+              {/* 강의 영상 여러개 추가/삭제 */}
               <FormSection>
-                <Label>강의 목록</Label>
-                <FileInput type="file" id="lecture-file"/>
-                <FileLabel htmlFor="lecture-file">파일 선택</FileLabel>
-                <HelperText>강의 파일을 업로드 해주세요.</HelperText>
-              </FormSection>
-              {/* 강의 시작 시간 */}
-              <FormSection>
-                <Label>강의 시작 시간</Label>
-                <StartTimePicker />
+                <Label>강의 영상</Label>
+                {videos.map((video, idx) => (
+                  <div key={idx} style={{ marginBottom: "1rem", display: "flex", alignItems: "center" }}>
+                    <div style={{ flex: 1 }}>
+                      <Input
+                        type="text"
+                        placeholder={`영상 제목을 입력하세요 (${idx + 1})`}
+                        value={video.title}
+                        onChange={e => handleVideoChange(idx, "title", e.target.value)}
+                        style={{ marginBottom: "0.5rem" }}
+                      />
+                      <FileInput
+                        type="file"
+                        accept="video/*"
+                        id={`video-file-${idx}`}
+                        onChange={e => handleVideoChange(idx, "file", e.target.files?.[0] || null)}
+                      />
+                      <FileLabel htmlFor={`video-file-${idx}`}>영상 파일 선택</FileLabel>
+                      {video.file && <HelperText>선택됨: {video.file.name}</HelperText>}
+                    </div>
+                    <RemoveButton
+                      type="button"
+                      onClick={() => handleRemoveVideo(idx)}
+                      disabled={videos.length === 1}
+                      style={{
+                        opacity: videos.length === 1 ? 0.4 : 1,
+                        pointerEvents: videos.length === 1 ? "none" : "auto"
+                      }}
+                    >
+                      삭제
+                    </RemoveButton>
+                  </div>
+                ))}
+                <Button type="button" variant="default" onClick={handleAddVideo} style={{ marginTop: "0.5rem" }}>
+                  + 강의 영상 추가
+                </Button>
               </FormSection>
               {/* 가격 & 카테고리 */}
               <FormSection>
@@ -445,12 +359,14 @@ const CreateLecturePage: React.FC = () => {
                     <Input
                       type="text"
                       placeholder="예: 10000"
+                      value={price}
+                      onChange={e => setPrice(e.target.value)}
                     />
                     <HelperText>희망하는 강의의 가격을 입력해주세요</HelperText>
                   </div>
                   <div style={{ flex: 1 }}>
                     <Label>카테고리</Label>
-                    <Select>
+                    <Select value={category} onChange={e => setCategory(e.target.value)}>
                       <option>교육</option>
                       <option>개발</option>
                       <option>음악</option>
