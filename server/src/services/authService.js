@@ -150,7 +150,7 @@ exports.handleGoogleOAuth = async (code) => {
   // 기존 유저면 → 로그인 처리
   if (result.rowCount > 0) {
     const user = result.rows[0];
-    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     });
 
@@ -250,7 +250,7 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
     await redis.del(`temp-oauth:${key}`);
 
     // JWT 발급
-    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     });
 
@@ -298,7 +298,7 @@ exports.login = async (email, password) => {
     throw { status: 401, message: '이메일 또는 비밀번호가 올바르지 않습니다.' };
   }
 
-  const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+  const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: '7d',
   });
 
