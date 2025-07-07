@@ -3,13 +3,21 @@ const lectureService = require('../services/lectureService');
 /**
  * [POST] /lectures
  *  ├─ 파일 : thumbnail(1), videos[](N)
- *  └─ 본문 : title, description, price, category, titles[](N)
+ *  └─ 본문 : title, description, price, category(쉼표구분), titles[](N)
  */
 exports.createLecture = async (req, res, next) => {
   try {
     /* 0) 필수 필드 */
-    const { title, description, price = 0, category } = req.body;
-    if (!title || !category) {
+    const { title, description, price = 0 } = req.body;
+
+    // category 문자열 → 쉼표 구분, trim, 중복 제거
+    const categoryStr = (req.body.category || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(',');
+
+    if (!title || !categoryStr) {
       return res.status(400).json({ message: 'title과 category는 필수입니다.' });
     }
 
@@ -32,11 +40,12 @@ exports.createLecture = async (req, res, next) => {
       title,
       description,
       price: Number(price) || 0,
-      category,
+      category: categoryStr, // ← categoryStr로 수정
       thumbnailFile,
       videoFiles,
       videoTitles,
     });
+
     res.status(201).json(result);
   } catch (e) {
     console.error('[POST /lectures] error:', e);
