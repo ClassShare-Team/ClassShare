@@ -24,6 +24,8 @@ app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/lectures', lectureRoutes);
+app.use('/likes', likesRoutes);
+app.use('/follows', followRoutes);
 
 app.listen(port, () => {
   console.log(`Express 서버 실행 중: http://localhost:${port}`);
