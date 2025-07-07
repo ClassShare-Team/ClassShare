@@ -9,11 +9,11 @@ function ensureDir(dir) {
 
 /* ────────────────────────────────
    1) 프로필 사진 업로드 (profileImage)
-   경로 : /uploads/profiles/
+   경로 : server/uploads/profiles/
 ──────────────────────────────── */
 const profileStorage = multer.diskStorage({
   destination: (req, file, cb) =>
-    cb(null, ensureDir(path.join(__dirname, '..', 'uploads', 'profiles'))),
+    cb(null, ensureDir(path.join(__dirname, '..', '..', 'uploads', 'profiles'))),
   filename: (req, file, cb) => cb(null, `profile_${Date.now()}${path.extname(file.originalname)}`),
 });
 
@@ -28,12 +28,12 @@ module.exports.uploadProfileImage = multer({
 
 /* ────────────────────────────────
    2) 강의 썸네일 업로드 (thumbnail)
-   경로 : /uploads/thumbnails/YYYY-MM-DD/
+   경로 : server/uploads/thumbnails/YYYY-MM-DD/
 ──────────────────────────────── */
 const thumbnailStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const today = new Date().toISOString().slice(0, 10); // 2025-07-02
-    cb(null, ensureDir(path.join(__dirname, '..', 'uploads', 'thumbnails', today)));
+    const today = new Date().toISOString().slice(0, 10);
+    cb(null, ensureDir(path.join(__dirname, '..', '..', 'uploads', 'thumbnails', today)));
   },
   filename: (req, file, cb) => cb(null, `thumb_${Date.now()}${path.extname(file.originalname)}`),
 });
@@ -49,12 +49,12 @@ module.exports.uploadThumbnail = multer({
 
 /* ────────────────────────────────
    3) 강의 영상 업로드 (videos[])
-   경로 : /uploads/videos/YYYY-MM-DD/
+   경로 : server/uploads/videos/YYYY-MM-DD/
 ──────────────────────────────── */
 const videoStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const today = new Date().toISOString().slice(0, 10);
-    cb(null, ensureDir(path.join(__dirname, '..', 'uploads', 'videos', today)));
+    cb(null, ensureDir(path.join(__dirname, '..', '..', 'uploads', 'videos', today)));
   },
   filename: (req, file, cb) => {
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -73,14 +73,15 @@ module.exports.uploadVideos = multer({
 
 /* ────────────────────────────────
    4) 썸네일 + 영상 동시에 받기
+   경로 : server/uploads/...
 ──────────────────────────────── */
 const lectureMediaStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const today = new Date().toISOString().slice(0, 10);
     const base =
       file.fieldname === 'thumbnail'
-        ? path.join(__dirname, '..', 'uploads', 'thumbnails', today)
-        : path.join(__dirname, '..', 'uploads', 'videos', today);
+        ? path.join(__dirname, '..', '..', 'uploads', 'thumbnails', today)
+        : path.join(__dirname, '..', '..', 'uploads', 'videos', today);
     cb(null, ensureDir(base));
   },
   filename: (req, file, cb) => {

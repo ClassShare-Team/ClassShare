@@ -21,7 +21,7 @@ exports.createLecture = async ({
   const thumbUrl = path
     .join('/uploads/thumbnails', path.basename(thumbnailFile.destination), thumbnailFile.filename)
     .replace(/\\/g, '/');
-  const client = await db.connect();
+  const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
 
