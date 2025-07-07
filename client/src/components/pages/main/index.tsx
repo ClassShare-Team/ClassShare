@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Header } from '../../layout/Header';
-import { Footer } from '../../layout/Footer';
 import './index.css';
 
 interface Lecture {
@@ -93,7 +91,5 @@ const MainPage: React.FC = () => {
     </div>
   );
 };
-
-export default MainPage;
 
 export default MainPage;
