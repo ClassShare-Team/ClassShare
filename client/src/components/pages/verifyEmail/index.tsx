@@ -2,33 +2,30 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
-import { verifyEmailCode, signUpUser } from '@/apis/auth';
+import { verifyEmailCode } from '@/apis/auth';
 
 const VerifyEmailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [code, setCode] = useState('');
 
-  const userInfo = location.state;
+  const { email } = location.state as { email: string };
 
-  if (!userInfo) {
-    toast.error('회원가입 정보가 없습니다.');
+  if (!email) {
+    toast.error('이메일 정보가 없습니다.');
     navigate('/register');
     return null;
   }
 
   const handleVerify = async () => {
     try {
-      await verifyEmailCode(userInfo.email, code);
+      await verifyEmailCode(email, code);
       toast.success('이메일 인증 성공');
-
-      await signUpUser(userInfo);
-      toast.success('회원가입 완료');
       setTimeout(() => navigate('/login'), 1000);
     } catch (err: unknown) {
       const error = err as { message?: string };
 
-      if (error.message?.includes('이비 가입된 이메일')) {
+      if (error.message?.includes('이미 가입된 이메일')) {
         toast.error('이미 가입된 메일입니다.');
         navigate('/register');
       } else {

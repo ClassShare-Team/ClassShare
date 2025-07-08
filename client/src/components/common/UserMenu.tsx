@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import UserProfileLogo from '@/assets/UserProfileLogo.png';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 // context, recoil 중 context 사용
 
@@ -8,6 +9,7 @@ const UserMenu = () => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { user, setUser } = useUser();
+  const navigate = useNavigate();
 
   const handleClickOutside = (e: MouseEvent) => {
     if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -23,7 +25,7 @@ const UserMenu = () => {
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     setUser(null);
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   if (!user) return null;

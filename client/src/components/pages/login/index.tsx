@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import googleIcon from '@/assets/google-icon.png';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { useUser } from '@/contexts/UserContext';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassWord] = useState(false);
+  const { setUser } = useUser();
+  const navigate = useNavigate();
+
   const handleGoogleLogin = () => {
     window.location.href = 'http://localhost:5000/auth/oauth/google';
   };
 
   const handleLogin = async () => {
     if (!email || !password) {
-      alert('이메일과 비밀번호를 입력해주세요');
+      toast.error('이메일과 비밀번호를 입력해주세요');
       return;
     }
 
@@ -23,22 +31,27 @@ export const LoginPage = () => {
       });
 
       if (!res.ok) {
-        if (res.status === 401)
-          return alert('이메일 또는 비밀번호가 일치하지 않습니다. 다시 확인해주세요');
-        return alert('로그인 실패');
+        if (res.status === 401) {
+          toast.error('이메일 또는 비밀번호가 일치하지 않습니다. 다시 확인해주세요.');
+          return;
+        }
+        toast.error('로그인 실패');
+        return;
       }
 
       const result = await res.json();
 
-      if (!result.accessToken) {
-        return alert('로그인 실패: 토큰이 없습니다.');
+      if (!result.accessToken || !result.user) {
+        return toast.error('로그인 실패');
       }
 
       localStorage.setItem('accessToken', result.accessToken);
-      alert('로그인 성공');
-      window.location.href = '/main';
-    } catch {
-      alert('로그인 요청 중 오류가 발생했습니다.');
+      setUser(result.user);
+      toast.success('로그인 성공');
+      navigate('/main');
+    } catch (error) {
+      console.error('Login Error: ', error);
+      toast.error('로그인 요청 중 오류가 발생했습니다.');
     }
   };
 
@@ -61,12 +74,17 @@ export const LoginPage = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <Input
-          type="password"
-          placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <PasswordWrapper>
+          <Input
+            type={showPassword ? 'text' : 'password'}
+            placeholder="비밀번호"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <EyeIcon onClick={() => setShowPassWord((prev) => !prev)}>
+            {showPassword ? <FiEyeOff /> : <FiEye />}
+          </EyeIcon>
+        </PasswordWrapper>
         <LoginButton onClick={handleLogin}>로그인</LoginButton>
         <SubmitButton
           onClick={() => {
@@ -110,7 +128,10 @@ const Input = styled.input`
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 10px;
   padding: 16px;
+  padding-right: 48px;
   font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const SubmitButton = styled.button`
@@ -135,6 +156,26 @@ const LoginButton = styled.button`
 
 const DummySpace = styled.div`
   height: 6px;
+`;
+
+const PasswordWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const EyeIcon = styled.button`
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.gray400};
+  font-size: 20px;
+  cursor: pointer;
 `;
 
 const OAuthButton = styled.button`

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-import { sendEmailCode } from '@/apis/auth';
+import { signUpUser } from '@/apis/auth';
 import { useNavigate } from 'react-router-dom';
 
 type Role = 'student' | 'instructor';
@@ -46,14 +46,14 @@ const RegisterPage = () => {
     }
 
     try {
-      await sendEmailCode(email);
+      await signUpUser({ name, nickname, email, password, role });
       toast.success('인증번호가 발송되었습니다.');
       navigate('/verifyEmail', {
-        state: { name, nickname, email, password, role },
+        state: { email },
       });
     } catch (err: unknown) {
       const error = err as { message?: string };
-      toast.error(error.message || '인증번호 발송 실패');
+      toast.error(error.message || '회원가입 실패');
     }
   };
 
