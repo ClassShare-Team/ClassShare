@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { useUser } from '@/contexts/UserContext';
 
 export const OAuthFinalizePage = () => {
   const [form, setForm] = useState({
     nickname: '',
-    phone: '',
-    birth: '',
+    role: '',
   });
   const [tempToken, setTempToken] = useState('');
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const { setUser } = useUser();
 
   useEffect(() => {
     // 기존 유저
@@ -21,13 +23,13 @@ export const OAuthFinalizePage = () => {
     if (token) {
       // 기존 유저 : accessToken 저장 후 이동
       localStorage.setItem('accessToken', token);
-      alert('로그인 성공!');
+      toast.success('로그인 성공!');
       navigate('/main');
     } else if (temp) {
       // 신규 유저 : 폼 입력 받음
       setTempToken(temp);
     } else {
-      alert('유효하지 않은 접근입니다.');
+      toast.error('유효하지 않은 접근입니다.');
       navigate('/');
     }
   }, [params, navigate]);
@@ -37,8 +39,13 @@ export const OAuthFinalizePage = () => {
   };
 
   const handleSubmit = async () => {
+    if (!form.nickname || !form.role) {
+      toast.error('닉네임과 역할을 모두 입력해주세요.');
+      return;
+    }
+
     try {
-      const res = await fetch('/auth/oauth/finalize', {
+      const res = await fetch('http://localhost:5000/auth/oauth/finalize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,13 +57,14 @@ export const OAuthFinalizePage = () => {
       if (res.ok) {
         const result = await res.json();
         localStorage.setItem('accessToken', result.accessToken);
-        alert('회원가입이 완료되었습니다');
+        setUser(result.user);
+        toast.success('회원가입이 완료되었습니다');
         navigate('/main');
       } else {
-        alert('회원가입 실패');
+        toast.error('회원가입 실패');
       }
     } catch {
-      alert('서버 오류 발생');
+      toast.error('서버 오류 발생');
     }
   };
 
@@ -70,18 +78,11 @@ export const OAuthFinalizePage = () => {
           value={form.nickname}
           onChange={(e) => handleChange('nickname', e.target.value)}
         />
-        <Input
-          type="text"
-          placeholder="휴대폰 번호"
-          value={form.phone}
-          onChange={(e) => handleChange('phone', e.target.value)}
-        />
-        <Input
-          type="date"
-          placeholder="생년월일"
-          value={form.birth}
-          onChange={(e) => handleChange('birth', e.target.value)}
-        />
+        <Select value={form.role} onChange={(e) => handleChange('role', e.target.value)}>
+          <option value="">역할선택</option>
+          <option value="student">학생</option>
+          <option value="instructor">강사</option>
+        </Select>
         <SubmitButton onClick={handleSubmit}>계속</SubmitButton>
       </Frame>
     </PageContainer>
@@ -114,6 +115,13 @@ const Title = styled.div`
 `;
 
 const Input = styled.input`
+  border: 1px solid ${({ theme }) => theme.colors.gray300};
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 16px;
+`;
+
+const Select = styled.select`
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 10px;
   padding: 16px;
