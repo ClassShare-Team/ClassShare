@@ -1,22 +1,19 @@
 import React, { useState } from "react";
+import axios from "axios";
 import styled from "styled-components";
 
-// =======================
-// styled-components
-// =======================
+// ----------------- styled-components -----------------
 const PageWrapper = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(to bottom, #F4F7FE, #F8FAFF, #EAF5FF);
 `;
-
 const MainContent = styled.main`
   flex: 1;
   display: flex;
   flex-direction: column;
 `;
-
 const Container = styled.div`
   max-width: 72rem;
   margin: 0 auto;
@@ -25,31 +22,26 @@ const Container = styled.div`
   padding: 2.5rem 1.5rem;
   display: flex;
 `;
-
 const Sidebar = styled.aside`
   width: 20%;
   min-width: 160px;
   padding-right: 2.5rem;
 `;
-
 const SidebarTitle = styled.div`
   margin-bottom: 2rem;
   font-size: 1.25rem;
   font-weight: bold;
   color: #111827;
 `;
-
 const StepList = styled.ol`
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
 `;
-
 const StepItem = styled.li`
   display: flex;
   align-items: center;
 `;
-
 const StepCircle = styled.div<{ active?: boolean }>`
   width: 1.5rem;
   height: 1.5rem;
@@ -62,20 +54,17 @@ const StepCircle = styled.div<{ active?: boolean }>`
   justify-content: center;
   font-weight: bold;
 `;
-
 const StepLine = styled.div`
   width: 1px;
   flex: 1;
   background: #e5e7eb;
   margin-top: 0.25rem;
 `;
-
 const StepText = styled.span<{ active?: boolean }>`
   font-size: 1rem;
   color: ${({ active }) => (active ? "#111827" : "#9ca3af")};
   font-weight: ${({ active }) => (active ? "600" : "400")};
 `;
-
 const FormCard = styled.section`
   flex: 1;
   background: #fff;
@@ -84,7 +73,6 @@ const FormCard = styled.section`
   padding: 2.5rem;
   margin-left: 1.5rem;
 `;
-
 const FormTitleRow = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -92,14 +80,12 @@ const FormTitleRow = styled.div`
   margin-bottom: 2rem;
   gap: 0.5rem;
 `;
-
 const FormTitle = styled.h2`
   font-size: 2rem;
   font-weight: bold;
   text-align: center;
   flex: 1;
 `;
-
 const Button = styled.button<{ variant?: "primary" | "default" }>`
   padding: 0.5rem 1.5rem;
   border-radius: 9999px;
@@ -113,18 +99,15 @@ const Button = styled.button<{ variant?: "primary" | "default" }>`
     background: ${({ variant }) => (variant === "primary" ? "#4f46e5" : "#f3f4f6")};
   }
 `;
-
 const FormSection = styled.div`
   margin-bottom: 2rem;
 `;
-
 const Label = styled.label`
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
   color: #2d2d2d;
 `;
-
 const Input = styled.input`
   width: 100%;
   border: 1px solid #d1d5db;
@@ -138,7 +121,6 @@ const Input = styled.input`
     box-shadow: 0 0 0 2px #c7d2fe;
   }
 `;
-
 const TextArea = styled.textarea`
   width: 100%;
   border: 1px solid #d1d5db;
@@ -153,11 +135,9 @@ const TextArea = styled.textarea`
     box-shadow: 0 0 0 2px #c7d2fe;
   }
 `;
-
 const FileInput = styled.input`
   display: none;
 `;
-
 const FileLabel = styled.label`
   cursor: pointer;
   display: block;
@@ -171,18 +151,15 @@ const FileLabel = styled.label`
     background: #ddd6fe;
   }
 `;
-
 const HelperText = styled.div`
   font-size: 0.875rem;
   color: #6b7280;
   margin-top: 0.5rem;
 `;
-
 const Row = styled.div`
   display: flex;
   gap: 1rem;
 `;
-
 const Select = styled.select`
   width: 100%;
   border: 1px solid #d1d5db;
@@ -196,7 +173,6 @@ const Select = styled.select`
     box-shadow: 0 0 0 2px #c7d2fe;
   }
 `;
-
 const ThumbnailLabel = styled.label`
   cursor: pointer;
   display: flex;
@@ -208,20 +184,16 @@ const ThumbnailLabel = styled.label`
   border: 2px dashed #d1d5db;
   border-radius: 1rem;
 `;
-
 const ThumbnailIcon = styled.span`
   font-size: 2rem;
   color: #9ca3af;
   margin-bottom: 0.5rem;
 `;
-
 const ThumbnailText = styled.span`
   font-size: 0.75rem;
   color: #6b7280;
   text-align: center;
 `;
-
-// 강의 영상 삭제 버튼
 const RemoveButton = styled.button`
   margin-left: 0.75rem;
   padding: 0.25rem 0.75rem;
@@ -236,32 +208,69 @@ const RemoveButton = styled.button`
     background: #ef4444;
   }
 `;
+// -----------------------------------------------------
 
-// =======================
-// Main Component
-// =======================
 const CreateLecturePage: React.FC = () => {
-  // 여러 영상 관리 state
   const [videos, setVideos] = useState([{ title: "", file: null as File | null }]);
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("교육");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
 
-  // 영상 추가
-  const handleAddVideo = () => {
-    setVideos([...videos, { title: "", file: null }]);
-  };
-
-  // 영상 필드 입력 변경
+  const handleAddVideo = () => setVideos([...videos, { title: "", file: null }]);
   const handleVideoChange = (idx: number, field: "title" | "file", value: any) => {
     setVideos(videos.map((v, i) =>
       i === idx ? { ...v, [field]: value } : v
     ));
   };
-
-  // 영상 삭제
   const handleRemoveVideo = (idx: number) => {
     if (videos.length === 1) return;
     setVideos(videos.filter((_, i) => i !== idx));
+  };
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) setThumbnail(e.target.files[0]);
+  };
+
+  const handleSubmit = async () => {
+    if (!title || !description || !price || !category || !thumbnail || videos.some(v => !v.title || !v.file)) {
+      alert("모든 항목을 입력/선택해 주세요.");
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("category", category);
+      formData.append("thumbnail", thumbnail);
+
+      const lecturesArr = videos.map((video) => ({ title: video.title }));
+      formData.append("lectures", JSON.stringify(lecturesArr));
+      videos.forEach((video) => {
+        if (video.file) formData.append("videos", video.file);
+      });
+
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      await axios.post(
+        "/lectures",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+      alert("강의가 등록되었습니다!");
+    } catch (error: any) {
+      alert("등록 실패: " + (error?.response?.data?.message || error.message));
+    }
   };
 
   return (
@@ -293,26 +302,29 @@ const CreateLecturePage: React.FC = () => {
             <FormTitleRow>
               <FormTitle>내 강의 만들기</FormTitle>
               <Button variant="default" type="button">뒤로 가기</Button>
-              <Button variant="primary" type="button">저장</Button>
+              <Button variant="primary" type="button" onClick={handleSubmit}>
+                저장
+              </Button>
             </FormTitleRow>
             <div>
-              {/* 강의 제목 */}
               <FormSection>
                 <Label>강의 제목</Label>
                 <Input
                   type="text"
                   placeholder="강의 제목을 입력해 주세요"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
                 />
               </FormSection>
-              {/* 강의 설명 */}
               <FormSection>
                 <Label>강의 설명</Label>
                 <TextArea
                   rows={7}
                   placeholder="강의 내용을 입력해 주세요"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
                 />
               </FormSection>
-              {/* 강의 영상 여러개 추가/삭제 */}
               <FormSection>
                 <Label>강의 영상</Label>
                 {videos.map((video, idx) => (
@@ -351,7 +363,6 @@ const CreateLecturePage: React.FC = () => {
                   + 강의 영상 추가
                 </Button>
               </FormSection>
-              {/* 가격 & 카테고리 */}
               <FormSection>
                 <Row>
                   <div style={{ flex: 1 }}>
@@ -378,16 +389,16 @@ const CreateLecturePage: React.FC = () => {
                   </div>
                 </Row>
               </FormSection>
-              {/* 강의 썸네일 */}
               <FormSection>
                 <Label>강의 썸네일</Label>
-                <FileInput type="file" id="thumbnail-file"/>
+                <FileInput type="file" id="thumbnail-file" accept="image/png, image/jpeg" onChange={handleThumbnailChange} />
                 <ThumbnailLabel htmlFor="thumbnail-file">
                   <ThumbnailIcon>+</ThumbnailIcon>
                   <ThumbnailText>
                     이미지를 업로드 해주세요.<br />JPG, PNG 파일만 지원합니다.
                   </ThumbnailText>
                 </ThumbnailLabel>
+                {thumbnail && <HelperText>선택됨: {thumbnail.name}</HelperText>}
               </FormSection>
             </div>
           </FormCard>
