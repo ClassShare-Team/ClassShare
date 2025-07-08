@@ -37,7 +37,12 @@ exports.oauthGoogleCallback = async (req, res) => {
   }
   try {
     const result = await authService.handleGoogleOAuth(code);
-    res.status(200).json(result);
+    if (result.needsSignup && result.tempToken) {
+      const frontendUrl = `http://localhost:5173/oauth/finalize?tempToken=${result.tempToken}`;
+      return res.redirect(frontendUrl);
+    }
+    const frontendUrl = `http://localhost:5173/oauth/finalize?token=${result.accessToken}`;
+    return res.redirect(frontendUrl);
   } catch (e) {
     console.error('Google OAuth 실패:', e);
     res.status(e.status || 500).json({ message: e.message || '서버 오류' });
