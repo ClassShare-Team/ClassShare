@@ -8,7 +8,7 @@ interface NotificationData {
   message: string;
 }
 
-const socket: Socket = io('http://localhost:5000'); // 백엔드 포트
+const socket: Socket = io('http://localhost:5000');
 
 export const Notification = () => {
   const [open, setOpen] = useState(false);

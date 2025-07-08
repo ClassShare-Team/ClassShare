@@ -1,13 +1,19 @@
 .notification-container {
-  position: relative;
-  display: inline-block;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
 }
 
 .notify-btn {
   background-color: #a259ff;
   border: none;
   border-radius: 50%;
-  padding: 12px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -21,7 +27,7 @@
 
 .notify-list {
   position: absolute;
-  top: 60px;
+  bottom: 60px;
   right: 0;
   width: 250px;
   background: white;
@@ -29,7 +35,7 @@
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 1001;
 }
 
 .notify-list h4 {
@@ -47,6 +53,15 @@
 .notify-item strong {
   display: block;
   color: #a259ff;
+  font-size: 15px;
+}
+
+.notify-item p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .empty {
