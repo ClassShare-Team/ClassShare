@@ -10,4 +10,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/auth': 'http://localhost:5000',
+      '/lectures': 'http://localhost:5000', // ← 이 줄 추가!
+    },
+  },
 });

@@ -233,45 +233,46 @@ const CreateLecturePage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title || !description || !price || !category || !thumbnail || videos.some(v => !v.title || !v.file)) {
-      alert("모든 항목을 입력/선택해 주세요.");
+  if (!title || !description || !price || !category || !thumbnail || videos.some(v => !v.title || !v.file)) {
+    alert("모든 항목을 입력/선택해 주세요.");
+    return;
+  }
+  try {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("category", category);
+    formData.append("thumbnail", thumbnail);
+
+    // 🔥🔥 여기서 수정: lecturesArr 및 lectures append → "titles" 배열로 각각 title 추가, videos도 각각 append
+    videos.forEach((video) => {
+      if (video.file) formData.append("videos", video.file);
+      formData.append("titles", video.title);
+    });
+
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
       return;
     }
-    try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("price", price);
-      formData.append("category", category);
-      formData.append("thumbnail", thumbnail);
 
-      const lecturesArr = videos.map((video) => ({ title: video.title }));
-      formData.append("lectures", JSON.stringify(lecturesArr));
-      videos.forEach((video) => {
-        if (video.file) formData.append("videos", video.file);
-      });
-
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        alert("로그인이 필요합니다.");
-        return;
+    await axios.post(
+      "/lectures",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${token}`,
+        },
       }
+    );
+    alert("강의가 등록되었습니다!");
+  } catch (error: any) {
+    alert("등록 실패: " + (error?.response?.data?.message || error.message));
+  }
+};
 
-      await axios.post(
-        "/lectures",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${token}`,
-          },
-        }
-      );
-      alert("강의가 등록되었습니다!");
-    } catch (error: any) {
-      alert("등록 실패: " + (error?.response?.data?.message || error.message));
-    }
-  };
 
   return (
     <PageWrapper>
