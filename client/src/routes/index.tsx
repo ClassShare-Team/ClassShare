@@ -3,7 +3,9 @@ import { Routes, Route } from 'react-router-dom';
 import App from '@/App';
 import { RegisterPage } from '@/components/pages/register';
 import { LoginPage } from '@/components/pages/login';
-import MainPage from "@/components/pages/main";
+import { MainPage } from '@/components/pages/main';
+import CreateLecturePage from '@/components/pages/lecture';
+
 
 export const AppRoutes = () => {
   return (
@@ -13,6 +15,7 @@ export const AppRoutes = () => {
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="main" element={<MainPage />} />
+        <Route path="lecturepage" element={<CreateLecturePage />} />
       </Route>
     </Routes>
   );
