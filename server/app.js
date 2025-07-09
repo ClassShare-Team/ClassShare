@@ -10,6 +10,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const lectureRoutes = require('./src/routes/lectureRoutes');
 const likesRoutes = require('./src/routes/likesRoutes');
 const followRoutes = require('./src/routes/followRoutes');
+const commentRoutes = require('./src/routes/commentRoutes');
 
 app.use(
   cors({
@@ -26,6 +27,7 @@ app.use('/users', userRoutes);
 app.use('/lectures', lectureRoutes);
 app.use('/likes', likesRoutes);
 app.use('/follows', followRoutes);
+app.use('/comments', commentRoutes);
 
 app.listen(port, () => {
   console.log(`Express 서버 실행 중: http://localhost:${port}`);
