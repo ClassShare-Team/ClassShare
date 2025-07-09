@@ -8,7 +8,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const lectureRoutes = require('./src/routes/lectureRoutes');
 const likesRoutes = require('./src/routes/likesRoutes');
-const followRoutes = require('./src/routes/followsRoutes');
+const followRoutes = require('./src/routes/followRoutes');
 
 app.use(express.json());
 app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile')));
