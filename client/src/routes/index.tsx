@@ -4,6 +4,7 @@ import App from '@/App';
 import { RegisterPage } from '@/components/pages/register';
 import { LoginPage } from '@/components/pages/login';
 import { MainPage } from '@/components/pages/main';
+import { EnrollPage } from '@/components/pages/enroll';
 
 export const AppRoutes = () => {
   return (
@@ -12,6 +13,7 @@ export const AppRoutes = () => {
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="main" element={<MainPage />} />
+        <Route path="enroll" element={<EnrollPage />} />
       </Route>
     </Routes>
   );
