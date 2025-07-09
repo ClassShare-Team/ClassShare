@@ -5,9 +5,10 @@ interface Lecture {
   id: number;
   title: string;
   category: string;
-  price: string;
+  instructor: string;
+  description: string;
+  price: number;
   image?: string;
-  tag?: string;
 }
 
 const categories = ["전체", "교육", "개발", "음악", "요리", "운동", "글쓰기", "예술", "마케팅"];
@@ -18,11 +19,9 @@ const MainPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("전체");
 
   useEffect(() => {
-    fetch("http://localhost:5000/lectures")
+    fetch(`${import.meta.env.VITE_API_URL}/lectures`)
       .then((res) => res.json())
-      .then((data) => {
-        setLectures(data);
-      })
+      .then((data) => setLectures(data))
       .catch((err) => {
         console.error("강의 데이터를 불러오는데 실패했습니다:", err);
       });
@@ -61,21 +60,37 @@ const MainPage: React.FC = () => {
       <div className="scroll-container">
         {displayedCategories.map((category) => (
           <section className="section" key={category}>
-            <h2>{category}</h2>
-            <div className="card-grid">
-              {filteredLectures.filter((lec) => lec.category === category).length === 0 ? (
-                <div className="card empty">아직 등록된 클래스가 없습니다.</div>
-              ) : (
-                filteredLectures
-                  .filter((lec) => lec.category === category)
-                  .map((lec) => (
-                    <div key={lec.id} className="card">
-                      <p className="title">{lec.title}</p>
-                      <span className="tag">{lec.tag || "태그 없음"}</span>
-                      <strong className="price">{lec.price || "가격 미정"}</strong>
-                    </div>
-                  ))
-              )}
+            <div className="section-inner">
+              <h2>{category}</h2>
+              <div className="card-grid">
+                {filteredLectures.filter((lec) => lec.category === category).length === 0 ? (
+                  <div className="card empty">아직 등록된 클래스가 없습니다.</div>
+                ) : (
+                  filteredLectures
+                    .filter((lec) => lec.category === category)
+                    .map((lec) => (
+                      <div key={lec.id} className="card">
+                        <div className="image-container">
+                          {lec.image ? (
+                            <img src={lec.image} alt={`${lec.title} 이미지`} />
+                          ) : (
+                            <div className="no-image">이미지 없음</div>
+                          )}
+                        </div>
+                        <div className="card-content">
+                          <span className="category-tag">{lec.category}</span>
+                          <p className="title">{lec.title}</p>
+                          <p className="instructor">강사: {lec.instructor}</p>
+                          <p className="description">{lec.description}</p>
+                          <div className="price-row">
+                            <span className="price">{lec.price.toLocaleString()}원</span>
+                            <button className="pay-btn">결제</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
             </div>
           </section>
         ))}
