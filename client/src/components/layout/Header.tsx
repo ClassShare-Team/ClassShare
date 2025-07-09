@@ -5,12 +5,11 @@ import { Logo } from '@/components/nav/Logo';
 import { NavMenu } from '@/components/nav/NavMenu';
 import { SearchBar } from './SearchBar';
 import UserMenu from '@/components/common/UserMenu';
+import { useUser } from '@/contexts/UserContext';
 
 export const Header = () => {
   const navigate = useNavigate();
-
-  // 추후에 isLoggedIn을 실제 로그인 상태 (토큰, 세션 등)으로 대체
-  const isLoggedIn = true;
+  const { user } = useUser();
 
   return (
     <HeaderWrapper>
@@ -22,13 +21,8 @@ export const Header = () => {
           <SearchBar />
         </CenterArea>
         <RightArea>
-          {isLoggedIn ? (
-            <UserMenu
-              //현재는 mock데이터로 설정. 추후에 변경 예정
-              userName="홍길동"
-              userImage={null}
-              point={25000}
-            />
+          {user ? (
+            <UserMenu />
           ) : (
             <LoginButton onClick={() => navigate('/login')}>로그인</LoginButton>
           )}
