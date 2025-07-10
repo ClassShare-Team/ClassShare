@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import styled from "styled-components";
 
 // ----------------- styled-components -----------------
@@ -233,46 +232,54 @@ const CreateLecturePage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-  if (!title || !description || !price || !category || !thumbnail || videos.some(v => !v.title || !v.file)) {
-    alert("모든 항목을 입력/선택해 주세요.");
-    return;
-  }
-  try {
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("category", category);
-    formData.append("thumbnail", thumbnail);
-
-    // 🔥🔥 여기서 수정: lecturesArr 및 lectures append → "titles" 배열로 각각 title 추가, videos도 각각 append
-    videos.forEach((video) => {
-      if (video.file) formData.append("videos", video.file);
-      formData.append("titles", video.title);
-    });
-
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      alert("로그인이 필요합니다.");
+    if (
+      !title ||
+      !description ||
+      !price ||
+      !category ||
+      !thumbnail ||
+      videos.some((v) => !v.title || !v.file)
+    ) {
+      alert("모든 항목을 입력/선택해 주세요.");
       return;
     }
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("category", category);
+      formData.append("thumbnail", thumbnail);
 
-    await axios.post(
-      "/lectures",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${token}`,
-        },
+      videos.forEach((video) => {
+        if (video.file) formData.append("videos", video.file);
+        formData.append("titles", video.title);
+      });
+
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        return;
       }
-    );
-    alert("강의가 등록되었습니다!");
-  } catch (error: any) {
-    alert("등록 실패: " + (error?.response?.data?.message || error.message));
-  }
-};
 
+      const response = await fetch("/lectures", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          // Content-Type은 명시하지 않습니다!
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.message || response.statusText);
+      }
+      alert("강의가 등록되었습니다!");
+    } catch (error: any) {
+      alert("등록 실패: " + (error?.message || "알 수 없는 에러"));
+    }
+  };
 
   return (
     <PageWrapper>
@@ -287,10 +294,17 @@ const CreateLecturePage: React.FC = () => {
                 "강의 영상",
                 "가격",
                 "카테고리",
-                "강의 썸네일"
+                "강의 썸네일",
               ].map((step, idx) => (
                 <StepItem key={step}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: "1rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      marginRight: "1rem",
+                    }}
+                  >
                     <StepCircle active={idx === 0}>{idx + 1}</StepCircle>
                     {idx !== 5 && <StepLine />}
                   </div>
@@ -302,7 +316,9 @@ const CreateLecturePage: React.FC = () => {
           <FormCard>
             <FormTitleRow>
               <FormTitle>내 강의 만들기</FormTitle>
-              <Button variant="default" type="button">뒤로 가기</Button>
+              <Button variant="default" type="button">
+                뒤로 가기
+              </Button>
               <Button variant="primary" type="button" onClick={handleSubmit}>
                 저장
               </Button>
@@ -314,7 +330,7 @@ const CreateLecturePage: React.FC = () => {
                   type="text"
                   placeholder="강의 제목을 입력해 주세요"
                   value={title}
-                  onChange={e => setTitle(e.target.value)}
+                  onChange={(e) => setTitle(e.target.value)}
                 />
               </FormSection>
               <FormSection>
@@ -323,29 +339,48 @@ const CreateLecturePage: React.FC = () => {
                   rows={7}
                   placeholder="강의 내용을 입력해 주세요"
                   value={description}
-                  onChange={e => setDescription(e.target.value)}
+                  onChange={(e) => setDescription(e.target.value)}
                 />
               </FormSection>
               <FormSection>
                 <Label>강의 영상</Label>
                 {videos.map((video, idx) => (
-                  <div key={idx} style={{ marginBottom: "1rem", display: "flex", alignItems: "center" }}>
+                  <div
+                    key={idx}
+                    style={{
+                      marginBottom: "1rem",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
                     <div style={{ flex: 1 }}>
                       <Input
                         type="text"
                         placeholder={`영상 제목을 입력하세요 (${idx + 1})`}
                         value={video.title}
-                        onChange={e => handleVideoChange(idx, "title", e.target.value)}
+                        onChange={(e) =>
+                          handleVideoChange(idx, "title", e.target.value)
+                        }
                         style={{ marginBottom: "0.5rem" }}
                       />
                       <FileInput
                         type="file"
                         accept="video/*"
                         id={`video-file-${idx}`}
-                        onChange={e => handleVideoChange(idx, "file", e.target.files?.[0] || null)}
+                        onChange={(e) =>
+                          handleVideoChange(
+                            idx,
+                            "file",
+                            e.target.files?.[0] || null
+                          )
+                        }
                       />
-                      <FileLabel htmlFor={`video-file-${idx}`}>영상 파일 선택</FileLabel>
-                      {video.file && <HelperText>선택됨: {video.file.name}</HelperText>}
+                      <FileLabel htmlFor={`video-file-${idx}`}>
+                        영상 파일 선택
+                      </FileLabel>
+                      {video.file && (
+                        <HelperText>선택됨: {video.file.name}</HelperText>
+                      )}
                     </div>
                     <RemoveButton
                       type="button"
@@ -353,14 +388,19 @@ const CreateLecturePage: React.FC = () => {
                       disabled={videos.length === 1}
                       style={{
                         opacity: videos.length === 1 ? 0.4 : 1,
-                        pointerEvents: videos.length === 1 ? "none" : "auto"
+                        pointerEvents: videos.length === 1 ? "none" : "auto",
                       }}
                     >
                       삭제
                     </RemoveButton>
                   </div>
                 ))}
-                <Button type="button" variant="default" onClick={handleAddVideo} style={{ marginTop: "0.5rem" }}>
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={handleAddVideo}
+                  style={{ marginTop: "0.5rem" }}
+                >
                   + 강의 영상 추가
                 </Button>
               </FormSection>
@@ -372,13 +412,18 @@ const CreateLecturePage: React.FC = () => {
                       type="text"
                       placeholder="예: 10000"
                       value={price}
-                      onChange={e => setPrice(e.target.value)}
+                      onChange={(e) => setPrice(e.target.value)}
                     />
-                    <HelperText>희망하는 강의의 가격을 입력해주세요</HelperText>
+                    <HelperText>
+                      희망하는 강의의 가격을 입력해주세요
+                    </HelperText>
                   </div>
                   <div style={{ flex: 1 }}>
                     <Label>카테고리</Label>
-                    <Select value={category} onChange={e => setCategory(e.target.value)}>
+                    <Select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                    >
                       <option>교육</option>
                       <option>개발</option>
                       <option>음악</option>
@@ -392,14 +437,22 @@ const CreateLecturePage: React.FC = () => {
               </FormSection>
               <FormSection>
                 <Label>강의 썸네일</Label>
-                <FileInput type="file" id="thumbnail-file" accept="image/png, image/jpeg" onChange={handleThumbnailChange} />
+                <FileInput
+                  type="file"
+                  id="thumbnail-file"
+                  accept="image/png, image/jpeg"
+                  onChange={handleThumbnailChange}
+                />
                 <ThumbnailLabel htmlFor="thumbnail-file">
                   <ThumbnailIcon>+</ThumbnailIcon>
                   <ThumbnailText>
-                    이미지를 업로드 해주세요.<br />JPG, PNG 파일만 지원합니다.
+                    이미지를 업로드 해주세요.<br />
+                    JPG, PNG 파일만 지원합니다.
                   </ThumbnailText>
                 </ThumbnailLabel>
-                {thumbnail && <HelperText>선택됨: {thumbnail.name}</HelperText>}
+                {thumbnail && (
+                  <HelperText>선택됨: {thumbnail.name}</HelperText>
+                )}
               </FormSection>
             </div>
           </FormCard>
