@@ -15,7 +15,13 @@ export const Dropdown = ({ label, items }: DropdownProps) => {
       {isOpen && (
         <DropdownList>
           {items.map((item, index) => (
-            <DropdownItem key={index} onClick={() => alert(item)}>
+            <DropdownItem
+              key={index}
+              onClick={() => {
+                localStorage.setItem("selectedCategory", item);
+                window.location.href = "/";
+              }}
+            >
               {item}
             </DropdownItem>
           ))}
