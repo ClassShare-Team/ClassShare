@@ -144,3 +144,105 @@ exports.getMySubscriptions = async (userId, page, size) => {
     subscriptions: subscriptionsResult.rows,
   };
 };
+
+// 내 리뷰 조회
+exports.getMyReviews = async (userId, page, size) => {
+  const offset = (page - 1) * size;
+
+  // 총 개수
+  const {
+    rows: [{ total }],
+  } = await db.query(
+    `SELECT COUNT(*)::INT AS total
+       FROM reviews
+      WHERE user_id = $1`,
+    [userId]
+  );
+
+  // 리뷰 목록
+  const { rows: reviews } = await db.query(
+    `SELECT
+        r.id,
+        r.lecture_id               AS "lectureId",
+        l.title                     AS "lectureTitle",
+        r.rating,
+        r.content,
+        r.created_at
+     FROM reviews r
+     JOIN lectures l ON l.id = r.lecture_id
+    WHERE r.user_id = $1
+    ORDER BY r.created_at DESC
+    LIMIT $2 OFFSET $3`,
+    [userId, size, offset]
+  );
+
+  return { page, size, total, reviews };
+};
+
+// 내가 쓴 댓글 전체 조회
+exports.getMyComments = async (userId, page, size) => {
+  const offset = (page - 1) * size;
+
+  // 총 개수
+  const {
+    rows: [{ total }],
+  } = await db.query(
+    `SELECT COUNT(*)::INT AS total
+       FROM comments
+      WHERE user_id = $1`,
+    [userId]
+  );
+
+  // 댓글 조회
+  const { rows: comments } = await db.query(
+    `SELECT
+        c.id,
+        c.post_id            AS "postId",
+        p.title              AS "postTitle",
+        c.content,
+        c.created_at
+     FROM comments c
+     JOIN posts p ON p.id = c.post_id
+    WHERE c.user_id = $1
+    ORDER BY c.created_at DESC
+    LIMIT $2 OFFSET $3`,
+    [userId, size, offset]
+  );
+
+  return { page, size, total, comments };
+};
+
+// 내가 구매한 강의 조회
+exports.getMyLectures = async (userId, page, size) => {
+  const offset = (page - 1) * size;
+
+  const {
+    rows: [{ total }],
+  } = await db.query(
+    `SELECT COUNT(*)::INT AS total
+       FROM lecture_purchases
+      WHERE user_id = $1`,
+    [userId]
+  );
+
+  const { rows: lectures } = await db.query(
+    `SELECT
+        l.id,
+        l.public_id            AS "publicId",
+        l.title,
+        l.category,
+        l.price,
+        l.thumbnail,
+        lp.purchased_at        AS "purchasedAt",
+        u.nickname             AS "instructorNickname"
+     FROM lecture_purchases lp
+     JOIN lectures        l ON l.id = lp.lecture_id
+     JOIN users           u ON u.id = l.instructor_id
+    WHERE lp.user_id = $1
+    ORDER BY lp.purchased_at DESC
+    LIMIT $2 OFFSET $3`,
+    [userId, size, offset]
+  );
+
+  return { page, size, total, lectures };
+};
