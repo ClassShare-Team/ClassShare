@@ -13,6 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/auth': 'http://localhost:5000',
+      '/lectures': 'http://localhost:5000', // ← 이 줄 추가!
     },
   },
 });

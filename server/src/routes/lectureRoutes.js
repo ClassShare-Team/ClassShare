@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
+
 const lectureController = require('../controllers/lectureController');
 const { authMiddleware } = require('../middleware/authMiddleware');
 const { instructorOnly } = require('../middleware/roleMiddleware');
-const { uploadVideos } = require('../middleware/uploadMiddleware');
+const { uploadLectureMedia } = require('../middleware/uploadMiddleware');
 
 router.post(
   '/',
   authMiddleware,
   instructorOnly,
-  uploadVideos.array('videos'),
+  uploadLectureMedia,
   lectureController.createLecture
 );
 

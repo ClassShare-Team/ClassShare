@@ -1,47 +1,54 @@
 const lectureService = require('../services/lectureService');
 
-// 강의 + 영상 목록 생성
-exports.createLecture = async (req, res) => {
-  // 필수 필드 확인
-  const { title, description, price, category, thumbnail } = req.body;
-  if (!title || !category) {
-    return res.status(400).json({ message: 'title과 category는 필수입니다.' });
-  }
-
-  // lectures 메타데이터(JSON 파싱)
-  let lecturesMeta;
+/**
+ * [POST] /lectures
+ *  ├─ 파일 : thumbnail(1), videos[](N)
+ *  └─ 본문 : title, description, price, category(쉼표구분), titles[](N)
+ */
+exports.createLecture = async (req, res, next) => {
   try {
-    lecturesMeta = JSON.parse(req.body.lectures || '[]');
-  } catch (e) {
-    console.error('[JSON parse error] lectures field:', e);
-    return res.status(401).json({ message: 'lectures 필드는 JSON 배열이어야 합니다.' });
-  }
-  if (!Array.isArray(lecturesMeta) || lecturesMeta.length === 0) {
-    return res.status(402).json({ message: 'lectures 배열이 비어 있거나 잘못됐습니다.' });
-  }
+    /* 0) 필수 필드 */
+    const { title, description, price = 0 } = req.body;
 
-  // 업로드된 파일 목록
-  const files = req.files || [];
-  if (files.length !== lecturesMeta.length) {
-    return res.status(403).json({ message: '영상 파일 수와 lectures 메타 수가 일치해야 합니다.' });
-  }
+    // category 문자열 → 쉼표 구분, trim, 중복 제거
+    const categoryStr = (req.body.category || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(',');
 
-  try {
-    const payload = {
+    if (!title || !categoryStr) {
+      return res.status(400).json({ message: 'title과 category는 필수입니다.' });
+    }
+
+    /* 1) 파일 수집 */
+    const thumbnailFile = req.files?.thumbnail?.[0] ?? null;
+    const videoFiles = req.files?.videos || [];
+
+    if (!thumbnailFile) return res.status(400).json({ message: '썸네일 파일이 필요합니다.' });
+    if (videoFiles.length === 0) return res.status(400).json({ message: '강의 영상이 없습니다.' });
+
+    /* 2) 제목 배열 normalize (1개일 때도 대응) */
+    let videoTitles = req.body.titles ?? [];
+    if (!Array.isArray(videoTitles)) videoTitles = [videoTitles];
+    if (videoFiles.length !== videoTitles.length)
+      return res.status(400).json({ message: '영상 수와 titles 수가 일치해야 합니다.' });
+
+    /* 3) 서비스 호출 */
+    const result = await lectureService.createLecture({
       instructorId: req.user.id,
       title,
       description,
       price: Number(price) || 0,
-      category,
-      thumbnail,
-      lecturesMeta,
-      files,
-    };
+      category: categoryStr, // ← categoryStr로 수정
+      thumbnailFile,
+      videoFiles,
+      videoTitles,
+    });
 
-    const result = await lectureService.createLecture(payload);
-    return res.status(201).json(result); // 201 Created
-  } catch (err) {
-    console.error('[POST /lectures] error:', err);
-    return res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+    res.status(201).json(result);
+  } catch (e) {
+    console.error('[POST /lectures] error:', e);
+    next(e);
   }
 };
