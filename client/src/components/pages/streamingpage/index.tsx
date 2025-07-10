@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import styled from "styled-components";
+import React, { useState, useRef, useEffect } from 'react';
+import styled from 'styled-components';
 import {
   FiCheckCircle,
   FiDownload,
@@ -10,11 +10,10 @@ import {
   FiMaximize2,
   FiCamera,
   FiShare2,
-} from "react-icons/fi";
-import { MdSlowMotionVideo } from "react-icons/md";
-import { BsChevronLeft, BsChevronRight, BsChatLeftText } from "react-icons/bs";
+} from 'react-icons/fi';
+import { MdSlowMotionVideo } from 'react-icons/md';
+import { BsChevronLeft, BsChevronRight, BsChatLeftText } from 'react-icons/bs';
 
-// 상단 바 스타일 추가
 const TopBar = styled.div`
   width: 100%;
   height: 44px;
@@ -31,7 +30,7 @@ const TopBar = styled.div`
 const TopBarBack = styled.button`
   background: none;
   border: none;
-  color: #fff;
+  color: ${({ theme }) => theme.colors.white};
   font-size: 20px;
   display: flex;
   align-items: center;
@@ -40,7 +39,7 @@ const TopBarBack = styled.button`
 `;
 
 const TopBarTitle = styled.div`
-  color: #fff;
+  color: ${({ theme }) => theme.colors.white};
   font-size: 18px;
   font-weight: 600;
 `;
@@ -53,7 +52,7 @@ const Wrapper = styled.div`
 
 const VideoSection = styled.div`
   flex: 1 1 0;
-  background: #000;
+  background: ${({ theme }) => theme.colors.black};
   position: relative;
   display: flex;
   flex-direction: column;
@@ -62,7 +61,7 @@ const VideoSection = styled.div`
 
 const VideoArea = styled.div`
   flex: 1;
-  background: #000;
+  background: ${({ theme }) => theme.colors.black};
   position: relative;
 `;
 
@@ -73,7 +72,7 @@ const ControlsBar = styled.div<{ visible: boolean }>`
   left: 0;
   bottom: 0;
   opacity: ${({ visible }) => (visible ? 1 : 0)};
-  pointer-events: ${({ visible }) => (visible ? "auto" : "none")};
+  pointer-events: ${({ visible }) => (visible ? 'auto' : 'none')};
   transition: opacity 0.2s;
   z-index: 20;
 `;
@@ -137,9 +136,9 @@ const VolumePopup = styled.div`
 const VolumeSlider = styled.input`
   width: 90px;
   height: 4px;
-  accent-color: #fff;
+  accent-color: ${({ theme }) => theme.colors.white};
   margin-left: 8px;
-  background: #fff;
+  background: ${({ theme }) => theme.colors.white};
 `;
 
 const ControlRight = styled.div`
@@ -161,7 +160,7 @@ const NaviButton = styled.button`
   display: flex;
   align-items: center;
   background: #232323;
-  color: #fff;
+  color: ${({ theme }) => theme.colors.white};
   border: none;
   border-radius: 22px;
   font-size: 15px;
@@ -199,10 +198,10 @@ const Spacer = styled.div`
 
 const RightSidebar = styled.div`
   width: 340px;
-  background: #fff;
+  background: ${({ theme }) => theme.colors.white};
   display: flex;
   flex-direction: column;
-  border-left: 1px solid #eee;
+  border-left: 1px solid ${({ theme }) => theme.colors.gray100};
   overflow-y: auto;
 `;
 
@@ -230,11 +229,11 @@ const CurriculumList = styled.ul`
   padding: 0;
 `;
 
-const CurriculumItem = styled.li<{active?: boolean, done?: boolean}>`
+const CurriculumItem = styled.li<{ active?: boolean; done?: boolean }>`
   display: flex;
   align-items: center;
   padding: 10px 0;
-  background: ${({ active }) => (active ? "#e9faf1" : "#fff")};
+  background: ${({ active }) => (active ? '#e9faf1' : '#fff')};
   border-radius: 10px;
   margin-bottom: 3px;
   font-weight: ${({ active }) => (active ? 700 : 400)};
@@ -272,14 +271,13 @@ export const StreamingPage = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showBar, setShowBar] = useState(true);
 
-  // 영상 시간/길이 예시
   const [current, setCurrent] = useState(1806); // 30:06
   const duration = 3459; // 57:39
 
   const fullscreenRef = useRef<HTMLDivElement>(null);
-  const barTimeout = useRef<any>(null);
+  // any 대신 정확한 타입 명시
+  const barTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 전체화면 진입/해제
   const handleFullscreen = () => {
     const elem = fullscreenRef.current;
     if (!document.fullscreenElement && elem) {
@@ -292,21 +290,20 @@ export const StreamingPage = () => {
   useEffect(() => {
     const handleChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
-      setShowBar(!!document.fullscreenElement ? false : true); // 전체화면 들어가면 숨기기
+      setShowBar(document.fullscreenElement ? false : true);
     };
-    document.addEventListener("fullscreenchange", handleChange);
-    return () => document.removeEventListener("fullscreenchange", handleChange);
+    document.addEventListener('fullscreenchange', handleChange);
+    return () => document.removeEventListener('fullscreenchange', handleChange);
   }, []);
 
-  // ESC로 전체화면 해제
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isFullscreen && e.key === "Escape") {
+      if (isFullscreen && e.key === 'Escape') {
         document.exitFullscreen();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen]);
 
   // 더블클릭(왼쪽버튼)시 전체화면 해제
@@ -317,7 +314,7 @@ export const StreamingPage = () => {
   };
 
   // 전체화면일 때만 showBar true/false
-  const handleBarMouseMove = (e: React.MouseEvent) => {
+  const handleBarMouseMove = () => {
     if (!isFullscreen) return;
     setShowBar(true);
     if (barTimeout.current) clearTimeout(barTimeout.current);
@@ -331,7 +328,8 @@ export const StreamingPage = () => {
 
   // 볼륨 컨트롤
   const handleVolumeClick = () => setShowVolume((prev) => !prev);
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => setVolume(Number(e.target.value));
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setVolume(Number(e.target.value));
   const changeVolume = (diff: number) => {
     setVolume((prev) => {
       let next = prev + diff;
@@ -350,8 +348,8 @@ export const StreamingPage = () => {
   };
 
   const formatTime = (sec: number) => {
-    const m = String(Math.floor(sec / 60)).padStart(2, "0");
-    const s = String(sec % 60).padStart(2, "0");
+    const m = String(Math.floor(sec / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
     return `${m}:${s}`;
   };
 
@@ -365,15 +363,12 @@ export const StreamingPage = () => {
       <VideoSection>
         {/* 상단바 추가 */}
         <TopBar>
-        <TopBarBack onClick={handleBack}>
+          <TopBarBack onClick={handleBack}>
             <BsChevronLeft style={{ fontSize: 23, marginRight: 6 }} />
-        </TopBarBack>
-        <TopBarTitle>반복문 (v2)</TopBarTitle>
+          </TopBarBack>
+          <TopBarTitle>반복문 (v2)</TopBarTitle>
         </TopBar>
-        <VideoArea
-          style={{ height: "100%", width: "100%" }}
-          onMouseMove={handleBarMouseMove}
-        >
+        <VideoArea style={{ height: '100%', width: '100%' }} onMouseMove={handleBarMouseMove}>
           {/* (여기에 video 태그 넣어도 됨) */}
 
           {/* 전체화면일 때만 툴바 마우스오버로 show/hide, 평소엔 고정 */}
@@ -384,11 +379,11 @@ export const StreamingPage = () => {
               </ProgressBarWrap>
               <VideoControlBar>
                 <ControlLeft>
-                  <FiPlay style={{ fontSize: 22, cursor: "pointer" }} />
-                  <div style={{ fontSize: 15, minWidth: 82, textAlign: "right" }}>
+                  <FiPlay style={{ fontSize: 22, cursor: 'pointer' }} />
+                  <div style={{ fontSize: 15, minWidth: 82, textAlign: 'right' }}>
                     {formatTime(current)} / {formatTime(duration)}
                   </div>
-                  <VolumeWrapper style={{ marginLeft: 12, cursor: "pointer" }}>
+                  <VolumeWrapper style={{ marginLeft: 12, cursor: 'pointer' }}>
                     <span onClick={handleVolumeClick}>
                       {volume === 0 ? (
                         <FiVolumeX style={{ fontSize: 21 }} />
@@ -397,14 +392,14 @@ export const StreamingPage = () => {
                       )}
                     </span>
                     {showVolume && (
-                      <VolumePopup onClick={e => e.stopPropagation()}>
+                      <VolumePopup onClick={(e) => e.stopPropagation()}>
                         <button
                           style={{
-                            background: "none",
-                            border: "none",
-                            color: "#fff",
+                            background: 'none',
+                            border: 'none',
+                            color: '#fff',
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             marginRight: 3,
                           }}
                           onClick={() => changeVolume(-10)}
@@ -421,11 +416,11 @@ export const StreamingPage = () => {
                         />
                         <button
                           style={{
-                            background: "none",
-                            border: "none",
-                            color: "#fff",
+                            background: 'none',
+                            border: 'none',
+                            color: '#fff',
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             marginLeft: 3,
                           }}
                           onClick={() => changeVolume(10)}
@@ -441,13 +436,24 @@ export const StreamingPage = () => {
                   <FiCamera title="캡처" />
                   <MdSlowMotionVideo title="재생속도" />
                   <FiSettings title="설정" />
-                  <FiMaximize2 title="전체화면" style={{ cursor: "pointer" }} onClick={handleFullscreen} />
+                  <FiMaximize2
+                    title="전체화면"
+                    style={{ cursor: 'pointer' }}
+                    onClick={handleFullscreen}
+                  />
                 </ControlRight>
               </VideoControlBar>
               <BottomBar>
-                <NaviButton><BsChevronLeft style={{ marginRight: 5 }} /> 이전</NaviButton>
-                <NaviButton>다음 <BsChevronRight style={{ marginLeft: 5 }} /></NaviButton>
-                <ReviewButton><BsChatLeftText style={{ marginRight: 6 }} />수강평</ReviewButton>
+                <NaviButton>
+                  <BsChevronLeft style={{ marginRight: 5 }} /> 이전
+                </NaviButton>
+                <NaviButton>
+                  다음 <BsChevronRight style={{ marginLeft: 5 }} />
+                </NaviButton>
+                <ReviewButton>
+                  <BsChatLeftText style={{ marginRight: 6 }} />
+                  수강평
+                </ReviewButton>
                 <Spacer />
                 <ItemButton>
                   <FiDownload style={{ marginRight: 3 }} /> 자료 다운로드
@@ -464,11 +470,11 @@ export const StreamingPage = () => {
               </ProgressBarWrap>
               <VideoControlBar>
                 <ControlLeft>
-                  <FiPlay style={{ fontSize: 22, cursor: "pointer" }} />
-                  <div style={{ fontSize: 15, minWidth: 82, textAlign: "right" }}>
+                  <FiPlay style={{ fontSize: 22, cursor: 'pointer' }} />
+                  <div style={{ fontSize: 15, minWidth: 82, textAlign: 'right' }}>
                     {formatTime(current)} / {formatTime(duration)}
                   </div>
-                  <VolumeWrapper style={{ marginLeft: 12, cursor: "pointer" }}>
+                  <VolumeWrapper style={{ marginLeft: 12, cursor: 'pointer' }}>
                     <span onClick={handleVolumeClick}>
                       {volume === 0 ? (
                         <FiVolumeX style={{ fontSize: 21 }} />
@@ -477,14 +483,14 @@ export const StreamingPage = () => {
                       )}
                     </span>
                     {showVolume && (
-                      <VolumePopup onClick={e => e.stopPropagation()}>
+                      <VolumePopup onClick={(e) => e.stopPropagation()}>
                         <button
                           style={{
-                            background: "none",
-                            border: "none",
-                            color: "#fff",
+                            background: 'none',
+                            border: 'none',
+                            color: '#fff',
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             marginRight: 3,
                           }}
                           onClick={() => changeVolume(-10)}
@@ -501,11 +507,11 @@ export const StreamingPage = () => {
                         />
                         <button
                           style={{
-                            background: "none",
-                            border: "none",
-                            color: "#fff",
+                            background: 'none',
+                            border: 'none',
+                            color: '#fff',
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             marginLeft: 3,
                           }}
                           onClick={() => changeVolume(10)}
@@ -521,13 +527,24 @@ export const StreamingPage = () => {
                   <FiCamera title="캡처" />
                   <MdSlowMotionVideo title="재생속도" />
                   <FiSettings title="설정" />
-                  <FiMaximize2 title="전체화면" style={{ cursor: "pointer" }} onClick={handleFullscreen} />
+                  <FiMaximize2
+                    title="전체화면"
+                    style={{ cursor: 'pointer' }}
+                    onClick={handleFullscreen}
+                  />
                 </ControlRight>
               </VideoControlBar>
               <BottomBar>
-                <NaviButton><BsChevronLeft style={{ marginRight: 5 }} /> 이전</NaviButton>
-                <NaviButton>다음 <BsChevronRight style={{ marginLeft: 5 }} /></NaviButton>
-                <ReviewButton><BsChatLeftText style={{ marginRight: 6 }} />수강평</ReviewButton>
+                <NaviButton>
+                  <BsChevronLeft style={{ marginRight: 5 }} /> 이전
+                </NaviButton>
+                <NaviButton>
+                  다음 <BsChevronRight style={{ marginLeft: 5 }} />
+                </NaviButton>
+                <ReviewButton>
+                  <BsChatLeftText style={{ marginRight: 6 }} />
+                  수강평
+                </ReviewButton>
                 <Spacer />
                 <ItemButton>
                   <FiDownload style={{ marginRight: 3 }} /> 자료 다운로드
@@ -554,7 +571,9 @@ export const StreamingPage = () => {
                   </ItemStatus>
                   <ItemTitle>4. 주석과 시작점</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
               <CurriculumItem done>
                 <ItemLeft>
@@ -563,7 +582,9 @@ export const StreamingPage = () => {
                   </ItemStatus>
                   <ItemTitle>5. 입력과 출력</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
               <CurriculumItem done>
                 <ItemLeft>
@@ -572,7 +593,9 @@ export const StreamingPage = () => {
                   </ItemStatus>
                   <ItemTitle>6. 변수 선언과 출력</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
               <CurriculumItem done>
                 <ItemLeft>
@@ -581,7 +604,9 @@ export const StreamingPage = () => {
                   </ItemStatus>
                   <ItemTitle>7. 조건문 (v2)</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
               <CurriculumItem active>
                 <ItemLeft>
@@ -590,35 +615,45 @@ export const StreamingPage = () => {
                   </ItemStatus>
                   <ItemTitle>8. 반복문 (v2)</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
               <CurriculumItem>
                 <ItemLeft>
                   <ItemStatus />
                   <ItemTitle>9. 비교연산자와 반복문·조건문 문제 풀이 (v2)</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
               <CurriculumItem>
                 <ItemLeft>
                   <ItemStatus />
                   <ItemTitle>10. 함수(메서드) 선언과 호출</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
               <CurriculumItem>
                 <ItemLeft>
                   <ItemStatus />
                   <ItemTitle>11. 연산자와 기출문제</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
               <CurriculumItem>
                 <ItemLeft>
                   <ItemStatus />
                   <ItemTitle>12. switch-case문</ItemTitle>
                 </ItemLeft>
-                <ItemButton>자료 <FiDownload /></ItemButton>
+                <ItemButton>
+                  자료 <FiDownload />
+                </ItemButton>
               </CurriculumItem>
             </CurriculumList>
           </CurriculumSection>
