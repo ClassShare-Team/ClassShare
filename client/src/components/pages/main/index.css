@@ -3,88 +3,37 @@ body {
   padding: 0;
   font-family: 'Pretendard', sans-serif;
   background: linear-gradient(to bottom, #FEF7FF, #F0F9FF);
+  min-height: 100vh;
+  width: 100%;
 }
 
-/* 배경은 전체 너비, 콘텐츠만 중앙 정렬 */
 .main-wrapper {
   width: 100%;
   padding: 0 16px;
   box-sizing: border-box;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #FEF7FF, #F0F9FF);
 }
 
-.main-inner {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 32px;
-}
-
-/* 상단 내비게이션 
-.top-nav {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin: 24px 0;
-  border-bottom: 2px solid #e3e3e3;
-  padding-bottom: 12px;
-  flex-wrap: wrap;
-}*/
-
-.top-nav button {
-  background: none;
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-  color: #555;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-bottom: 3px solid transparent;
-  transition: all 0.2s ease;
-}
-.top-nav button:hover {
-  border-bottom: 3px solid #a58cff;
-  color: #000;
-}
-
-/* 카테고리 필터 */
-.category-filter {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin: 24px 0 40px;
-}
-.category-filter button {
-  background-color: #f1f3f5;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.category-filter button:hover {
-  background-color: #dcdde1;
-}
-
-/* 콘텐츠 */
 .scroll-container {
   flex-grow: 1;
   padding-bottom: 60px;
-}
-.section {
-  margin-bottom: 48px;
-}
-.section h2 {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #333;
-  text-align: left;
-  padding-left: 8px;
+  max-width: 1271px;
+  margin: 0 auto;
 }
 
-/* 카드 그리드 */
+.section {
+  margin-bottom: 64px;
+}
+
+.section h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-left: 8px;
+  color: #333;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -92,7 +41,6 @@ body {
   justify-items: center;
 }
 
-/* 카드 */
 .card {
   width: 100%;
   min-height: 160px;
@@ -124,7 +72,6 @@ body {
   font-weight: 700;
   color: #5c3df3;
 }
-
 .card.empty {
   background-color: #fafafa;
   border: 1px dashed #ccc;
