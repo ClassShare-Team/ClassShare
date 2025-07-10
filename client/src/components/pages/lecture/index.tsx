@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-// ----------------- styled-components -----------------
 const PageWrapper = styled.div`
   min-height: 100vh;
   display: flex;
@@ -66,7 +65,7 @@ const StepText = styled.span<{ active?: boolean }>`
 `;
 const FormCard = styled.section`
   flex: 1;
-  background: #fff;
+  background: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
   padding: 2.5rem;
@@ -109,7 +108,7 @@ const Label = styled.label`
 `;
 const Input = styled.input`
   width: 100%;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${({ theme }) => theme.colors.gray200};
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   color: #374151;
@@ -122,7 +121,7 @@ const Input = styled.input`
 `;
 const TextArea = styled.textarea`
   width: 100%;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${({ theme }) => theme.colors.gray500};
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   color: #374151;
@@ -152,7 +151,7 @@ const FileLabel = styled.label`
 `;
 const HelperText = styled.div`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.gray500};
   margin-top: 0.5rem;
 `;
 const Row = styled.div`
@@ -161,7 +160,7 @@ const Row = styled.div`
 `;
 const Select = styled.select`
   width: 100%;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${({ theme }) => theme.colors.gray500};
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   color: #374151;
@@ -180,7 +179,7 @@ const ThumbnailLabel = styled.label`
   justify-content: center;
   padding: 2rem 1rem;
   background: #f3f4f6;
-  border: 2px dashed #d1d5db;
+  border: 2px dashed ${({ theme }) => theme.colors.gray500};
   border-radius: 1rem;
 `;
 const ThumbnailIcon = styled.span`
@@ -190,7 +189,7 @@ const ThumbnailIcon = styled.span`
 `;
 const ThumbnailText = styled.span`
   font-size: 0.75rem;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.gray500};
   text-align: center;
 `;
 const RemoveButton = styled.button`
@@ -199,7 +198,7 @@ const RemoveButton = styled.button`
   font-size: 0.875rem;
   border: none;
   background: #f87171;
-  color: #fff;
+  color: ${({ theme }) => theme.colors.black};
   border-radius: 0.5rem;
   cursor: pointer;
   transition: background 0.15s;
@@ -207,7 +206,6 @@ const RemoveButton = styled.button`
     background: #ef4444;
   }
 `;
-// -----------------------------------------------------
 
 const CreateLecturePage: React.FC = () => {
   const [videos, setVideos] = useState([{ title: "", file: null as File | null }]);
@@ -218,7 +216,8 @@ const CreateLecturePage: React.FC = () => {
   const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const handleAddVideo = () => setVideos([...videos, { title: "", file: null }]);
-  const handleVideoChange = (idx: number, field: "title" | "file", value: any) => {
+  //분기처리
+  const handleVideoChange = (idx: number, field: "title" | "file", value: string | File | null) => {
     setVideos(videos.map((v, i) =>
       i === idx ? { ...v, [field]: value } : v
     ));
@@ -266,7 +265,6 @@ const CreateLecturePage: React.FC = () => {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
-          // Content-Type은 명시하지 않습니다!
         },
         body: formData,
       });
@@ -276,8 +274,14 @@ const CreateLecturePage: React.FC = () => {
         throw new Error(err?.message || response.statusText);
       }
       alert("강의가 등록되었습니다!");
-    } catch (error: any) {
-      alert("등록 실패: " + (error?.message || "알 수 없는 에러"));
+
+    //catch 블록에서 any 사용하면 noImplicitAny: true 설정에 걸려서 에러 발생해서 unknown으로 대체했습니다.
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert("등록 실패: " + error.message);
+      } else {
+        alert("등록 실패: 알 수 없는 에러");
+      }
     }
   };
 
