@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 
 interface DropdownProps {
@@ -18,8 +18,8 @@ export const Dropdown = ({ label, items }: DropdownProps) => {
             <DropdownItem
               key={index}
               onClick={() => {
-                localStorage.setItem("selectedCategory", item);
-                window.location.href = "/";
+                localStorage.setItem('selectedCategory', item);
+                window.location.href = '/';
               }}
             >
               {item}
