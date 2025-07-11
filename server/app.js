@@ -47,6 +47,6 @@ app.use('/reviews', reviewRoutes);
 
 app.get('/', (_, res) => res.send('API up and running'));
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Express 서버 실행 중 (포트: ${port})`);
 });
