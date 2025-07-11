@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export const sendEmailCode = async (email: string) => {
   const res = await fetch(`${API_BASE}/auth/email/send-code`, {
