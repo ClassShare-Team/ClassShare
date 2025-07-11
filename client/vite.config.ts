@@ -1,4 +1,3 @@
-// vite.config.ts
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -15,7 +14,7 @@ export default defineConfig({
           writeBundle() {
             fs.copyFileSync(
               path.resolve(__dirname, 'public/_redirects'),
-              path.resolve(__dirname, 'dis/_redirects')
+              path.resolve(__dirname, 'dist/_redirects')
             );
           },
         },
