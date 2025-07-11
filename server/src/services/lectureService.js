@@ -127,3 +127,31 @@ function formatDuration(seconds) {
   const sec = seconds % 60;
   return `${minutes}:${sec.toString().padStart(2, '0')}`;
 }
+
+// 강의 무료 구매
+exports.purchaseLecture = async (userId, lectureId) => {
+  // 가격 조회
+  const lectureResult = await db.query(`SELECT price FROM lectures WHERE id = $1`, [lectureId]);
+  if (lectureResult.rows.length === 0) {
+    throw new Error('해당 강의가 존재하지 않습니다.');
+  }
+
+  const price = lectureResult.rows[0].price;
+
+  // 이미 구매했는지 확인
+  const exists = await db.query(`
+    SELECT 1 FROM lecture_purchases WHERE user_id = $1 AND lecture_id = $2
+  `, [userId, lectureId]);
+
+  if (exists.rows.length > 0) {
+    return { alreadyPurchased: true };
+  }
+
+  // 구매 등록
+  await db.query(`
+    INSERT INTO lecture_purchases (user_id, lecture_id, price)
+    VALUES ($1, $2, $3)
+  `, [userId, lectureId, price]);
+
+  return { success: true };
+};

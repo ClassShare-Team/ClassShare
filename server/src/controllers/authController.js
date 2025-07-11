@@ -32,47 +32,48 @@ exports.signup = async (req, res) => {
 // 구글 OAuth 콜백 처리 (로그인 또는 회원가입 분기)
 exports.oauthGoogleCallback = async (req, res) => {
   const { code } = req.query;
-  if (!code) {
-    return res.status(400).json({ message: 'code 파라미터가 없습니다.' });
-  }
+  if (!code) return res.status(400).json({ message: 'code 파라미터가 없습니다.' });
+
   try {
     const result = await authService.handleGoogleOAuth(code);
+    const qp = encodeURIComponent;
+
     if (result.needsSignup && result.tempToken) {
-      const frontendUrl = `http://localhost:5173/oauth/finalize?tempToken=${result.tempToken}`;
-      return res.redirect(frontendUrl);
+      return res.redirect(
+        `${process.env.CLIENT_URL}/oauth/finalize?tempToken=${qp(result.tempToken)}`
+      );
     }
-    const frontendUrl = `http://localhost:5173/oauth/finalize?token=${result.accessToken}`;
-    return res.redirect(frontendUrl);
+    return res.redirect(`${process.env.CLIENT_URL}/oauth/finalize?token=${qp(result.accessToken)}`);
   } catch (e) {
     console.error('Google OAuth 실패:', e);
-    res.status(e.status || 500).json({ message: e.message || '서버 오류' });
+    return res.status(e.status || 500).json({ message: e.message || '서버 오류' });
   }
 };
 // 구글 OAuth 회원가입 최종 정보 입력 처리
 exports.finalizeGoogleSignup = async (req, res) => {
   const { nickname, role } = req.body;
-  const tempToken = req.headers.authorization?.split(' ')[1];
+  const tempToken =
+    req.headers.authorization?.split(' ')[1] || req.body.tempToken || req.query.tempToken;
+
   if (!tempToken) {
     return res.status(401).json({ message: 'tempToken이 필요합니다.' });
   }
   try {
-    // 직접 디코딩하지 않고 토큰만 서비스로 넘김
-    const result = await authService.finalizeGoogleUser({
-      nickname,
-      role,
-      tempToken,
-    });
+    const result = await authService.finalizeGoogleUser({ nickname, role, tempToken });
     return res.status(201).json(result);
   } catch (e) {
     console.error('구글 회원가입 실패:', e);
-    res.status(e.status || 500).json({ message: e.message || '구글 회원가입 처리 중 오류 발생' });
+    return res
+      .status(e.status || 500)
+      .json({ message: e.message || '구글 회원가입 처리 중 오류 발생' });
   }
 };
 // 일반 로그인 요청
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password)
+  if (!email || !password) {
     return res.status(400).json({ message: '이메일과 비밀번호를 모두 입력해주세요.' });
+  }
   try {
     const result = await authService.login(email, password);
     return res.status(200).json(result);
@@ -82,20 +83,16 @@ exports.login = async (req, res) => {
 };
 // 로그아웃
 exports.logout = async (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(400).json({ message: '토큰이 없습니다.' });
   try {
-    const { exp } = req.user; // authMiddleware에서 검증된 JWT payload 사용
-    const now = Math.floor(Date.now() / 1000);
-    const ttl = exp - now;
-    if (ttl > 0) {
-      await redis.set(`blacklist:${token}`, '1', { EX: ttl });
+    const ttlMs = req.user.exp * 1000 - Date.now(); // 토큰 잔여 TTL
+    if (ttlMs > 0) {
+      await redis.set(`blacklist:${req.token}`, '1', { PX: ttlMs });
     }
-    res.status(200).json({ message: '로그아웃이 완료되었습니다.' });
-  } catch (e) {
-    console.error('로그아웃 처리 중 Redis 오류:', e);
-    res.status(200).json({ message: '로그아웃이 완료되었습니다.' });
-  } // 서버 오류 있어도 200으로 처리 완료
+    return res.json({ message: '로그아웃 완료' });
+  } catch (err) {
+    console.error('[logout] error:', err);
+    return res.status(500).json({ message: '로그아웃 처리 중 오류가 발생했습니다.' });
+  }
 };
 
 //추가
@@ -116,17 +113,19 @@ exports.sendCode = async (req, res) => {
 //추가
 //redirect
 exports.redirectToGoogle = (req, res) => {
-  const baseUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
-  const redirectUri = encodeURIComponent(process.env.GOOGLE_REDIRECT_URI);
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const scope = encodeURIComponent(
-    'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
-  );
-  const responseType = 'code';
-  const accessType = 'offline';
-  const prompt = 'consent';
+  const base = 'https://accounts.google.com/o/oauth2/v2/auth';
 
-  const redirectUrl = `${baseUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}&access_type=${accessType}&prompt=${prompt}`;
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+    response_type: 'code',
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ].join(' '),
+    access_type: 'offline',
+    prompt: 'consent',
+  });
 
-  res.redirect(redirectUrl);
+  return res.redirect(`${base}?${params.toString()}`);
 };

@@ -98,3 +98,25 @@ exports.getCurriculumByLectureId = async (req, res) => {
     return res.status(500).json({ message: '커리큘럼 목록을 불러오는 중 오류가 발생했습니다.' });
   }
 };
+
+// 무료 강의 구매
+exports.purchaseLecture = async (req, res) => {
+  const lectureId = parseInt(req.params.id, 10);
+  const userId = req.user?.id; 
+
+  if (isNaN(lectureId) || !userId) {
+    return res.status(400).json({ message: '잘못된 요청입니다.' });
+  }
+
+  try {
+    const result = await lectureService.purchaseLecture(userId, lectureId);
+    if (result.alreadyPurchased) {
+      return res.status(200).json({ message: '이미 구매한 강의입니다.' });
+    }
+    return res.status(201).json({ message: '결제가 완료되었습니다. 수강이 가능합니다.' });
+  } catch (err) {
+    console.error('[POST /lectures/:id/purchase] error:', err);
+    return res.status(500).json({ message: '결제 처리 중 오류가 발생했습니다.' });
+  }
+};
+

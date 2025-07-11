@@ -24,11 +24,15 @@ exports.verifyCode = async (email, inputCode) => {
     [email]
   );
   if (!row) throw { status: 400, message: '인증코드를 먼저 발급받아 주세요.' };
-  if (row.verified) throw { status: 400, message: '이미 인증이 완료된 이메일입니다.' };
+  if (row.verified) throw { status: 401, message: '이미 인증이 완료된 이메일입니다.' };
   const ageMin = (Date.now() - row.created_at.getTime()) / 60000;
-  if (ageMin > CODE_TTL_MIN) throw { status: 400, message: '인증코드가 만료되었습니다.' };
+  if (ageMin > CODE_TTL_MIN) throw { status: 402, message: '인증코드가 만료되었습니다.' };
+  if (inputCode.length !== row.code.length) {
+    throw { status: 403, message: '인증코드가 일치하지 않습니다.' };
+  }
   const isMatch = crypto.timingSafeEqual(Buffer.from(inputCode), Buffer.from(row.code));
-  if (!isMatch) throw { status: 400, message: '인증코드가 일치하지 않습니다.' };
+  if (!isMatch) throw { status: 405, message: '인증코드가 일치하지 않습니다.' };
+
   await db.query('UPDATE email_verification_codes SET verified = true WHERE email = $1', [email]);
   await db.query('UPDATE users SET is_verified = true WHERE email = $1', [email]);
 };
@@ -59,7 +63,7 @@ exports.signupAndSendCode = async ({ email, password, name, nickname, role }) =>
     const { rowCount: dupNick } = await client.query('SELECT 1 FROM users WHERE nickname = $1', [
       nickname,
     ]);
-    if (dupNick) {
+    if (dupNick > 0) {
       throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
     }
 
@@ -170,52 +174,39 @@ exports.handleGoogleOAuth = async (code) => {
 
 // Google OAuth 최종 회원가입
 exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
-  // 토큰 디코딩
-  const decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
-  const { key } = decoded;
-  // Redis에서 임시 정보 조회
+  const { key } = jwt.verify(tempToken, process.env.JWT_SECRET);
   const raw = await redis.get(`temp-oauth:${key}`);
-  if (!raw) {
-    throw { status: 400, message: '임시 회원가입 정보가 만료되었거나 없습니다.' };
-  }
-  let email, oauthId, name, profile_image;
-  try {
-    const userData = JSON.parse(raw);
-    email = userData.email;
-    oauthId = userData.oauthId;
-    name = userData.name;
-    profile_image = userData.profile_image;
-  } catch (e) {
-    console.error('authService 오류:', e);
-    throw { status: 400, message: '임시 정보 파싱 오류' };
-  }
+  if (!raw) throw { status: 400, message: '임시 회원가입 정보가 만료되었거나 없습니다.' };
+
+  const { email, oauthId, name, profile_image } = JSON.parse(raw);
   if (!email || !oauthId || !name) {
     throw { status: 400, message: '임시 정보가 불완전합니다. 다시 시도해 주세요.' };
   }
-  // 필드 유효성 검사
+
   if (!['instructor', 'student'].includes(role)) {
     throw { status: 400, message: 'role은 instructor 또는 student여야 합니다.' };
   }
-  const client = await db.pool.connect(); // 트랜잭션을 위한 커넥션 확보
+
+  const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
     const dupNickname = await client.query(`SELECT 1 FROM users WHERE nickname = $1`, [nickname]);
     if (dupNickname.rowCount > 0) {
       throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
     }
-    // 삽입
-    const result = await client.query(
+
+    const {
+      rows: [user],
+    } = await client.query(
       `INSERT INTO users (email, name, nickname, role, profile_image, oauth_provider, oauth_id, is_verified)
        VALUES ($1, $2, $3, $4, $5, 'google', $6, TRUE)
-       RETURNING id, public_id`,
+       RETURNING id, public_id, role`,
       [email, name, nickname, role, profile_image, oauthId]
     );
     await client.query('COMMIT');
-    const user = result.rows[0];
-    // Redis에서 임시 정보 삭제
     await redis.del(`temp-oauth:${key}`);
-    // JWT 발급
-    const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+
+    const accessToken = jwt.sign({ id: user.id, role }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     });
     return {
@@ -231,10 +222,9 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
       },
       profileComplete: true,
     };
-  } catch (e) {
+  } catch (err) {
     await client.query('ROLLBACK');
-    console.error('Google 최종 회원가입 트랜잭션 오류:', e);
-    throw e;
+    throw err;
   } finally {
     client.release();
   }
