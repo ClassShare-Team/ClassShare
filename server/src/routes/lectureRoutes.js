@@ -14,4 +14,6 @@ router.post(
   lectureController.createLecture
 );
 
+router.get('/', lectureController.getAllLectures);
+
 module.exports = router;

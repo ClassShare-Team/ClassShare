@@ -56,3 +56,22 @@ exports.createLecture = async ({
     client.release();
   }
 };
+
+// 전체 강의 조회
+exports.getAllLectures = async () => {
+  const result = await db.query(`
+    SELECT
+      l.id,
+      l.title,
+      l.instructor_id,
+      u.nickname AS instructor_nickname,
+      l.category,
+      l.price,
+      l.thumbnail,
+      l.created_at
+    FROM lectures l
+    JOIN users u ON l.instructor_id = u.id
+    ORDER BY l.created_at DESC
+  `);
+  return result.rows;
+};
