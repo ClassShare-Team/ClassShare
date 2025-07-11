@@ -75,3 +75,55 @@ exports.getAllLectures = async () => {
   `);
   return result.rows;
 };
+
+// 강의 단건 조회
+exports.getLectureById = async (lectureId) => {
+  const result = await db.query(
+    `
+    SELECT
+      l.id,
+      l.title,
+      l.description,
+      l.instructor_id,
+      u.nickname AS instructor_nickname,
+      u.profile_image AS instructor_profile_image,
+      l.category,
+      l.price,
+      l.thumbnail,
+      l.created_at
+    FROM lectures l
+    JOIN users u ON l.instructor_id = u.id
+    WHERE l.id = $1
+  `,
+    [lectureId]
+  );
+
+  return result.rows[0];
+};
+
+// 단건 강의 커리큘럼 조회
+exports.getCurriculumByLectureId = async (lectureId) => {
+  const result = await db.query(
+    `
+    SELECT
+      title,
+      duration_sec
+    FROM videos
+    WHERE lecture_id = $1
+    ORDER BY order_index ASC
+  `,
+    [lectureId]
+  );
+
+  return result.rows.map((video) => ({
+    title: video.title,
+    duration: formatDuration(video.duration_sec),
+  }));
+};
+
+function formatDuration(seconds) {
+  if (seconds === null || seconds === undefined) return null;
+  const minutes = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  return `${minutes}:${sec.toString().padStart(2, '0')}`;
+}

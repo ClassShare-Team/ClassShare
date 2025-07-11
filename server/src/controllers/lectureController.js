@@ -63,3 +63,38 @@ exports.getAllLectures = async (req, res) => {
     return res.status(500).json({ message: '강의 목록을 불러오는 중 오류가 발생했습니다.' });
   }
 };
+
+// 강의 단건 조회
+exports.getLectureById = async (req, res) => {
+  const lectureId = parseInt(req.params.id, 10);
+  if (isNaN(lectureId)) {
+    return res.status(400).json({ message: '유효한 강의 ID가 아닙니다.' });
+  }
+
+  try {
+    const lecture = await lectureService.getLectureById(lectureId);
+    if (!lecture) {
+      return res.status(404).json({ message: '해당 강의를 찾을 수 없습니다.' });
+    }
+    return res.status(200).json(lecture);
+  } catch (err) {
+    console.error(`[GET /lectures/${lectureId}] error:`, err);
+    return res.status(500).json({ message: '강의 정보를 불러오는 중 오류가 발생했습니다.' });
+  }
+};
+
+// 특정 강의 커리큘럼 조회
+exports.getCurriculumByLectureId = async (req, res) => {
+  const lectureId = parseInt(req.params.id, 10);
+  if (isNaN(lectureId)) {
+    return res.status(400).json({ message: '유효한 강의 ID가 아닙니다.' });
+  }
+
+  try {
+    const curriculum = await lectureService.getCurriculumByLectureId(lectureId);
+    return res.status(200).json(curriculum);
+  } catch (err) {
+    console.error(`[GET /lectures/${lectureId}/curriculum] error:`, err);
+    return res.status(500).json({ message: '커리큘럼 목록을 불러오는 중 오류가 발생했습니다.' });
+  }
+};
