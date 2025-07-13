@@ -75,11 +75,11 @@ exports.getAllLectures = async () => {
     SELECT
       l.id,
       l.title,
-      l.instructor_id,
+      l.instructor_id AS instructor,
       u.nickname AS instructor_nickname,
       l.category,
       l.price,
-      l.thumbnail,
+      l.thumbnail AS image,
       l.created_at
     FROM lectures l
     JOIN users u ON l.instructor_id = u.id
