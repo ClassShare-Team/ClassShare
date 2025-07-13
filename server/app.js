@@ -48,12 +48,19 @@ app.use('/reviews', reviewRoutes);
 app.get('/', (_, res) => res.send('API up and running'));
 
 app.use((err, req, res, next) => {
-  console.error('Global Error:', err);
+  console.error(
+    `[${req.method}] ${req.originalUrl} | IP: ${req.ip} | UA: ${req.headers['user-agent']}`
+  );
+  console.error('Request Body:', req.body);
+
+  console.error('🔴 Global Error:', err);
   if (err?.stack) console.error(err.stack);
 
   res.status(err.status || 500).json({
     message: err.message || 'Internal Server Error',
   });
+
+  next(err);
 });
 
 app.listen(port, '0.0.0.0', () => {
