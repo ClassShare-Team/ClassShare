@@ -10,6 +10,7 @@ import VerifyEmailPage from '@/components/pages/verifyEmail';
 import StreamingPage from '@/components/pages/streamingpage';
 import BoardPage from '@/components/pages/board';
 import BoardCreatePage from '@/components/pages/boardCreate';
+import VideoListPage from '@/components/pages/VideoListPage';
 
 export const AppRoutes = () => {
   return (
@@ -23,8 +24,9 @@ export const AppRoutes = () => {
         <Route path="token" element={<TokenPage />} />
         <Route path="oauth/finalize" element={<OAuthFinalizePage />} />
         <Route path="verifyEmail" element={<VerifyEmailPage />} />
-        <Route path="boards" element={<BoardPage />} />
-        <Route path="boards/create" element={<BoardCreatePage />} />
+        <Route path="board" element={<BoardPage />} />
+        <Route path="board/create" element={<BoardCreatePage />} />
+        <Route path="lecture/:lectureId/videos" element={<VideoListPage />} />
       </Route>
       <Route path="/streamingpage" element={<StreamingPage />} />
     </Routes>

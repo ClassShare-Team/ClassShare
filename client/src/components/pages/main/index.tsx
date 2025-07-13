@@ -8,7 +8,7 @@ interface Lecture {
   instructor?: string;
   description?: string;
   price: number | string;
-  image?: string;
+  image?: string; // 썸네일 URL
   tag?: string;
 }
 
@@ -70,6 +70,14 @@ const MainPage: React.FC = () => {
                   .filter((lec) => lec.category === category)
                   .map((lec) => (
                     <div key={lec.id} className="card">
+                      <img
+                        className="thumbnail"
+                        src={lec.image}
+                        alt="썸네일"
+                        onError={(e) => {
+                          e.currentTarget.src = '/default-thumbnail.jpg';
+                        }}
+                      />
                       <p className="title">{lec.title}</p>
                       <span className="tag">{lec.tag}</span>
                       <strong className="price">
