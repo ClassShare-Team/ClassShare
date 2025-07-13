@@ -61,7 +61,7 @@ const uploadLectureMedia = multer({
     },
   }),
   limits: {
-    fileSize: 500 * 1024 * 1024, // 500 MB per file
+    fileSize: 2 * 1024 * 1024 * 1024, // 2GB per file
   },
   fileFilter: (_req, file, cb) => {
     if (file.fieldname === 'thumbnail' && !file.mimetype.startsWith('image/')) {
