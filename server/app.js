@@ -23,6 +23,9 @@ const whitelist = [process.env.CLIENT_URL];
 app.use(
   cors({
     origin(origin, callback) {
+      console.log('요청된 Origin:', origin);
+      console.log('현재 whitelist:', whitelist);
+
       if (!origin || whitelist.includes(origin)) {
         callback(null, true);
       } else {
