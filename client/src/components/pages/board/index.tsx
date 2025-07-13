@@ -125,7 +125,7 @@ const BoardPage = () => {
             <PostList>
               {paginatedPosts.length > 0
                 ? paginatedPosts.map((post) => (
-                    <PostItem key={post.id}>
+                    <PostItem key={post.id} onClick={() => navigate(`/boards/posts/${post.id}`)}>
                       <PostTitle>{post.title}</PostTitle>
                       <PostContent>{post.content}</PostContent>
                       <PostInfo>
@@ -180,7 +180,7 @@ const PageWrapper = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(to bottom, #f4f7fe, #f8faff, #eaf5ff);
+  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
 `;
 
 const MainContent = styled.main`
@@ -319,6 +319,7 @@ const PostItem = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.colors.gray100};
   padding-bottom: 16px;
   transition: background-color 0.2s;
+  cursor: pointer;
   &:hover {
     background-color: #fcfcfc;
   }

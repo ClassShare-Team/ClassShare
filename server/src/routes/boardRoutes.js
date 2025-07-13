@@ -5,5 +5,6 @@ const { authMiddleware } = require('../middleware/authMiddleware');
 
 router.get('/posts', boardController.getPosts);
 router.post('/posts', authMiddleware, boardController.createPost);
+router.get('/posts/:id', boardController.getPostById);
 
 module.exports = router;
