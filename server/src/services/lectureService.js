@@ -10,10 +10,10 @@ exports.createLecture = async ({
   videoFiles, // 배열
   videoTitles,
 }) => {
-  if (!thumbnailFile) throw { status: 400, message: '썸네일이 필요합니다.' };
-  if (videoFiles.length === 0) throw { status: 400, message: '강의 영상이 없습니다.' };
+  if (!thumbnailFile) throw { status: 405, message: '썸네일이 필요합니다.' };
+  if (videoFiles.length === 0) throw { status: 406, message: '강의 영상이 없습니다.' };
   if (videoFiles.length !== videoTitles.length)
-    throw { status: 400, message: '영상 수와 제목 수가 일치하지 않습니다.' };
+    throw { status: 407, message: '영상 수와 제목 수가 일치하지 않습니다.' };
 
   // S3 URL 그대로 사용
   const thumbUrl = thumbnailFile.location;
@@ -50,8 +50,13 @@ exports.createLecture = async ({
       lecturePublicId: lecture.public_id,
     };
   } catch (err) {
+    // 예외 로그 및 롤백
     await client.query('ROLLBACK');
-    throw err;
+
+    console.error('[createLecture] 트랜잭션 오류:', err);
+    if (err?.stack) console.error(err.stack);
+
+    throw err; // 컨트롤러로 전파
   } finally {
     client.release();
   }
@@ -139,19 +144,25 @@ exports.purchaseLecture = async (userId, lectureId) => {
   const price = lectureResult.rows[0].price;
 
   // 이미 구매했는지 확인
-  const exists = await db.query(`
+  const exists = await db.query(
+    `
     SELECT 1 FROM lecture_purchases WHERE user_id = $1 AND lecture_id = $2
-  `, [userId, lectureId]);
+  `,
+    [userId, lectureId]
+  );
 
   if (exists.rows.length > 0) {
     return { alreadyPurchased: true };
   }
 
   // 구매 등록
-  await db.query(`
+  await db.query(
+    `
     INSERT INTO lecture_purchases (user_id, lecture_id, price)
     VALUES ($1, $2, $3)
-  `, [userId, lectureId, price]);
+  `,
+    [userId, lectureId, price]
+  );
 
   return { success: true };
 };
