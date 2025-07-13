@@ -53,20 +53,23 @@ const uploadLectureMedia = multer({
     bucket: process.env.AWS_S3_BUCKET,
     acl: 'public-read',
     key: (_req, file, cb) => {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
       const isThumb = file.fieldname === 'thumbnail';
       const prefix = isThumb ? `thumbnails/${today}/thumb_` : `videos/${today}/video_`;
       const rand = isThumb ? '' : `-${Math.round(Math.random() * 1e9)}`;
+
       cb(null, `${prefix}${Date.now()}${rand}${path.extname(file.originalname)}`);
     },
   }),
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB per file
+  },
   fileFilter: (_req, file, cb) => {
     if (file.fieldname === 'thumbnail' && !file.mimetype.startsWith('image/'))
       return cb(new Error('썸네일은 image/* 형식만 허용됩니다.'));
     if (file.fieldname === 'videos' && !file.mimetype.startsWith('video/'))
       return cb(new Error('영상은 video/* 형식만 허용됩니다.'));
-    return cb(null, true);
+    cb(null, true);
   },
 }).fields([
   { name: 'thumbnail', maxCount: 1 },

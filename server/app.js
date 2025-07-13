@@ -18,23 +18,9 @@ const commentRoutes = require('./src/routes/commentRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
 
 // CORS 설정
-const whitelist = [process.env.CLIENT_URL];
-
 app.use(
   cors({
-    origin(origin, callback) {
-      console.log('\n--- CORS 검사 시작 ---');
-      console.log('요청된 Origin:', origin);
-      console.log('허용된 whitelist:', whitelist);
-
-      if (!origin || whitelist.includes(origin)) {
-        console.log('CORS 허용됨\n');
-        callback(null, true);
-      } else {
-        console.warn(`[CORS BLOCKED] 허용되지 않은 Origin: ${origin}\n`);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );

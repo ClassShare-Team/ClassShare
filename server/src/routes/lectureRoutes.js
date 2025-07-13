@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 
 const lectureController = require('../controllers/lectureController');
@@ -10,9 +11,25 @@ router.post(
   '/',
   authMiddleware,
   instructorOnly,
-  uploadLectureMedia,
+  (req, res, next) => {
+    uploadLectureMedia(req, res, (err) => {
+      if (!err) return next();
+      if (err instanceof multer.MulterError) {
+        switch (err.code) {
+          case 'LIMIT_FILE_SIZE':
+            return res.status(413).json({ message: '파일이 너무 큽니다.' });
+          case 'LIMIT_UNEXPECTED_FILE':
+            return res.status(400).json({ message: '예상치 못한 필드명입니다.' });
+          default:
+            return res.status(400).json({ message: err.message });
+        }
+      }
+      console.error('[uploadLectureMedia] unknown error:', err);
+      return res.status(500).json({ message: '파일 업로드 중 오류가 발생했습니다.' });
+    });
+  },
   lectureController.createLecture
-); // 강의 생성
+);
 
 router.get('/', lectureController.getAllLectures); // 전체 강의 조회
 router.get('/:id', lectureController.getLectureById); // 강의 단건 조회
