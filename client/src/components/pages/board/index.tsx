@@ -199,7 +199,10 @@ const BoardContainer = styled.div`
 `;
 
 const FormCard = styled.section`
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-height: 800px;
   background: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
@@ -307,6 +310,7 @@ const FilterCheck = styled.label<{ active?: boolean }>`
 
 const PostList = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 24px;
 `;
