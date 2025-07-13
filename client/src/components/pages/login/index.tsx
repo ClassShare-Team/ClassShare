@@ -99,7 +99,7 @@ export const LoginPage = () => {
 };
 
 const PageContainer = styled.div`
-  background-color: ${({ theme }) => theme.colors.white};
+  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   width: 100%;
   min-height: 100vh;
   display: flex;
