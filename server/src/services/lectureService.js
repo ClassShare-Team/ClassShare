@@ -1,4 +1,9 @@
 const db = require('../db');
+const { getVideoDurationInSeconds } = require('get-video-duration');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
 // 강의 생성
 exports.createLecture = async ({
@@ -42,14 +47,48 @@ exports.createLecture = async ({
 
     // 테이블 병렬 삽입
     await Promise.all(
-      videoFiles.map((vFile, idx) =>
-        client.query(
+      videoFiles.map(async (vFile, idx) => {
+        let durationSec = null;
+
+        try {
+          // 1) 임시 파일 경로 지정
+          const tmpPath = path.join(os.tmpdir(), `video-${Date.now()}-${idx}.mp4`);
+
+          // 2) S3에서 임시 파일로 다운로드
+          await new Promise((resolve, reject) => {
+            const file = fs.createWriteStream(tmpPath);
+            https
+              .get(vFile.location, (res) => {
+                res.pipe(file);
+                file.on('finish', () => file.close(resolve));
+              })
+              .on('error', reject);
+          });
+
+          // 3) 영상 길이 측정
+          const duration = await getVideoDurationInSeconds(tmpPath);
+          durationSec = Math.floor(duration);
+
+          // 4) 임시 파일 삭제
+          fs.unlink(tmpPath, () => {});
+        } catch (e) {
+          console.error(`[createLecture] 영상 길이 측정 실패 (index ${idx}):`, e.message);
+        }
+
+        // 5) DB INSERT (duration_sec 포함)
+        await client.query(
           `INSERT INTO videos
-             (lecture_id, title, video_url, order_index)
-           VALUES ($1, $2, $3, $4)`,
-          [lecture.id, videoTitles[idx]?.trim() || `Lecture ${idx + 1}`, vFile.location, idx + 1]
-        )
-      )
+             (lecture_id, title, video_url, order_index, duration_sec)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [
+            lecture.id,
+            videoTitles[idx]?.trim() || `Lecture ${idx + 1}`,
+            vFile.location,
+            idx + 1,
+            durationSec,
+          ]
+        );
+      })
     );
 
     await client.query('COMMIT');
