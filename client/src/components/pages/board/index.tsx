@@ -23,7 +23,10 @@ const BoardPage = () => {
   const navigate = useNavigate();
 
   const postsPerPage = 10;
-  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const totalPages = Math.max(1, Math.ceil(posts.length / postsPerPage));
+  const pageGroupSize = 5;
+  const currentGroup = Math.floor((currentPage - 1) / pageGroupSize);
+  const pageGroupStart = currentGroup * pageGroupSize + 1;
 
   const getTimeAgo = (createdAt: string) => {
     const diff = Date.now() - new Date(createdAt).getTime();
@@ -57,95 +60,152 @@ const BoardPage = () => {
     setCurrentPage(page);
   };
 
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   const paginatedPosts = posts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+  const pageButtons = Array.from({ length: pageGroupSize }, (_, i) => pageGroupStart + i);
 
   return (
-    <Container>
-      <FilterList>
-        <SearchBox>
-          <SearchInput
-            placeholder="궁금한 점을 검색해보세요"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <TopButton onClick={fetchPosts}>검색</TopButton>
-        </SearchBox>
+    <PageWrapper>
+      <MainContent>
+        <BoardContainer>
+          <FormCard>
+            <FilterList>
+              <SearchBox>
+                <SearchInput
+                  placeholder="궁금한 점을 검색해보세요"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <TopButton onClick={fetchPosts}>검색</TopButton>
+              </SearchBox>
+              <FilterSection>
+                <CenterGroup>
+                  <FilterButtons>
+                    {(['recent', 'accuracy', 'comments', 'likes'] as SortType[]).map((type) => (
+                      <FilterCheck key={type}>
+                        <input
+                          type="radio"
+                          name="sort"
+                          checked={sortType === type}
+                          onChange={() => setSortType(type)}
+                        />
+                        <span>
+                          {type === 'recent'
+                            ? '최신순'
+                            : type === 'accuracy'
+                              ? '정확도순'
+                              : type === 'comments'
+                                ? '댓글 많은순'
+                                : '좋아요순'}
+                        </span>
+                      </FilterCheck>
+                    ))}
+                  </FilterButtons>
+                  <TopButton
+                    style={{ marginLeft: '20px' }}
+                    onClick={() => navigate('/board/create')}
+                  >
+                    글쓰기
+                  </TopButton>
+                </CenterGroup>
+              </FilterSection>
+            </FilterList>
 
-        <FilterSection>
-          <CenterGroup>
-            <FilterButtons>
-              {(['recent', 'accuracy', 'comments', 'likes'] as SortType[]).map((type) => (
-                <FilterCheck key={type}>
-                  <input
-                    type="radio"
-                    name="sort"
-                    checked={sortType === type}
-                    onChange={() => setSortType(type)}
-                  />
-                  <span>
-                    {type === 'recent'
-                      ? '최신순'
-                      : type === 'accuracy'
-                        ? '정확도순'
-                        : type === 'comments'
-                          ? '댓글 많은순'
-                          : '좋아요순'}
-                  </span>
-                </FilterCheck>
+            <PostList>
+              {paginatedPosts.length > 0
+                ? paginatedPosts.map((post) => (
+                    <PostItem key={post.id}>
+                      <PostTitle>{post.title}</PostTitle>
+                      <PostContent>{post.content}</PostContent>
+                      <PostInfo>
+                        <span>
+                          {post.author} · {getTimeAgo(post.created_at)}
+                        </span>
+                        <InfoRight>
+                          <span>좋아요 {post.likes}</span>
+                          <span>댓글 {post.comments}</span>
+                          <span>조회 {post.views ?? 0}</span>
+                        </InfoRight>
+                      </PostInfo>
+                    </PostItem>
+                  ))
+                : Array.from({ length: 10 }).map((_, i) => (
+                    <PostItem key={i} className="placeholder" />
+                  ))}
+            </PostList>
+
+            <Page>
+              <PageButton disabled={currentPage === 1} onClick={handlePrevPage}>
+                〈
+              </PageButton>
+              {pageButtons.map((num) => (
+                <PageButton
+                  key={num}
+                  active={currentPage === num}
+                  onClick={() => {
+                    if (num <= totalPages) handlePageChange(num);
+                  }}
+                  disabled={num > totalPages}
+                >
+                  {num}
+                </PageButton>
               ))}
-            </FilterButtons>
-            <TopButton style={{ marginLeft: '20px' }} onClick={() => navigate('/board/create')}>
-              글쓰기
-            </TopButton>
-          </CenterGroup>
-        </FilterSection>
-      </FilterList>
+              <PageButton disabled={currentPage === totalPages} onClick={handleNextPage}>
+                〉
+              </PageButton>
+            </Page>
 
-      <PostList>
-        {paginatedPosts.map((post) => (
-          <PostItem key={post.id}>
-            <PostTitle>{post.title}</PostTitle>
-            <PostContent>{post.content}</PostContent>
-            <PostInfo>
-              <span>
-                {post.author} · {getTimeAgo(post.created_at)}
-              </span>
-              <InfoRight>
-                <span>좋아요 {post.likes}</span>
-                <span>댓글 {post.comments}</span>
-                <span>조회 {post.views ?? 0}</span>
-              </InfoRight>
-            </PostInfo>
-          </PostItem>
-        ))}
-      </PostList>
-
-      <Page>
-        <PageButton disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
-          〈
-        </PageButton>
-        {[1, 2, 3, 4, 5].map((num) => (
-          <PageButton key={num} active={currentPage === num} onClick={() => handlePageChange(num)}>
-            {num}
-          </PageButton>
-        ))}
-        <PageButton
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          〉
-        </PageButton>
-      </Page>
-    </Container>
+            <CurrentPageText>현재 {currentPage} 페이지입니다.</CurrentPageText>
+          </FormCard>
+        </BoardContainer>
+      </MainContent>
+    </PageWrapper>
   );
 };
 
 export default BoardPage;
 
-const Container = styled.div`
-  max-width: 100%;
+const PageWrapper = styled.div`
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom, #f4f7fe, #f8faff, #eaf5ff);
+`;
+
+const MainContent = styled.main`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+const BoardContainer = styled.div`
+  max-width: 72rem;
   margin: 0 auto;
-  padding: 40px 20px;
+  flex: 1;
+  width: 100%;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+`;
+
+const FormCard = styled.section`
+  flex: 1;
+  background: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
+  padding: 2.5rem;
+  margin-left: 1.5rem;
+  width: 100%;
 `;
 
 const FilterList = styled.div`
@@ -258,6 +318,14 @@ const PostItem = styled.div`
   &:hover {
     background-color: #fcfcfc;
   }
+
+  &.placeholder {
+    height: 80px;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.gray400};
+    background-color: transparent;
+    opacity: 0.3;
+    pointer-events: none;
+  }
 `;
 
 const PostTitle = styled.h3`
@@ -299,9 +367,15 @@ const PageButton = styled.button<{ active?: boolean }>`
   border: none;
   cursor: pointer;
   font-weight: 500;
-
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
   }
+`;
+
+const CurrentPageText = styled.div`
+  text-align: center;
+  margin-top: 28px;
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.black};
 `;
