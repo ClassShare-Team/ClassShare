@@ -114,7 +114,7 @@ const BoardPage = () => {
                   </FilterButtons>
                   <TopButton
                     style={{ marginLeft: '20px' }}
-                    onClick={() => navigate('/board/create')}
+                    onClick={() => navigate('/boards/create')}
                   >
                     글쓰기
                   </TopButton>

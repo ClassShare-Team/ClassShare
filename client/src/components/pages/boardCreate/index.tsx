@@ -16,7 +16,7 @@ const BoardCreatePage = () => {
     try {
       const token = localStorage.getItem('accessToken');
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/board/posts`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/boards/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ const BoardCreatePage = () => {
       if (!res.ok) throw new Error('작성 실패');
 
       alert('게시글이 등록되었습니다.');
-      navigate('/board');
+      navigate('/boards');
     } catch (err) {
       alert('오류 발생: ' + (err as Error).message);
     }
