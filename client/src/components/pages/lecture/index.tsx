@@ -259,7 +259,9 @@ const CreateLecturePage: React.FC = () => {
         return;
       }
 
-      const response = await fetch('/lectures', {
+      const API_BASE = import.meta.env.VITE_API_URL;
+
+      const response = await fetch(`${API_BASE}/lectures`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
