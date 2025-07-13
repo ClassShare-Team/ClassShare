@@ -16,6 +16,7 @@ const likesRoutes = require('./src/routes/likesRoutes');
 const followRoutes = require('./src/routes/followRoutes');
 const commentRoutes = require('./src/routes/commentRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
+const boardRoutes = require('./src/routes/boardRoutes');
 
 // CORS 설정
 app.use(
@@ -36,6 +37,7 @@ app.use('/likes', likesRoutes);
 app.use('/follows', followRoutes);
 app.use('/comments', commentRoutes);
 app.use('/reviews', reviewRoutes);
+app.use('/boards', boardRoutes);
 
 app.get('/', (_, res) => res.send('API up and running'));
 
@@ -45,7 +47,7 @@ app.use((err, req, res, next) => {
   );
   console.error('Request Body:', req.body);
 
-  console.error('🔴 Global Error:', err);
+  console.error('Global Error:', err);
   if (err?.stack) console.error(err.stack);
 
   res.status(err.status || 500).json({

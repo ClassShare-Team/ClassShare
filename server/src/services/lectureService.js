@@ -1,5 +1,6 @@
 const db = require('../db');
 
+// 강의 생성
 exports.createLecture = async ({
   instructorId,
   title,
