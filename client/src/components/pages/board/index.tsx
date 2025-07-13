@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type SortType = 'recent' | 'accuracy' | 'comments' | 'likes';
 
@@ -8,106 +9,21 @@ interface Post {
   title: string;
   content: string;
   author: string;
-  createdAt: string;
+  created_at: string;
   likes: number;
   comments: number;
   views: number;
-  accuracy: number;
 }
-
-const dummyPost: Post[] = [
-  {
-    id: 1,
-    title: '저의 첫 게시글입니다',
-    content: '저의 첫 게시글의 내용입니다',
-    author: '김진수',
-    createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30분 전
-    likes: 6,
-    comments: 9,
-    views: 30,
-    accuracy: 0.8,
-  },
-  {
-    id: 2,
-    title: '게시판 게시글입니다',
-    content: '게시판 게시글의 내용입니다',
-    author: '홍길동',
-    createdAt: new Date(Date.now() - 46 * 60 * 1000).toISOString(),
-    likes: 9,
-    comments: 25,
-    views: 80,
-    accuracy: 0.95,
-  },
-  {
-    id: 3,
-    title: 'abc',
-    content: 'English_English',
-    author: 'Yamal',
-    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    likes: 7,
-    comments: 19,
-    views: 55,
-    accuracy: 0.7,
-  },
-  {
-    id: 4,
-    title: '가나다',
-    content: '한글_한글',
-    author: '이세종',
-    createdAt: new Date(Date.now() - 180 * 60 * 1000).toISOString(),
-    likes: 2,
-    comments: 3,
-    views: 13,
-    accuracy: 0.5,
-  },
-  {
-    id: 5,
-    title: '123',
-    content: '0102030405',
-    author: '숫자맨',
-    createdAt: new Date(Date.now() - 2880 * 60 * 1000).toISOString(),
-    likes: 31,
-    comments: 42,
-    views: 108,
-    accuracy: 0.99,
-  },
-  {
-    id: 6,
-    title: '제목있음',
-    content: '내용있음',
-    author: '작성자있음',
-    createdAt: new Date(Date.now() - 2880 * 60 * 1000).toISOString(),
-    likes: 31,
-    comments: 42,
-    views: 108,
-    accuracy: 0.99,
-  },
-  {
-    id: 7,
-    title: '지금 시간 새벽 3시 40분',
-    content: '20250711',
-    author: '0340',
-    createdAt: new Date(Date.now() - 2880 * 60 * 1000).toISOString(),
-    likes: 31,
-    comments: 42,
-    views: 108,
-    accuracy: 0.99,
-  },
-  {
-    id: 8,
-    title: '화이팅',
-    content: 'fighting',
-    author: '화이팅이용',
-    createdAt: new Date(Date.now() - 2880 * 60 * 1000).toISOString(),
-    likes: 31,
-    comments: 42,
-    views: 108,
-    accuracy: 0.99,
-  },
-];
 
 const BoardPage = () => {
   const [sortType, setSortType] = useState<SortType>('recent');
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
+
+  const postsPerPage = 10;
+  const totalPages = Math.ceil(posts.length / postsPerPage);
 
   const getTimeAgo = (createdAt: string) => {
     const diff = Date.now() - new Date(createdAt).getTime();
@@ -120,80 +36,84 @@ const BoardPage = () => {
     return `${days}일 전`;
   };
 
-  const sortedPost = [...dummyPost].sort((a, b) => {
-    if (sortType === 'likes') return b.likes - a.likes;
-    if (sortType === 'comments') return b.comments - a.comments;
-    if (sortType === 'accuracy') return b.accuracy - a.accuracy;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/board/posts?sort=${sortType}&search=${searchQuery}`
+      );
+      const data = await res.json();
+      setPosts(data.posts);
+      setCurrentPage(1);
+    } catch (err) {
+      console.error('게시글 불러오기 실패:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [sortType]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const paginatedPosts = posts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
   return (
     <Container>
       <FilterList>
         <SearchBox>
-          <SearchInput placeholder="궁금한 점을 검색해보세요" />
-          <TopButton>검색</TopButton>
+          <SearchInput
+            placeholder="궁금한 점을 검색해보세요"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <TopButton onClick={fetchPosts}>검색</TopButton>
         </SearchBox>
 
         <FilterSection>
           <CenterGroup>
             <FilterButtons>
-              <FilterCheck>
-                <input
-                  type="radio"
-                  name="sort"
-                  checked={sortType === 'recent'}
-                  onChange={() => setSortType('recent')}
-                />
-                <span>최신순</span>
-              </FilterCheck>
-              <FilterCheck>
-                <input
-                  type="radio"
-                  name="sort"
-                  checked={sortType === 'accuracy'}
-                  onChange={() => setSortType('accuracy')}
-                />
-                <span>정확도순</span>
-              </FilterCheck>
-              <FilterCheck>
-                <input
-                  type="radio"
-                  name="sort"
-                  checked={sortType === 'comments'}
-                  onChange={() => setSortType('comments')}
-                />
-                <span>댓글 많은순</span>
-              </FilterCheck>
-              <FilterCheck>
-                <input
-                  type="radio"
-                  name="sort"
-                  checked={sortType === 'likes'}
-                  onChange={() => setSortType('likes')}
-                />
-                <span>좋아요순</span>
-              </FilterCheck>
+              {(['recent', 'accuracy', 'comments', 'likes'] as SortType[]).map((type) => (
+                <FilterCheck key={type}>
+                  <input
+                    type="radio"
+                    name="sort"
+                    checked={sortType === type}
+                    onChange={() => setSortType(type)}
+                  />
+                  <span>
+                    {type === 'recent'
+                      ? '최신순'
+                      : type === 'accuracy'
+                        ? '정확도순'
+                        : type === 'comments'
+                          ? '댓글 많은순'
+                          : '좋아요순'}
+                  </span>
+                </FilterCheck>
+              ))}
             </FilterButtons>
-
-            <TopButton style={{ marginLeft: '20px' }}>글쓰기</TopButton>
+            <TopButton style={{ marginLeft: '20px' }} onClick={() => navigate('/board/create')}>
+              글쓰기
+            </TopButton>
           </CenterGroup>
         </FilterSection>
       </FilterList>
 
       <PostList>
-        {sortedPost.map((post) => (
+        {paginatedPosts.map((post) => (
           <PostItem key={post.id}>
             <PostTitle>{post.title}</PostTitle>
             <PostContent>{post.content}</PostContent>
             <PostInfo>
               <span>
-                {post.author} · {getTimeAgo(post.createdAt)}
+                {post.author} · {getTimeAgo(post.created_at)}
               </span>
               <InfoRight>
                 <span>좋아요 {post.likes}</span>
                 <span>댓글 {post.comments}</span>
-                <span>조회 {post.views}</span>
+                <span>조회 {post.views ?? 0}</span>
               </InfoRight>
             </PostInfo>
           </PostItem>
@@ -201,13 +121,20 @@ const BoardPage = () => {
       </PostList>
 
       <Page>
-        <PageButton>〈</PageButton>
+        <PageButton disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)}>
+          〈
+        </PageButton>
         {[1, 2, 3, 4, 5].map((num) => (
-          <PageButton key={num} active={num === 3}>
+          <PageButton key={num} active={currentPage === num} onClick={() => handlePageChange(num)}>
             {num}
           </PageButton>
         ))}
-        <PageButton>〉</PageButton>
+        <PageButton
+          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          〉
+        </PageButton>
       </Page>
     </Container>
   );
@@ -372,4 +299,9 @@ const PageButton = styled.button<{ active?: boolean }>`
   border: none;
   cursor: pointer;
   font-weight: 500;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 `;

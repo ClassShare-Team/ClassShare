@@ -9,6 +9,7 @@ import { OAuthFinalizePage } from '@/components/pages/oauth/finalize';
 import VerifyEmailPage from '@/components/pages/verifyEmail';
 import StreamingPage from '@/components/pages/streamingpage';
 import BoardPage from '@/components/pages/board';
+import BoardCreatePage from '@/components/pages/boardCreate';
 
 export const AppRoutes = () => {
   return (
@@ -23,6 +24,7 @@ export const AppRoutes = () => {
         <Route path="oauth/finalize" element={<OAuthFinalizePage />} />
         <Route path="verifyEmail" element={<VerifyEmailPage />} />
         <Route path="board" element={<BoardPage />} />
+        <Route path="board/create" element={<BoardCreatePage />} />
       </Route>
       <Route path="/streamingpage" element={<StreamingPage />} />
     </Routes>
