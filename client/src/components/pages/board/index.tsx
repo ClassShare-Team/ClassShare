@@ -42,7 +42,7 @@ const BoardPage = () => {
   const fetchPosts = async () => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/board/posts?sort=${sortType}&search=${searchQuery}`
+        `${import.meta.env.VITE_API_URL}/boards/posts?sort=${sortType}&search=${searchQuery}`
       );
       const data = await res.json();
       setPosts(data.posts);
