@@ -10,6 +10,7 @@ const port = 5000;
 const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const lectureRoutes = require('./src/routes/lectureRoutes'); // ✅ 강의 라우트 추가
+const boardRoutes = require('./src/routes/boardRoutes');
 
 // 미들웨어
 app.use(
@@ -25,6 +26,7 @@ app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads/profile
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/lectures', lectureRoutes); // ✅ 강의 API 연결
+app.use('/boards', boardRoutes);
 
 // 서버 실행
 app.listen(port, () => {
