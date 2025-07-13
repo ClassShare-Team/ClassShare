@@ -18,7 +18,7 @@ const commentRoutes = require('./src/routes/commentRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
 
 // CORS 설정
-const whitelist = [process.env.CLIENT_URL, 'https://classshare.netlify.app'];
+const whitelist = [process.env.CLIENT_URL];
 
 app.use(
   cors({
@@ -26,6 +26,7 @@ app.use(
       if (!origin || whitelist.includes(origin)) {
         callback(null, true);
       } else {
+        console.warn(`[CORS BLOCKED] origin=${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
