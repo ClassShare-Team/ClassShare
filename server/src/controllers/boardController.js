@@ -63,3 +63,29 @@ exports.createPost = async (req, res) => {
     res.status(500).json({ message: '서버 오류' });
   }
 };
+
+exports.getPostById = async (req, res) => {
+  const postId = req.params.id;
+
+  try {
+    const result = await db.query(
+      `
+      SELECT
+        p.id, p.title, p.content, p.created_at, u.nickname AS author
+      FROM posts p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.id = $1
+      `,
+      [postId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: '게시글이 존재하지 않습니다.' });
+    }
+
+    res.json({ post: result.rows[0] });
+  } catch (err) {
+    console.error('게시글 조회 실패: ', err);
+    res.status(500).json({ message: '게시글 조회 실패' });
+  }
+};
