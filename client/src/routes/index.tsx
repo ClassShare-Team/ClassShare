@@ -11,6 +11,7 @@ import StreamingPage from '@/components/pages/streamingpage';
 import BoardPage from '@/components/pages/board';
 import BoardCreatePage from '@/components/pages/boardCreate';
 import VideoListPage from '@/components/pages/VideoListPage';
+import BoardPostDetailPage from '@/components/pages/boardPostDetail';
 
 export const AppRoutes = () => {
   return (
@@ -27,6 +28,7 @@ export const AppRoutes = () => {
         <Route path="boards" element={<BoardPage />} />
         <Route path="boards/create" element={<BoardCreatePage />} />
         <Route path="lecture/:lectureId/videos" element={<VideoListPage />} />
+        <Route path="boards/posts/:id" element={<BoardPostDetailPage />} />
       </Route>
       <Route path="/streamingpage" element={<StreamingPage />} />
     </Routes>
