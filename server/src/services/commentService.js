@@ -29,3 +29,25 @@ exports.createComment = async ({ postId, userId, content }) => {
   );
   return rows[0];
 };
+
+// 게시글에 달린 댓글 확인
+exports.getCommentsByPostId = async ({ postId, offset, limit }) => {
+  const commentsQuery = `
+    SELECT c.id, c.content, c.created_at AS "createdAt",
+           u.id AS "userId", u.nickname, u.profile_image AS "profileImage"
+    FROM comments c
+    JOIN users u ON c.user_id = u.id
+    WHERE c.post_id = $1
+    ORDER BY c.created_at ASC
+    LIMIT $2 OFFSET $3
+  `;
+  const countQuery = 'SELECT COUNT(*) FROM comments WHERE post_id = $1';
+
+  const commentsResult = await db.query(commentsQuery, [postId, limit, offset]);
+  const countResult = await db.query(countQuery, [postId]);
+
+  return {
+    comments: commentsResult.rows,
+    total: parseInt(countResult.rows[0].count),
+  };
+};
