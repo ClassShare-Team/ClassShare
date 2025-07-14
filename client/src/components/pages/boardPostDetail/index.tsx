@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import useUserInfo from '@/components/hooks/useUserInfo';
 
 interface Post {
   id: number;
@@ -10,28 +11,87 @@ interface Post {
   created_at: string;
 }
 
+interface Comment {
+  id: number;
+  content: string;
+  created_at: string;
+  author: string;
+}
+
 const BoardPostDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useUserInfo();
+
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [comment, setComment] = useState('');
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  const fetchPost = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}`);
+      const data = await res.json();
+      setPost(data.post);
+    } catch (err) {
+      console.error('게시글 불러오기 실패:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}/comments`);
+      const data = await res.json();
+      setComments(data.comments);
+    } catch (err) {
+      console.error('댓글 조회 실패:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}`);
-        const data = await res.json();
-        setPost(data.post);
-      } catch (err) {
-        console.error('게시글 불러오기 실패:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPost();
   }, [id]);
 
-  if (loading)
+  useEffect(() => {
+    if (post) fetchComments();
+  }, [post]);
+
+  const handleSubmit = async () => {
+    if (!comment.trim()) return;
+
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ content: comment }),
+      });
+      setComment('');
+      await fetchComments();
+      await fetchPost();
+      localStorage.setItem('reloadBoard', 'true');
+    } catch (err) {
+      console.error('댓글 작성 실패:', err);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/boards/comments/${commentId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      fetchComments();
+    } catch (err) {
+      console.error('댓글 삭제 실패:', err);
+    }
+  };
+
+  if (loading) {
     return (
       <Wrapper>
         <Main>
@@ -39,7 +99,9 @@ const BoardPostDetailPage = () => {
         </Main>
       </Wrapper>
     );
-  if (!post)
+  }
+
+  if (!post) {
     return (
       <Wrapper>
         <Main>
@@ -47,6 +109,7 @@ const BoardPostDetailPage = () => {
         </Main>
       </Wrapper>
     );
+  }
 
   return (
     <Wrapper>
@@ -60,6 +123,38 @@ const BoardPostDetailPage = () => {
           <Divider />
           <Body>{post.content}</Body>
           <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+
+          <CommentSection>
+            {user ? (
+              <CommentForm>
+                <CommentInput
+                  placeholder="댓글을 입력하세요"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                />
+                <SubmitButton onClick={handleSubmit}>작성</SubmitButton>
+              </CommentForm>
+            ) : (
+              <p style={{ color: '#999', fontSize: '14px', marginBottom: '1rem' }}>
+                로그인 후 댓글을 작성할 수 있습니다.
+              </p>
+            )}
+
+            <CommentList>
+              {comments.map((c) => (
+                <CommentItem key={c.id}>
+                  <CommentHeader>
+                    <span>{c.author}</span>
+                    <span>{new Date(c.created_at).toLocaleString()}</span>
+                  </CommentHeader>
+                  <p>{c.content}</p>
+                  {user?.nickname === c.author && (
+                    <DeleteButton onClick={() => handleDeleteComment(c.id)}>삭제</DeleteButton>
+                  )}
+                </CommentItem>
+              ))}
+            </CommentList>
+          </CommentSection>
         </Content>
       </Main>
     </Wrapper>
@@ -133,6 +228,72 @@ const BackButton = styled.button`
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.purple};
+  }
+`;
+
+const CommentSection = styled.div`
+  margin-top: 2rem;
+`;
+
+const CommentForm = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+`;
+
+const CommentInput = styled.textarea`
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid ${({ theme }) => theme.colors.gray300};
+  resize: none;
+`;
+
+const SubmitButton = styled.button`
+  padding: 8px 12px;
+  background: ${({ theme }) => theme.colors.purple100};
+  color: ${({ theme }) => theme.colors.white};
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.purple};
+  }
+`;
+
+const CommentList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const CommentItem = styled.div`
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #f5f5f5;
+`;
+
+const CommentHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.gray400};
+  margin-bottom: 4px;
+`;
+
+const DeleteButton = styled.button`
+  margin-top: 6px;
+  font-size: 12px;
+  color: red;
+  background: none;
+  border: none;
+  cursor: pointer;
+  align-self: flex-end;
+
+  &:hover {
+    text-decoration: underline;
   }
 `;
 

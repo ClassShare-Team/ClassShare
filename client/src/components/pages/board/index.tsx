@@ -1,6 +1,6 @@
-import styled from 'styled-components';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
 type SortType = 'recent' | 'accuracy' | 'comments' | 'likes';
 
@@ -12,7 +12,6 @@ interface Post {
   created_at: string;
   likes: number;
   comments: number;
-  views: number;
 }
 
 const BoardPage = () => {
@@ -39,10 +38,10 @@ const BoardPage = () => {
     return `${days}일 전`;
   };
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (sort = sortType, search = searchQuery) => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/boards/posts?sort=${sortType}&search=${searchQuery}`
+        `${import.meta.env.VITE_API_URL}/boards/posts?sort=${sort}&search=${search}`
       );
       const data = await res.json();
       setPosts(data.posts);
@@ -87,7 +86,7 @@ const BoardPage = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <TopButton onClick={fetchPosts}>검색</TopButton>
+                <TopButton onClick={() => fetchPosts()}>검색</TopButton>
               </SearchBox>
               <FilterSection>
                 <CenterGroup>
@@ -135,7 +134,6 @@ const BoardPage = () => {
                         <InfoRight>
                           <span>좋아요 {post.likes}</span>
                           <span>댓글 {post.comments}</span>
-                          <span>조회 {post.views ?? 0}</span>
                         </InfoRight>
                       </PostInfo>
                     </PostItem>
