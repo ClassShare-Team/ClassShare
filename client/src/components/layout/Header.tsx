@@ -10,11 +10,17 @@ export const Header = () => {
   const navigate = useNavigate();
   const { user } = useUser();
 
+  const handleLogoClick = () => {
+
+    localStorage.setItem("selectedCategory", "전체");
+    window.location.href = "/main"; 
+  };
+
   return (
     <HeaderWrapper>
       <TopRow>
         <LeftArea>
-          <Logo onClick={() => navigate('/')} />
+          <Logo onClick={handleLogoClick} />
         </LeftArea>
         <CenterArea>
           <SearchBar />

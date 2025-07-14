@@ -1,96 +1,113 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useLocation } from "react-router-dom";
 import "./index.css";
 
 interface Lecture {
   id: number;
   title: string;
+  price: number;
   category: string;
-  instructor?: string;
-  description?: string;
-  price: number | string;
-  image?: string; // 썸네일 URL
-  tag?: string;
+  thumbnailUrl: string;
 }
 
-const categories = ["전체", "교육", "개발", "음악", "요리", "운동", "글쓰기", "예술", "마케팅"];
+const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기", "예술", "연희활동"];
 
 const MainPage: React.FC = () => {
+  const location = useLocation();
   const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("전체");
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/lectures`)
-      .then((res) => res.json())
-      .then((data) => setLectures(data))
-      .catch((err) => {
-        console.error("강의 데이터를 불러오는데 실패했습니다:", err);
-      });
-  }, []);
+  const [filteredLectures, setFilteredLectures] = useState<Lecture[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("전체");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   useEffect(() => {
     const storedKeyword = localStorage.getItem("searchKeyword") || "";
+    const storedCategory =
+      location.state?.selectedCategory || localStorage.getItem("selectedCategory") || "전체";
+
     setSearchKeyword(storedKeyword);
-
-    const storedCategory = localStorage.getItem("selectedCategory") || "전체";
     setSelectedCategory(storedCategory);
+  }, [location.state]);
 
-    const handleStorageChange = () => {
-      const updatedKeyword = localStorage.getItem("searchKeyword") || "";
-      const updatedCategory = localStorage.getItem("selectedCategory") || "전체";
-      setSearchKeyword(updatedKeyword);
-      setSelectedCategory(updatedCategory);
+  useEffect(() => {
+    const fetchLectures = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/lectures");
+        setLectures(response.data);
+      } catch (error) {
+        console.error("강의 데이터를 불러오는데 실패했습니다.", error);
+      }
     };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    fetchLectures();
   }, []);
 
-  const filteredLectures = lectures.filter((lec) => {
-    const matchesSearch = lec.title.toLowerCase().includes(searchKeyword.toLowerCase());
-    const matchesCategory = selectedCategory === "전체" || lec.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  useEffect(() => {
+    let result = [...lectures];
 
-  const displayedCategories = selectedCategory === "전체"
-    ? categories.filter((cat) => cat !== "전체")
-    : [selectedCategory];
+    if (selectedCategory !== "전체") {
+      result = result.filter((lecture) => lecture.category === selectedCategory);
+    }
+
+    if (searchKeyword) {
+      result = result.filter((lecture) => lecture.title.includes(searchKeyword));
+    }
+
+    setFilteredLectures(result);
+  }, [lectures, selectedCategory, searchKeyword]);
+
+  const groupedLectures = categories.reduce((acc, category) => {
+    acc[category] = filteredLectures.filter((lecture) => lecture.category === category);
+    return acc;
+  }, {} as Record<string, Lecture[]>);
 
   return (
     <div className="main-wrapper">
       <div className="scroll-container">
-        {displayedCategories.map((category) => (
-          <section className="section" key={category}>
-            <h2>{category}</h2>
-            <div className="card-grid">
-              {filteredLectures.filter((lec) => lec.category === category).length === 0 ? (
-                <div className="card empty">아직 등록된 클래스가 없습니다.</div>
-              ) : (
-                filteredLectures
-                  .filter((lec) => lec.category === category)
-                  .map((lec) => (
-                    <div key={lec.id} className="card">
-                      <img
-                        className="thumbnail"
-                        src={lec.image}
-                        alt="썸네일"
-                        onError={(e) => {
-                          e.currentTarget.src = '/default-thumbnail.jpg';
-                        }}
-                      />
-                      <p className="title">{lec.title}</p>
-                      <span className="tag">{lec.tag}</span>
-                      <strong className="price">
-                        {typeof lec.price === "number"
-                          ? lec.price.toLocaleString() + "원"
-                          : lec.price}
-                      </strong>
+        {selectedCategory === "전체"
+          ? categories.map((category) => (
+              <section key={category} className="section">
+                <h2>{category}</h2>
+                <div className="card-grid">
+                  {groupedLectures[category]?.length ? (
+                    groupedLectures[category].map((lecture) => (
+                      <div className="card" key={lecture.id}>
+                        <div className="thumbnail-wrapper">
+                          <img className="thumbnail" src={lecture.thumbnailUrl} alt={lecture.title} />
+                        </div>
+                        <div className="card-content">
+                          <div className="title">{lecture.title}</div>
+                          <div className="price">{lecture.price.toFixed(2)}</div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="empty-card">아직 등록된 클래스가 없습니다.</div>
+                  )}
+                </div>
+              </section>
+            ))
+          : (
+            <section className="section">
+              <h2>{selectedCategory}</h2>
+              <div className="card-grid">
+                {filteredLectures.length ? (
+                  filteredLectures.map((lecture) => (
+                    <div className="card" key={lecture.id}>
+                      <div className="thumbnail-wrapper">
+                        <img className="thumbnail" src={lecture.thumbnailUrl} alt={lecture.title} />
+                      </div>
+                      <div className="card-content">
+                        <div className="title">{lecture.title}</div>
+                        <div className="price">{lecture.price.toFixed(2)}</div>
+                      </div>
                     </div>
                   ))
-              )}
-            </div>
-          </section>
-        ))}
+                ) : (
+                  <div className="empty-card">아직 등록된 클래스가 없습니다.</div>
+                )}
+              </div>
+            </section>
+          )}
       </div>
     </div>
   );
