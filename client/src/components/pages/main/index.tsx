@@ -66,6 +66,7 @@ const MainPage: React.FC = () => {
   };
 
   const getImageUrl = (path: string) => {
+    if (!path) return "/default-thumbnail.png";
     return path.startsWith("http") ? path : `${import.meta.env.VITE_API_URL}/${path}`;
   };
 
