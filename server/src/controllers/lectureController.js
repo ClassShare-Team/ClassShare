@@ -91,21 +91,17 @@ exports.getAllLectures = async (req, res) => {
 };
 
 // 강의 단건 조회
-exports.getLectureById = async (req, res) => {
-  const lectureId = parseInt(req.params.id, 10);
-  if (isNaN(lectureId)) {
-    return res.status(400).json({ message: '유효한 강의 ID가 아닙니다.' });
-  }
-
+exports.getLectureById = async (req, res, next) => {
   try {
-    const lecture = await lectureService.getLectureById(lectureId);
+    const { id } = req.params;
+    const lecture = await lectureService.getLectureById(id);
     if (!lecture) {
-      return res.status(404).json({ message: '해당 강의를 찾을 수 없습니다.' });
+      return res.status(404).json({ message: '강의를 찾을 수 없습니다.' });
     }
-    return res.status(200).json(lecture);
-  } catch (err) {
-    console.error(`[GET /lectures/${lectureId}] error:`, err);
-    return res.status(500).json({ message: '강의 정보를 불러오는 중 오류가 발생했습니다.' });
+    res.json(lecture);
+  } catch (e) {
+    console.error('[GET /lectures/:id] error:', e);
+    next(e);
   }
 };
 
