@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 interface DropdownProps {
   label: string;
   items: string[];
+  navigateTo?: string;
 }
 
-export const Dropdown = ({ label, items }: DropdownProps) => {
+export const Dropdown = ({ label, items, navigateTo }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleClick = (item: string) => {
+    localStorage.setItem('selectedCategory', item);
+    if (navigateTo) {
+      navigate(navigateTo);
+    } else {
+      window.location.href = '/';
+    }
+  };
 
   return (
     <DropdownWrapper onMouseEnter={() => setIsOpen(true)} onMouseLeave={() => setIsOpen(false)}>
@@ -15,7 +27,7 @@ export const Dropdown = ({ label, items }: DropdownProps) => {
       {isOpen && (
         <DropdownList>
           {items.map((item, index) => (
-            <DropdownItem key={index} onClick={() => alert(item)}>
+            <DropdownItem key={index} onClick={() => handleClick(item)}>
               {item}
             </DropdownItem>
           ))}

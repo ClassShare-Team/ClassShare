@@ -1,5 +1,0 @@
-# ./docker/.env
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=postgres
-JWT_SECRET=your-super-secret-jwt-key

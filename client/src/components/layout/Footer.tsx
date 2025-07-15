@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import githubMark from '@/assets/github-mark.png';
 import logoImage from '@/assets/logo.png';
