@@ -6,7 +6,7 @@ import "./index.css";
 interface Lecture {
   id: number;
   title: string;
-  price: number;
+  price: number | string; // ← 문자열 가능성도 반영
   category: string;
   thumbnailUrl: string;
 }
@@ -76,7 +76,9 @@ const MainPage: React.FC = () => {
                         </div>
                         <div className="card-content">
                           <div className="title">{lecture.title}</div>
-                          <div className="price">{lecture.price.toFixed(2)}</div>
+                          <div className="price">
+                            {Number(lecture.price).toFixed(2)}
+                          </div>
                         </div>
                       </div>
                     ))
@@ -98,7 +100,9 @@ const MainPage: React.FC = () => {
                       </div>
                       <div className="card-content">
                         <div className="title">{lecture.title}</div>
-                        <div className="price">{lecture.price.toFixed(2)}</div>
+                        <div className="price">
+                          {Number(lecture.price).toFixed(2)}
+                        </div>
                       </div>
                     </div>
                   ))
