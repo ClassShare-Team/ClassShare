@@ -29,8 +29,7 @@ exports.authMiddleware = async (req, res, next) => {
     return res.status(401).json({ message: '토큰이 없습니다.' });
   }
 
-  try {
-    // redis.get()을 try 안쪽으로 옮김
+  try { // redis.get()을 try 안쪽으로 옮김
     const blacklisted = await redis.get(`blacklist:${token}`);
     if (blacklisted) {
       console.warn('authMiddleware: 블랙리스트 토큰 차단');

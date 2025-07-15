@@ -1,15 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import UserProfileLogo from '@/assets/UserProfileLogo.png';
-import { useNavigate } from 'react-router-dom';
-import { useUser } from '@/contexts/UserContext';
-// context, recoil 중 context 사용
 
-const UserMenu = () => {
+type UserMenuProps = {
+  userName: string;
+  userImage?: string | null;
+  point: number;
+};
+
+const UserMenu = ({ userName, userImage, point }: UserMenuProps) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { user, setUser } = useUser();
-  const navigate = useNavigate();
 
   const handleClickOutside = (e: MouseEvent) => {
     if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -22,44 +23,27 @@ const UserMenu = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    setUser(null);
-    navigate('/login');
-  };
-
-  if (!user) return null;
-
   return (
     <Container ref={menuRef}>
       <Wrapper onClick={() => setOpen((prev) => !prev)}>
-        <UserLogo src={user.profile_image || UserProfileLogo} alt="user" />
-        <UserNickname>{user.nickname || '닉네임 없음'}</UserNickname>
+        <UserLogo src={userImage || UserProfileLogo} alt="user" />
+        <UserName>{userName}</UserName>
       </Wrapper>
 
       {open && (
         <Dropdown>
           <UserInfoRow>
-            <ProfileImage src={user.profile_image || UserProfileLogo} alt="profile" />
+            <ProfileImage src={userImage || UserProfileLogo} alt="profile" />
             <InfoText>
-              <UserName>{user.name || '이름 없음'}</UserName>
-              <UserPoint>남은 포인트: {(user.point_balance ?? 0).toLocaleString()}P</UserPoint>
+              <UserRealName>{userName}</UserRealName>
+              <UserPoint>남은 포인트: {point.toLocaleString()}P</UserPoint>
             </InfoText>
           </UserInfoRow>
-
-          <UserDetailRow>
-            <DetailLabel>이메일</DetailLabel>
-            <DetailValue>{user.email || '이메일 없음'}</DetailValue>
-          </UserDetailRow>
-          <UserDetailRow>
-            <DetailLabel>역할</DetailLabel>
-            <DetailValue>{user.role === 'student' ? '학생' : '강사'}</DetailValue>
-          </UserDetailRow>
 
           <Divider />
 
           <DropdownItem>마이페이지</DropdownItem>
-          <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
+          <DropdownItem>로그아웃</DropdownItem>
         </Dropdown>
       )}
     </Container>
@@ -86,7 +70,7 @@ const UserLogo = styled.img`
   object-fit: cover;
 `;
 
-const UserNickname = styled.span`
+const UserName = styled.span`
   font-weight: 600;
 `;
 
@@ -96,7 +80,7 @@ const Dropdown = styled.div`
   left: 50%;
   transform: translateX(-50%);
   margin-top: 8px;
-  width: 260px;
+  width: 240px;
   background-color: ${({ theme }) => theme.colors.white};
   border: 1px solid ${({ theme }) => theme.colors.gray200};
   border-radius: 8px;
@@ -124,7 +108,7 @@ const InfoText = styled.div`
   flex-direction: column;
 `;
 
-const UserName = styled.div`
+const UserRealName = styled.div`
   font-weight: 600;
   font-size: 14px;
 `;
@@ -134,22 +118,6 @@ const UserPoint = styled.div`
   color: ${({ theme }) => theme.colors.gray400};
 `;
 
-const UserDetailRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  padding: 4px 0;
-  color: ${({ theme }) => theme.colors.gray500};
-`;
-
-const DetailLabel = styled.span`
-  font-weight: 500;
-`;
-
-const DetailValue = styled.span`
-  font-weight: 400;
-`;
-
 const Divider = styled.hr`
   border: none;
   border-top: 1px solid ${({ theme }) => theme.colors.gray200};
@@ -157,7 +125,7 @@ const Divider = styled.hr`
 `;
 
 const DropdownItem = styled.div`
-  font-size: 16px;
+  font-size: 14px;
   padding: 6px 0;
   cursor: pointer;
   &:hover {
