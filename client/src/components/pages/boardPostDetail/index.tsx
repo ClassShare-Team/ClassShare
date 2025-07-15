@@ -14,8 +14,8 @@ interface Post {
 interface Comment {
   id: number;
   content: string;
-  created_at: string;
   author: string;
+  created_at: string;
 }
 
 const BoardPostDetailPage = () => {
@@ -61,13 +61,15 @@ const BoardPostDetailPage = () => {
   const handleSubmit = async () => {
     if (!comment.trim()) return;
 
+    const token = localStorage.getItem('accessToken');
+
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
-        credentials: 'include',
         body: JSON.stringify({ content: comment }),
       });
       setComment('');
@@ -80,10 +82,14 @@ const BoardPostDetailPage = () => {
   };
 
   const handleDeleteComment = async (commentId: number) => {
+    const token = localStorage.getItem('accessToken');
+
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/boards/comments/${commentId}`, {
         method: 'DELETE',
-        credentials: 'include',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
       });
       fetchComments();
     } catch (err) {
@@ -95,7 +101,7 @@ const BoardPostDetailPage = () => {
     return (
       <Wrapper>
         <Main>
-          <Loading>로딩 중...</Loading>
+          <Loading>로딩 중</Loading>
         </Main>
       </Wrapper>
     );
