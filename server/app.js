@@ -15,7 +15,7 @@ const boardRoutes = require('./src/routes/boardRoutes');
 // 미들웨어
 app.use(
   cors({
-    origin: ['https://classshare.kr'],
+    origin: ['https://classshare.kr', 'http://localhost:5173'],
     credentials: true,
   })
 );

@@ -61,7 +61,7 @@ const BoardPostDetailPage = () => {
   const handleSubmit = async () => {
     if (!comment.trim()) return;
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
 
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}/comments`, {
@@ -82,7 +82,7 @@ const BoardPostDetailPage = () => {
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
 
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/boards/comments/${commentId}`, {
