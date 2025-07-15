@@ -118,7 +118,7 @@ exports.getAllLectures = async () => {
       u.nickname AS instructor_nickname,
       l.category,
       l.price,
-      l.thumbnail AS image,
+      l.thumbnail,
       l.created_at
     FROM lectures l
     JOIN users u ON l.instructor_id = u.id
