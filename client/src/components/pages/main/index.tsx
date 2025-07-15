@@ -6,7 +6,7 @@ import "./index.css";
 interface Lecture {
   id: number;
   title: string;
-  price: number | string; // ← 문자열 가능성도 반영
+  price: number | string;
   category: string;
   thumbnailUrl: string;
 }
@@ -32,7 +32,7 @@ const MainPage: React.FC = () => {
   useEffect(() => {
     const fetchLectures = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/lectures`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/lectures`);
         setLectures(response.data);
       } catch (error) {
         console.error("강의 데이터를 불러오는데 실패했습니다.", error);
@@ -60,6 +60,11 @@ const MainPage: React.FC = () => {
     return acc;
   }, {} as Record<string, Lecture[]>);
 
+  const renderPrice = (price: number | string) => {
+    const num = Number(price);
+    return isNaN(num) ? String(price) : num.toFixed(2);
+  };
+
   return (
     <div className="main-wrapper">
       <div className="scroll-container">
@@ -76,9 +81,7 @@ const MainPage: React.FC = () => {
                         </div>
                         <div className="card-content">
                           <div className="title">{lecture.title}</div>
-                          <div className="price">
-                            {Number(lecture.price).toFixed(2)}
-                          </div>
+                          <div className="price">{renderPrice(lecture.price)}</div>
                         </div>
                       </div>
                     ))
@@ -100,9 +103,7 @@ const MainPage: React.FC = () => {
                       </div>
                       <div className="card-content">
                         <div className="title">{lecture.title}</div>
-                        <div className="price">
-                          {Number(lecture.price).toFixed(2)}
-                        </div>
+                        <div className="price">{renderPrice(lecture.price)}</div>
                       </div>
                     </div>
                   ))
