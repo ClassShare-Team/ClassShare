@@ -18,6 +18,7 @@ const commentRoutes = require('./src/routes/commentRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
 const boardRoutes = require('./src/routes/boardRoutes');
 const instructorRoutes = require('./routes/instructorRoutes');
+const videoRoutes = require('./routes/videoRoutes');
 
 // CORS 설정
 app.use(
@@ -40,6 +41,7 @@ app.use('/comments', commentRoutes);
 app.use('/reviews', reviewRoutes);
 app.use('/boards', boardRoutes);
 app.use('/instructors', instructorRoutes);
+app.use('/videos', videoRoutes);
 
 app.get('/', (_, res) => res.send('API up and running'));
 
