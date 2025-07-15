@@ -26,3 +26,28 @@ exports.getTotalReviewCountByInstructor = async (instructorId) => {
 
   return result.rows[0];
 };
+
+// 특정 강사 리뷰 전체 보기
+exports.getAllReviewsWithComments = async (instructorId) => {
+  const result = await db.query(`
+    SELECT
+      r.*,
+      u.nickname AS student_nickname,
+      l.title AS lecture_title,
+      COUNT(rl.id) AS like_count,
+      rc.content AS instructor_comment,
+      rc.created_at AS instructor_commented_at,
+      iu.nickname AS instructor_nickname
+    FROM reviews r
+    JOIN lectures l ON r.lecture_id = l.id
+    JOIN users u ON r.user_id = u.id
+    LEFT JOIN review_likes rl ON r.id = rl.review_id
+    LEFT JOIN review_comments rc ON rc.review_id = r.id
+    LEFT JOIN users iu ON rc.user_id = iu.id
+    WHERE l.instructor_id = $1
+    GROUP BY r.id, u.nickname, l.title, rc.content, rc.created_at, iu.nickname
+    ORDER BY r.created_at DESC;
+  `, [instructorId]);
+
+  return result.rows;
+};
