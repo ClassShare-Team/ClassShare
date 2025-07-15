@@ -1,3 +1,4 @@
+import React from 'react';
 import styled from 'styled-components';
 import { Search as SearchIcon } from './Search';
 import { theme } from '@/components/styles/theme';
