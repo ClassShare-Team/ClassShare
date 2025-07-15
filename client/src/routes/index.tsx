@@ -12,6 +12,7 @@ import BoardPage from '@/components/pages/board';
 import BoardCreatePage from '@/components/pages/boardCreate';
 import VideoListPage from '@/components/pages/VideoListPage';
 import BoardPostDetailPage from '@/components/pages/boardPostDetail';
+import LecturePage from '@/components/pages/lectureApply';
 
 export const AppRoutes = () => {
   return (
@@ -29,8 +30,9 @@ export const AppRoutes = () => {
         <Route path="boards/create" element={<BoardCreatePage />} />
         <Route path="lecture/:lectureId/videos" element={<VideoListPage />} />
         <Route path="boards/posts/:id" element={<BoardPostDetailPage />} />
+        <Route path="streamingpage" element={<StreamingPage />} />
+        <Route path="applypage" element={<LecturePage />} />
       </Route>
-      <Route path="/streamingpage" element={<StreamingPage />} />
     </Routes>
   );
 };
