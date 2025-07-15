@@ -32,7 +32,7 @@ const MainPage: React.FC = () => {
   useEffect(() => {
     const fetchLectures = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/lectures`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/lectures`);
         setLectures(response.data);
       } catch (error) {
         console.error("강의 데이터를 불러오는데 실패했습니다.", error);

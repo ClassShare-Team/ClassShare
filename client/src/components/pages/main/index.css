@@ -2,13 +2,13 @@
   width: 100%;
   min-height: 100vh;
   background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
+  padding-bottom: 60px; /* 하단 여백 유지 */
 }
 
 .scroll-container {
   max-width: 1271px;
   margin: 0 auto;
   padding: 0 16px;
-  padding-bottom: 60px;
 }
 
 .section {
