@@ -13,16 +13,23 @@ interface User {
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  // ✨ 'loading' 속성을 UserContextType 인터페이스에 추가
+  loading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  // ✨ 'loading' 상태 변수 추가 및 초기값 설정
+  const [loading, setLoading] = useState(true); // 초기값은 true (로딩 중)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
-    if (!token) return;
+    if (!token) {
+      setLoading(false); // 토큰이 없으면 로딩 완료
+      return;
+    }
 
     const fetchUser = async () => {
       try {
@@ -34,13 +41,17 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(data.user);
       } catch {
         setUser(null);
+      } finally {
+        // ✨ 데이터 페치 성공/실패 여부와 관계없이 로딩 완료
+        setLoading(false);
       }
     };
 
     fetchUser();
   }, []);
 
-  return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
+  // ✨ value 객체에 'loading' 상태도 함께 전달
+  return <UserContext.Provider value={{ user, setUser, loading }}>{children}</UserContext.Provider>;
 };
 
 export const useUser = () => {
