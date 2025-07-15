@@ -11,7 +11,7 @@ interface Lecture {
   thumbnailUrl: string;
 }
 
-const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기", "예술", "연희활동"];
+const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기", "예술"];
 
 const MainPage: React.FC = () => {
   const location = useLocation();
@@ -32,7 +32,7 @@ const MainPage: React.FC = () => {
   useEffect(() => {
     const fetchLectures = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/lectures");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/lectures`);
         setLectures(response.data);
       } catch (error) {
         console.error("강의 데이터를 불러오는데 실패했습니다.", error);
