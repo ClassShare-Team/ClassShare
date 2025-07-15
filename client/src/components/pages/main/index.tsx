@@ -8,7 +8,7 @@ interface Lecture {
   title: string;
   price: number | string;
   category: string;
-  thumbnailUrl: string;
+  thumbnail: string;
 }
 
 const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기", "예술"];
@@ -65,6 +65,10 @@ const MainPage: React.FC = () => {
     return isNaN(num) ? String(price) : num.toFixed(2);
   };
 
+  const getImageUrl = (path: string) => {
+    return path.startsWith("http") ? path : `${import.meta.env.VITE_API_URL}/${path}`;
+  };
+
   return (
     <div className="main-wrapper">
       <div className="scroll-container">
@@ -77,7 +81,11 @@ const MainPage: React.FC = () => {
                     groupedLectures[category].map((lecture) => (
                       <div className="card" key={lecture.id}>
                         <div className="thumbnail-wrapper">
-                          <img className="thumbnail" src={lecture.thumbnailUrl} alt={lecture.title} />
+                          <img
+                            className="thumbnail"
+                            src={getImageUrl(lecture.thumbnail)}
+                            alt={lecture.title}
+                          />
                         </div>
                         <div className="card-content">
                           <div className="title">{lecture.title}</div>
@@ -99,7 +107,11 @@ const MainPage: React.FC = () => {
                   filteredLectures.map((lecture) => (
                     <div className="card" key={lecture.id}>
                       <div className="thumbnail-wrapper">
-                        <img className="thumbnail" src={lecture.thumbnailUrl} alt={lecture.title} />
+                        <img
+                          className="thumbnail"
+                          src={getImageUrl(lecture.thumbnail)}
+                          alt={lecture.title}
+                        />
                       </div>
                       <div className="card-content">
                         <div className="title">{lecture.title}</div>
