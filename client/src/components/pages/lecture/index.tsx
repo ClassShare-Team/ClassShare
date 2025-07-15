@@ -231,7 +231,7 @@ const CreateLecturePage: React.FC = () => {
   };
 
   const handleGoBack = () => {
-    navigate('-1');
+    navigate(-1);
   };
 
   const handleSubmit = async () => {
