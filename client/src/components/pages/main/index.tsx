@@ -65,11 +65,6 @@ const MainPage: React.FC = () => {
     return isNaN(num) ? String(price) : num.toFixed(2);
   };
 
-  const getImageUrl = (path: string) => {
-    if (!path) return "/default-thumbnail.png";
-    return path.startsWith("http") ? path : `${import.meta.env.VITE_API_URL}/${path}`;
-  };
-
   return (
     <div className="main-wrapper">
       <div className="scroll-container">
@@ -84,7 +79,7 @@ const MainPage: React.FC = () => {
                         <div className="thumbnail-wrapper">
                           <img
                             className="thumbnail"
-                            src={getImageUrl(lecture.thumbnail)}
+                            src={lecture.thumbnail}
                             alt={lecture.title}
                           />
                         </div>
@@ -110,7 +105,7 @@ const MainPage: React.FC = () => {
                       <div className="thumbnail-wrapper">
                         <img
                           className="thumbnail"
-                          src={getImageUrl(lecture.thumbnail)}
+                          src={lecture.thumbnail}
                           alt={lecture.title}
                         />
                       </div>
