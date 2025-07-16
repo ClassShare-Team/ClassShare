@@ -168,6 +168,7 @@ const Left = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-left: 90px;
 `;
 
 const ProfileImage = styled.img`
@@ -227,7 +228,7 @@ const SaveButton = styled.button`
 
 const Right = styled.div`
   flex: 1;
-  margin-left: 90px;
+  margin-left: 30px;
   margin-right: 90px;
 `;
 
