@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import "./index.css";
@@ -19,6 +19,7 @@ const MainPage: React.FC = () => {
   const [filteredLectures, setFilteredLectures] = useState<Lecture[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [searchKeyword, setSearchKeyword] = useState("");
+  const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     const storedKeyword = localStorage.getItem("searchKeyword") || "";
@@ -62,7 +63,15 @@ const MainPage: React.FC = () => {
 
   const renderPrice = (price: number | string) => {
     const num = Number(price);
-    return isNaN(num) ? String(price) : num.toFixed(2);
+    return isNaN(num) ? String(price) : num.toLocaleString();
+  };
+
+  const scroll = (category: string, dir: "left" | "right") => {
+    const container = scrollRefs.current[category];
+    if (container) {
+      const scrollAmount = 260;
+      container.scrollLeft += dir === "left" ? -scrollAmount : scrollAmount;
+    }
   };
 
   return (
@@ -71,33 +80,46 @@ const MainPage: React.FC = () => {
         {selectedCategory === "전체"
           ? categories.map((category) => (
               <section key={category} className="section">
-                <h2>{category}</h2>
-                <div className="card-grid">
-                  {groupedLectures[category]?.length ? (
-                    groupedLectures[category].map((lecture) => (
-                      <div className="card" key={lecture.id}>
-                        <div className="thumbnail-wrapper">
-                          <img
-                            className="thumbnail"
-                            src={lecture.thumbnail}
-                            alt={lecture.title}
-                          />
+                <h2 className="category-title">{category}</h2>
+                {groupedLectures[category]?.length ? (
+                  <div className="carousel-wrapper">
+                    <button className="scroll-btn left" onClick={() => scroll(category, "left")}>
+                      ←
+                    </button>
+                    <div
+                      className="card-carousel"
+                      ref={(el) => {
+                        scrollRefs.current[category] = el;
+                      }}
+                    >
+                      {groupedLectures[category].map((lecture) => (
+                        <div className="card" key={lecture.id}>
+                          <div className="thumbnail-wrapper">
+                            <img
+                              className="thumbnail"
+                              src={lecture.thumbnail}
+                              alt={lecture.title}
+                            />
+                          </div>
+                          <div className="card-content">
+                            <div className="title">{lecture.title}</div>
+                            <div className="price">{renderPrice(lecture.price)}</div>
+                          </div>
                         </div>
-                        <div className="card-content">
-                          <div className="title">{lecture.title}</div>
-                          <div className="price">{renderPrice(lecture.price)}</div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="empty-card">아직 등록된 클래스가 없습니다.</div>
-                  )}
-                </div>
+                      ))}
+                    </div>
+                    <button className="scroll-btn right" onClick={() => scroll(category, "right")}>
+                      →
+                    </button>
+                  </div>
+                ) : (
+                  <div className="empty-card">아직 등록된 클래스가 없습니다.</div>
+                )}
               </section>
             ))
           : (
             <section className="section">
-              <h2>{selectedCategory}</h2>
+              <h2 className="category-title">{selectedCategory}</h2>
               <div className="card-grid">
                 {filteredLectures.length ? (
                   filteredLectures.map((lecture) => (

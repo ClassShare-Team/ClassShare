@@ -13,17 +13,25 @@ const VideoListPage = () => {
   const [videos, setVideos] = useState<Video[]>([]);
 
   useEffect(() => {
-    // 강의 제목 불러오기
-    fetch(`${import.meta.env.VITE_API_URL}/api/lectures/${lectureId}`)
+      fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}`)
       .then((res) => res.json())
-      .then((data) => setLectureTitle(data.title))
-      .catch((err) => console.error('강의 정보 오류', err));
+      .then((data) => {
+        if (!data || !data.title) throw new Error('강의 정보 없음');
+        setLectureTitle(data.title);
+      })
+      .catch((err) => {
+        console.error('강의 정보 오류:', err);
+        setLectureTitle('(강의 정보를 불러오지 못했습니다)');
+      });
 
-    // 커리큘럼(영상 목록) 불러오기
-    fetch(`${import.meta.env.VITE_API_URL}/api/lectures/${lectureId}/curriculum`)
+    
+    fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`)
       .then((res) => res.json())
-      .then((data) => setVideos(data))
-      .catch((err) => console.error('커리큘럼 오류', err));
+      .then((data: Video[]) => setVideos(data))
+      .catch((err) => {
+        console.error('커리큘럼 오류:', err);
+        setVideos([]);
+      });
   }, [lectureId]);
 
   return (
