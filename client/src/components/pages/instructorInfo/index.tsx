@@ -22,15 +22,8 @@ const InstructorInfoPage = () => {
   const [introductionText, setIntroductionText] = useState('');
   const navigate = useNavigate();
 
-  // user 확인용 테스트 로그
-  console.log('user: ', user);
-
   const fetchInfo = async () => {
-    //기존 코드 : if (!user || user.role !== 'instructor') return;
-    if (!user || user.role !== 'instructor') {
-      console.log('강사 계정이 아닙니다.', user);
-      return;
-    }
+    if (!user || user.role !== 'instructor') return;
     const token = localStorage.getItem('accessToken');
 
     try {
@@ -41,10 +34,10 @@ const InstructorInfoPage = () => {
         fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/review-count`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
+        fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/instructor-introduction`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${import.meta.env.VITE_API_URL}/users/my-lectures`, {
+        fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/lectures`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -55,13 +48,13 @@ const InstructorInfoPage = () => {
       const lectureData = await lectureRes.json();
 
       setInfo({
-        introduction: profileData.instructor_profile?.introduction || '',
+        introduction: profileData.introduction || '',
         studentCount: Number(studentData.total_student_count) || 0,
         reviewCount: Number(reviewData.total_review_count) || 0,
         lectures: Array.isArray(lectureData.lectures) ? lectureData.lectures : [],
       });
 
-      setIntroductionText(profileData.instructor_profile?.introduction || '');
+      setIntroductionText(profileData.introduction || '');
     } catch (err) {
       console.error('강사 정보 조회 실패:', err);
     }
@@ -71,13 +64,10 @@ const InstructorInfoPage = () => {
     fetchInfo();
   }, [user]);
 
-  // info 확인용 테스트 로그
-  console.log('info: ', info);
-
   const handleSaveIntroduction = async () => {
     const token = localStorage.getItem('accessToken');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/user/instructor-introduction`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/instructor-introduction`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -90,20 +80,20 @@ const InstructorInfoPage = () => {
         await fetchInfo();
         setEditMode(false);
       } else {
-        alert('소개글 저장에 실패했습니다.');
+        alert('소개 수정 실패했습니다. 다시 수정해주세요.');
       }
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (!user || !info) return <Container>로딩 중</Container>;
+  if (!user || !info) return <Container>권한이 없습니다.</Container>;
 
   return (
     <Container>
       <Left>
         <ProfileImage src={user.profile_image || UserProfileLogo} alt="profile" />
-        <Name>{user.name}</Name>
+        <Name>{user.nickname}</Name>
         <Stats>
           <StatBlock>
             <Label>수강생수</Label>
@@ -122,7 +112,7 @@ const InstructorInfoPage = () => {
 
       <Right>
         <Section>
-          <SectionTitle>소개</SectionTitle>
+          <SectionTitle>강사 소개</SectionTitle>
           <SectionContent>
             {editMode ? (
               <textarea
@@ -142,19 +132,21 @@ const InstructorInfoPage = () => {
           <SectionTitle>
             강의 <LectureCount>전체 {info.lectures.length}</LectureCount>
           </SectionTitle>
-          <LectureList>
-            {info.lectures.map((lecture) => (
-              <LectureCard key={lecture.id}>
-                <img src={lecture.thumbnail || ''} alt="thumbnail" />
-                <p>{lecture.title}</p>
-              </LectureCard>
-            ))}
-            {editMode && (
-              <LectureCard isAdd>
-                <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
-              </LectureCard>
-            )}
-          </LectureList>
+          <LectureSectionContent>
+            <LectureList>
+              {info.lectures.map((lecture) => (
+                <LectureCard key={lecture.id}>
+                  <img src={lecture.thumbnail || ''} alt="thumbnail" />
+                  <p>{lecture.title}</p>
+                </LectureCard>
+              ))}
+              {editMode && (
+                <LectureCard isAdd>
+                  <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
+                </LectureCard>
+              )}
+            </LectureList>
+          </LectureSectionContent>
         </Section>
       </Right>
     </Container>
@@ -167,6 +159,8 @@ const Container = styled.div`
   display: flex;
   padding: 40px;
   gap: 40px;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
 `;
 
 const Left = styled.div`
@@ -174,6 +168,7 @@ const Left = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-left: 90px;
 `;
 
 const ProfileImage = styled.img`
@@ -213,9 +208,11 @@ const Value = styled.div`
 
 const EditButton = styled.button`
   margin-top: 20px;
-  padding: 10px 24px;
-  border: 1px solid black;
-  background: ${({ theme }) => theme.colors.purple100};
+  padding: 8px 20px;
+  background-color: ${({ theme }) => theme.colors.purple};
+  color: ${({ theme }) => theme.colors.white};
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
 `;
 
@@ -231,6 +228,8 @@ const SaveButton = styled.button`
 
 const Right = styled.div`
   flex: 1;
+  margin-left: 30px;
+  margin-right: 90px;
 `;
 
 const Section = styled.section`
@@ -245,7 +244,7 @@ const SectionTitle = styled.h3`
 const SectionContent = styled.div`
   margin-top: 12px;
   padding: 16px;
-  background: #fafafa;
+  background: ${({ theme }) => theme.colors.white};
   border: 1px solid ${({ theme }) => theme.colors.gray100};
   min-height: 80px;
   white-space: pre-wrap;
@@ -260,8 +259,16 @@ const SectionContent = styled.div`
 
 const LectureCount = styled.span`
   font-size: 14px;
-  color: ${({ theme }) => theme.colors.purple};
+  color: ${({ theme }) => theme.colors.purple100};
   margin-left: 6px;
+`;
+
+const LectureSectionContent = styled.div`
+  margin-top: 12px;
+  padding: 16px;
+  background: ${({ theme }) => theme.colors.white};
+  border: 1px solid ${({ theme }) => theme.colors.gray100};
+  min-height: 100px;
 `;
 
 const LectureList = styled.div`
