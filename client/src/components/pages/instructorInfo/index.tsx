@@ -22,8 +22,6 @@ const InstructorInfoPage = () => {
   const [introductionText, setIntroductionText] = useState('');
   const navigate = useNavigate();
 
-  console.log('user: ', user);
-
   const fetchInfo = async () => {
     if (!user || user.role !== 'instructor') return;
     const token = localStorage.getItem('accessToken');
@@ -39,7 +37,7 @@ const InstructorInfoPage = () => {
         fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/instructor-introduction`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${import.meta.env.VITE_API_URL}/users/my-lectures`, {
+        fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/lectures`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -48,8 +46,6 @@ const InstructorInfoPage = () => {
       const reviewData = await reviewRes.json();
       const profileData = await profileRes.json();
       const lectureData = await lectureRes.json();
-      //강의 목록 테스트
-      console.log('lectureData:', lectureData);
 
       setInfo({
         introduction: profileData.introduction || '',
