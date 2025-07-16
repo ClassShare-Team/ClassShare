@@ -22,8 +22,14 @@ const InstructorInfoPage = () => {
   const [introductionText, setIntroductionText] = useState('');
   const navigate = useNavigate();
 
+  // user 확인용 테스트 로그
+  console.log('user: ', user);
+
   const fetchInfo = async () => {
-    if (!user || user.role !== 'instructor') return;
+    if (!user || user.role !== 'instructor') {
+      console.log('강사 계정이 아닙니다.', user);
+      return;
+    }
     const token = localStorage.getItem('accessToken');
 
     try {
@@ -62,6 +68,9 @@ const InstructorInfoPage = () => {
   useEffect(() => {
     fetchInfo();
   }, [user]);
+
+  // info 확인용 테스트 로그
+  console.log('info: ', info);
 
   const handleSaveIntroduction = async () => {
     const token = localStorage.getItem('accessToken');
