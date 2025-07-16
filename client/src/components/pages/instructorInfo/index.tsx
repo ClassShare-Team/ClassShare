@@ -28,10 +28,10 @@ const InstructorInfoPage = () => {
 
     try {
       const [studentRes, reviewRes, profileRes, lectureRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/instructor/${user.id}/student-count`, {
+        fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/student-count`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${import.meta.env.VITE_API_URL}/instructor/${user.id}/review-count`, {
+        fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/review-count`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch(`${import.meta.env.VITE_API_URL}/user/me`, {
