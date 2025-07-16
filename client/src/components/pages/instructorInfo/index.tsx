@@ -227,8 +227,8 @@ const SaveButton = styled.button`
 
 const Right = styled.div`
   flex: 1;
-  margin-left: 30px;
-  margin-right: 150px;
+  margin-left: 90px;
+  margin-right: 90px;
 `;
 
 const Section = styled.section`
@@ -274,8 +274,6 @@ const LectureList = styled.div`
   display: flex;
   gap: 16px;
   margin-top: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
 `;
 
 const LectureCard = styled.div<{ isAdd?: boolean }>`
