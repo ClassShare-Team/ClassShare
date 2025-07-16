@@ -53,7 +53,7 @@ const InstructorInfoPage = () => {
         introduction: profileData.instructor_profile?.introduction || '',
         studentCount: Number(studentData.total_student_count) || 0,
         reviewCount: Number(reviewData.total_review_count) || 0,
-        lectures: Array.isArray(lectureData.lectures) ? lectureData.lectures : [],
+        lectures: Array.isArray(lectureData) ? lectureData : [],
       });
 
       setIntroductionText(profileData.instructor_profile?.introduction || '');
@@ -134,19 +134,21 @@ const InstructorInfoPage = () => {
           <SectionTitle>
             강의 <LectureCount>전체 {info.lectures.length}</LectureCount>
           </SectionTitle>
-          <LectureList>
-            {info.lectures.map((lecture) => (
-              <LectureCard key={lecture.id}>
-                <img src={lecture.thumbnail || ''} alt="thumbnail" />
-                <p>{lecture.title}</p>
-              </LectureCard>
-            ))}
-            {editMode && (
-              <LectureCard isAdd>
-                <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
-              </LectureCard>
-            )}
-          </LectureList>
+          <LectureSectionContent>
+            <LectureList>
+              {info.lectures.map((lecture) => (
+                <LectureCard key={lecture.id}>
+                  <img src={lecture.thumbnail || ''} alt="thumbnail" />
+                  <p>{lecture.title}</p>
+                </LectureCard>
+              ))}
+              {editMode && (
+                <LectureCard isAdd>
+                  <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
+                </LectureCard>
+              )}
+            </LectureList>
+          </LectureSectionContent>
         </Section>
       </Right>
     </Container>
@@ -227,6 +229,8 @@ const SaveButton = styled.button`
 
 const Right = styled.div`
   flex: 1;
+  margin-left: 30px;
+  margin-right: 150px;
 `;
 
 const Section = styled.section`
@@ -258,6 +262,14 @@ const LectureCount = styled.span`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.purple};
   margin-left: 6px;
+`;
+
+const LectureSectionContent = styled.div`
+  margin-top: 12px;
+  padding: 16px;
+  background: #fafafa;
+  border: 1px solid ${({ theme }) => theme.colors.gray100};
+  min-height: 100px;
 `;
 
 const LectureList = styled.div`
