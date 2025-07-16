@@ -58,7 +58,7 @@ const InstructorInfoPage = () => {
         introduction: profileData.instructor_profile?.introduction || '',
         studentCount: Number(studentData.total_student_count) || 0,
         reviewCount: Number(reviewData.total_review_count) || 0,
-        lectures: lectureData,
+        lectures: Array.isArray(lectureData.lectures) ? lectureData.lectures : [],
       });
 
       setIntroductionText(profileData.instructor_profile?.introduction || '');
