@@ -72,3 +72,32 @@ exports.upsertReviewComment = async ({ reviewId, userId, content }) => {
     );
   }
 };
+
+// 강의 리뷰 조회
+exports.getReviewsByLecture = async (lectureId) => {
+  const result = await db.query(
+    `
+    SELECT
+      r.id AS review_id,
+      r.rating,
+      r.content AS review_content,
+      r.created_at AS review_created_at,
+      u.id AS student_id,
+      u.nickname AS student_nickname,
+      rc.id AS comment_id,
+      rc.content AS comment_content,
+      rc.created_at AS comment_created_at,
+      iu.id AS instructor_id,
+      iu.nickname AS instructor_nickname
+    FROM reviews r
+    JOIN users u ON r.user_id = u.id
+    LEFT JOIN review_comments rc ON rc.review_id = r.id
+    LEFT JOIN users iu ON rc.user_id = iu.id
+    WHERE r.lecture_id = $1
+    ORDER BY r.created_at DESC
+  `,
+    [lectureId]
+  );
+
+  return result.rows;
+};

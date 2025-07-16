@@ -46,3 +46,15 @@ exports.replyToReview = async (req, res) => {
   await reviewService.upsertReviewComment({ reviewId, userId, content });
   res.status(200).json({ message: '답변 완료' });
 };
+
+// 강의 리뷰 조회
+exports.getReviewsByLecture = async (req, res) => {
+  const { lectureId } = req.params;
+  try {
+    const reviews = await reviewService.getReviewsByLecture(lectureId);
+    res.json({ reviews });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: '서버 에러' });
+  }
+};
