@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import './index.css';
-
 interface Lecture {
   id: number;
   title: string;
@@ -10,25 +9,20 @@ interface Lecture {
   category: string;
   thumbnail: string;
 }
-
 const categories = ['교육', '개발', '음악', '요리', '운동', '글쓰기', '예술'];
-
 const MainPage: React.FC = () => {
   const location = useLocation();
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [filteredLectures, setFilteredLectures] = useState<Lecture[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [searchKeyword, setSearchKeyword] = useState('');
-
   useEffect(() => {
     const storedKeyword = localStorage.getItem('searchKeyword') || '';
     const storedCategory =
       location.state?.selectedCategory || localStorage.getItem('selectedCategory') || '전체';
-
     setSearchKeyword(storedKeyword);
     setSelectedCategory(storedCategory);
   }, [location.state]);
-
   useEffect(() => {
     const fetchLectures = async () => {
       try {
@@ -40,21 +34,16 @@ const MainPage: React.FC = () => {
     };
     fetchLectures();
   }, []);
-
   useEffect(() => {
     let result = [...lectures];
-
     if (selectedCategory !== '전체') {
       result = result.filter((lecture) => lecture.category === selectedCategory);
     }
-
     if (searchKeyword) {
       result = result.filter((lecture) => lecture.title.includes(searchKeyword));
     }
-
     setFilteredLectures(result);
   }, [lectures, selectedCategory, searchKeyword]);
-
   const groupedLectures = categories.reduce(
     (acc, category) => {
       acc[category] = filteredLectures.filter((lecture) => lecture.category === category);
@@ -62,12 +51,10 @@ const MainPage: React.FC = () => {
     },
     {} as Record<string, Lecture[]>
   );
-
   const renderPrice = (price: number | string) => {
     const num = Number(price);
     return isNaN(num) ? String(price) : num.toFixed(2);
   };
-
   return (
     <div className="main-wrapper">
       <div className="scroll-container">
@@ -120,5 +107,4 @@ const MainPage: React.FC = () => {
     </div>
   );
 };
-
 export default MainPage;
