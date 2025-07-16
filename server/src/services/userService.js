@@ -261,3 +261,18 @@ exports.getMyLectures = async (userId, page, size) => {
 
   return { page, size, total, lectures };
 };
+
+// 강사 설명 수정
+exports.getInstructorIntroduction = async (userId) => {
+  const result = await db.query(
+    `
+    SELECT introduction
+    FROM instructor_profiles
+    WHERE instructor_id = $1
+  `,
+    [userId]
+  );
+
+  if (result.rows.length === 0) return null;
+  return result.rows[0].introduction;
+};

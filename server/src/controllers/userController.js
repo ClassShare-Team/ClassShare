@@ -282,3 +282,15 @@ exports.getMyLectures = async (req, res) => {
     });
   }
 };
+
+// 강사 설명 수정
+exports.getInstructorIntroduction = async (req, res) => {
+  const userId = req.user.id;
+  const introduction = await userService.getInstructorIntroduction(userId);
+
+  if (!introduction) {
+    return res.status(404).json({ message: '강사 프로필 없음' });
+  }
+
+  res.json({ introduction });
+};
