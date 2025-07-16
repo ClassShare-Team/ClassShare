@@ -27,4 +27,4 @@ dist-ssr
 .history/
 .env.development/
 .env.production/
-
+.env
