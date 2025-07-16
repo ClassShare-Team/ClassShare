@@ -59,6 +59,9 @@ const UserMenu = () => {
           <Divider />
 
           <DropdownItem>마이페이지</DropdownItem>
+          {user.role === 'instructor' && (
+            <DropdownItem onClick={() => navigate('/instructor-info')}>강사 Info</DropdownItem>
+          )}
           <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
         </Dropdown>
       )}
