@@ -95,7 +95,7 @@ const InstructorInfoPage = () => {
     <Container>
       <Left>
         <ProfileImage src={user.profile_image || UserProfileLogo} alt="profile" />
-        <Name>{user.name}</Name>
+        <Name>{user.nickname}</Name>
         <Stats>
           <StatBlock>
             <Label>수강생수</Label>
