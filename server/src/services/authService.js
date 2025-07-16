@@ -87,6 +87,17 @@ exports.signupAndSendCode = async ({ email, password, name, nickname, role }) =>
       );
     }
 
+    if (role === 'instructor') {
+      await client.query(
+        `
+    INSERT INTO instructor_profiles (instructor_id)
+    SELECT id FROM users WHERE email = $1
+    ON CONFLICT DO NOTHING
+  `,
+        [email]
+      );
+    }
+
     // 6자리 영문+숫자 코드 생성
     const code = [...Array(6)]
       .map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.floor(Math.random() * 36)))
@@ -203,6 +214,17 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
        RETURNING id, public_id, role`,
       [email, name, nickname, role, profile_image, oauthId]
     );
+
+    if (role === 'instructor') {
+      await client.query(
+        `
+    INSERT INTO instructor_profiles (instructor_id)
+    VALUES ($1)
+  `,
+        [user.id]
+      );
+    }
+
     await client.query('COMMIT');
     await redis.del(`temp-oauth:${key}`);
 
