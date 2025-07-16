@@ -78,13 +78,13 @@ const InquiryHeader = styled.div`
   }
   span {
     font-size: 15px; /* 폰트 크기 조정 */
-    color: ${({ theme }) => theme.colors.gray600}; /* 색상 조정 */
+    color: ${({ theme }) => theme.colors.gray500}; /* 색상 조정 */
     font-weight: 500;
   }
 `;
 
 const InquiryContentDisplay = styled.p`
-  color: ${({ theme }) => theme.colors.gray700}; /* 색상 조정 */
+  color: ${({ theme }) => theme.colors.gray500}; /* 색상 조정 */
   margin-bottom: 12px; /* 여백 증가 */
   line-height: 1.6; /* 줄 간격 조정 */
 `;
@@ -104,7 +104,7 @@ const AnswerBox = styled.div`
 
   p {
     font-size: 15px; /* 폰트 크기 조정 */
-    color: ${({ theme }) => theme.colors.gray700};
+    color: ${({ theme }) => theme.colors.gray500};
     line-height: 1.5;
   }
   .answer-label {

@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 
 const MyReviewsContainer = styled.div`
@@ -52,7 +51,7 @@ const StarRating = styled.div`
   /* 아이콘 제거로 인해 별 스타일링은 필요에 따라 다시 구현해야 합니다. */
   /* 현재는 플레이스홀더 텍스트로 대체됩니다. */
   font-size: 16px;
-  color: #FFD700; /* 골드 색상 유지 */
+  color: #ffd700; /* 골드 색상 유지 */
 `;
 
 const ReviewContent = styled.p`
@@ -90,10 +89,10 @@ const ActionButton = styled.button`
   }
 
   &.delete {
-    background-color: #EF4444; /* Red-500 */
+    background-color: #ef4444; /* Red-500 */
     color: ${({ theme }) => theme.colors.white};
     &:hover {
-      background-color: #DC2626; /* Red-600 */
+      background-color: #dc2626; /* Red-600 */
     }
   }
 `;
@@ -102,9 +101,7 @@ const MyReviews = () => {
   return (
     <MyReviewsContainer>
       <Title>작성한 리뷰</Title>
-      <Description>
-        여기에 작성하신 강의 리뷰 목록을 표시합니다.
-      </Description>
+      <Description>여기에 작성하신 강의 리뷰 목록을 표시합니다.</Description>
       <ReviewList>
         <ReviewItem>
           <ReviewHeader>
@@ -115,7 +112,8 @@ const MyReviews = () => {
             </StarRating>
           </ReviewHeader>
           <ReviewContent>
-            강의 내용이 매우 유익하고 강사님의 설명이 명확해서 좋았습니다. 실습 예제도 풍부해서 이해하기 쉬웠어요.
+            강의 내용이 매우 유익하고 강사님의 설명이 명확해서 좋았습니다. 실습 예제도 풍부해서
+            이해하기 쉬웠어요.
           </ReviewContent>
           <ReviewDate>작성일: 2024.06.28</ReviewDate>
           <ButtonGroup>
@@ -132,7 +130,8 @@ const MyReviews = () => {
             </StarRating>
           </ReviewHeader>
           <ReviewContent>
-            TypeScript에 대한 이해를 높이는 데 큰 도움이 되었습니다. 코드 예시가 실용적이라 바로 적용하기 좋았습니다.
+            TypeScript에 대한 이해를 높이는 데 큰 도움이 되었습니다. 코드 예시가 실용적이라 바로
+            적용하기 좋았습니다.
           </ReviewContent>
           <ReviewDate>작성일: 2024.06.20</ReviewDate>
           <ButtonGroup>

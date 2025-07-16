@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 
 const MyCoursesContainer = styled.div`
@@ -87,12 +86,16 @@ const MyCourses = () => {
     <MyCoursesContainer>
       <Title>나의 강의 관리</Title>
       <Description>
-        여기에 수강 중인 강의 목록을 표시합니다. 각 강의의 진행 상황, 수강 기간 등을 확인할 수 있습니다.
+        여기에 수강 중인 강의 목록을 표시합니다. 각 강의의 진행 상황, 수강 기간 등을 확인할 수
+        있습니다.
       </Description>
       <CourseList>
         <CourseItem>
           <CourseInfo>
-            <CourseThumbnail src="https://placehold.co/80x80/7a36ff/FFFFFF?text=강의" alt="Course Thumbnail" />
+            <CourseThumbnail
+              src="https://placehold.co/80x80/7a36ff/FFFFFF?text=강의"
+              alt="Course Thumbnail"
+            />
             <CourseDetails>
               <h4>2025 VEI•JON C. Java, Python + CS</h4>
               <p>강사: 김철수</p>
@@ -103,7 +106,10 @@ const MyCourses = () => {
         </CourseItem>
         <CourseItem>
           <CourseInfo>
-            <CourseThumbnail src="https://placehold.co/80x80/7a36ff/FFFFFF?text=강의" alt="Course Thumbnail" />
+            <CourseThumbnail
+              src="https://placehold.co/80x80/7a36ff/FFFFFF?text=강의"
+              alt="Course Thumbnail"
+            />
             <CourseDetails>
               <h4>JavaScript & TypeScript 기초</h4>
               <p>강사: 박영희</p>
