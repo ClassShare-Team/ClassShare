@@ -258,7 +258,7 @@ const SectionContent = styled.div`
 
 const LectureCount = styled.span`
   font-size: 14px;
-  color: ${({ theme }) => theme.colors.purple};
+  color: ${({ theme }) => theme.colors.purple100};
   margin-left: 6px;
 `;
 
