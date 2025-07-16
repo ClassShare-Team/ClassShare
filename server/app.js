@@ -18,6 +18,7 @@ const reviewRoutes = require('./src/routes/reviewRoutes');
 const boardRoutes = require('./src/routes/boardRoutes');
 const instructorRoutes = require('./src/routes/instructorRoutes');
 const videoRoutes = require('./src/routes/videoRoutes');
+const qnaPostRoutes = require('./routes/qnaPostRoutes');
 
 // CORS 설정
 app.use(
@@ -40,6 +41,7 @@ app.use('/reviews', reviewRoutes);
 app.use('/boards', boardRoutes);
 app.use('/instructors', instructorRoutes);
 app.use('/videos', videoRoutes);
+app.use('/qna', qnaPostRoutes);
 
 app.get('/', (_, res) => res.send('API up and running'));
 
