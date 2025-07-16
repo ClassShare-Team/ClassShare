@@ -22,15 +22,10 @@ const InstructorInfoPage = () => {
   const [introductionText, setIntroductionText] = useState('');
   const navigate = useNavigate();
 
-  // user 확인용 테스트 로그
   console.log('user: ', user);
 
   const fetchInfo = async () => {
-    //기존 코드 : if (!user || user.role !== 'instructor') return;
-    if (!user || user.role !== 'instructor') {
-      console.log('강사 계정이 아닙니다.', user);
-      return;
-    }
+    if (!user || user.role !== 'instructor') return;
     const token = localStorage.getItem('accessToken');
 
     try {
@@ -71,13 +66,10 @@ const InstructorInfoPage = () => {
     fetchInfo();
   }, [user]);
 
-  // info 확인용 테스트 로그
-  console.log('info: ', info);
-
   const handleSaveIntroduction = async () => {
     const token = localStorage.getItem('accessToken');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/user/instructor-introduction`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/instructor-introduction`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -90,20 +82,20 @@ const InstructorInfoPage = () => {
         await fetchInfo();
         setEditMode(false);
       } else {
-        alert('소개글 저장에 실패했습니다.');
+        alert('소개 수정 실패했습니다. 다시 수정해주세요.');
       }
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (!user || !info) return <Container>로딩 중</Container>;
+  if (!user || !info) return <Container>권한이 없습니다.</Container>;
 
   return (
     <Container>
       <Left>
         <ProfileImage src={user.profile_image || UserProfileLogo} alt="profile" />
-        <Name>{user.name}</Name>
+        <Name>{user.nickname}</Name>
         <Stats>
           <StatBlock>
             <Label>수강생수</Label>
