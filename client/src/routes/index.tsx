@@ -13,6 +13,7 @@ import BoardCreatePage from '@/components/pages/boardCreate';
 import VideoListPage from '@/components/pages/VideoListPage';
 import BoardPostDetailPage from '@/components/pages/boardPostDetail';
 import LecturePage from '@/components/pages/lectureApply';
+import InstructorInfoPage from '@/components/pages/instructorInfo';
 
 export const AppRoutes = () => {
   return (
@@ -32,6 +33,7 @@ export const AppRoutes = () => {
         <Route path="boards/posts/:id" element={<BoardPostDetailPage />} />
         <Route path="streamingpage" element={<StreamingPage />} />
         <Route path="applypage" element={<LecturePage />} />
+        <Route path="instructor-info" element={<InstructorInfoPage />} />
       </Route>
     </Routes>
   );

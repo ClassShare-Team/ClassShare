@@ -1,11 +1,13 @@
+/* 전체 페이지 배경은 page-container 클래스에서 설정 */
 .page-container {
-  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
+  background: linear-gradient(to bottom, #FEF7FF, #F0F9FF);
   min-height: 100vh;
 }
 
+/* 이하 기존 내용은 그대로 */
 .lecture-wrapper {
   font-family: 'Pretendard', sans-serif;
-  /* background: linear-gradient(to bottom, #f8f9fa, #e9ecef); */
+  /* background: linear-gradient(to bottom, #f8f9fa, #e9ecef); */ /* <- 필요하면 주석처리 */
   padding: 40px;
   min-height: 100vh;
   box-sizing: border-box;
@@ -41,7 +43,7 @@
   height: 100%;
   object-fit: cover;
 }
-
+/* 본문 콘텐츠 영역 */
 .content-area {
   display: flex;
   justify-content: space-between;
@@ -83,7 +85,7 @@
   margin: 0;
   color: #444;
 }
-
+/* 리뷰/Q&A 목록/아이템 스타일 */
 .review-box ul {
   list-style: none;
   padding: 0;
@@ -96,7 +98,7 @@
   margin-bottom: 10px;
   font-size: 15px;
   color: #333;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
   line-height: 1.5;
   word-break: break-all;
   transition: background 0.15s;
@@ -139,30 +141,28 @@
   background-color: #5a34a1;
 }
 
+/* --------------------- */
+/* 리뷰/질문 모달 스타일 */
+/* --------------------- */
 .modal-bg {
   position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.15);
+  left: 0; top: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.15);
   z-index: 999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
 .modal-content {
   background: #fff;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
   width: 350px;
   padding: 28px 22px 20px 22px;
   position: relative;
 }
 .modal-submit-btn {
   position: absolute;
-  right: 16px;
-  top: 14px;
+  right: 16px; top: 14px;
   background: #6f42c1;
   color: #fff;
   border: none;
