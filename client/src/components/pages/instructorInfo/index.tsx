@@ -86,7 +86,7 @@ const InstructorInfoPage = () => {
     }
   };
 
-  if (!user || !info) return <Container>로딩 중...</Container>;
+  if (!user || !info) return <Container>로딩 중</Container>;
 
   return (
     <Container>
