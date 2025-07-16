@@ -18,7 +18,7 @@ const reviewRoutes = require('./src/routes/reviewRoutes');
 const boardRoutes = require('./src/routes/boardRoutes');
 const instructorRoutes = require('./src/routes/instructorRoutes');
 const videoRoutes = require('./src/routes/videoRoutes');
-const qnaPostRoutes = require('./routes/qnaPostRoutes');
+const qnaPostRoutes = require('./src/routes/qnaPostRoutes');
 
 // CORS 설정
 app.use(
