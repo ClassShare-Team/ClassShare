@@ -26,6 +26,7 @@ const InstructorInfoPage = () => {
   console.log('user: ', user);
 
   const fetchInfo = async () => {
+    //기존 코드 : if (!user || user.role !== 'instructor') return;
     if (!user || user.role !== 'instructor') {
       console.log('강사 계정이 아닙니다.', user);
       return;
@@ -55,10 +56,11 @@ const InstructorInfoPage = () => {
 
       setInfo({
         introduction: profileData.instructor_profile?.introduction || '',
-        studentCount: studentData.count,
-        reviewCount: reviewData.count,
+        studentCount: Number(studentData.total_student_count) || 0,
+        reviewCount: Number(reviewData.total_review_count) || 0,
         lectures: lectureData,
       });
+
       setIntroductionText(profileData.instructor_profile?.introduction || '');
     } catch (err) {
       console.error('강사 정보 조회 실패:', err);
