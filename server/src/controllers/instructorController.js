@@ -35,3 +35,11 @@ exports.getAllReviewsWithComments = async (req, res) => {
     res.status(500).json({ message: '서버 에러' });
   }
 };
+
+// 특정 강사 소개글 조회
+exports.getInstructorIntroduction = async (req, res) => {
+  const { id } = req.params;
+  const introduction = await instructorService.getInstructorIntroduction(id);
+  if (!introduction) return res.status(404).json({ message: '강사 프로필 없음' });
+  res.json({ introduction });
+};

@@ -263,14 +263,15 @@ exports.getMyLectures = async (userId, page, size) => {
 };
 
 // 강사 설명 수정
-exports.getInstructorIntroduction = async (userId) => {
+exports.updateInstructorIntroduction = async (userId, introduction) => {
   const result = await db.query(
     `
-    SELECT introduction
-    FROM instructor_profiles
-    WHERE instructor_id = $1
+    UPDATE instructor_profiles
+    SET introduction = $1
+    WHERE instructor_id = $2
+    RETURNING introduction
   `,
-    [userId]
+    [introduction, userId]
   );
 
   if (result.rows.length === 0) return null;

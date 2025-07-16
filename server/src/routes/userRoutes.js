@@ -18,6 +18,10 @@ router.get('/subscriptions', authMiddleware, userController.getMySubscriptions);
 router.get('/my-reviews', authMiddleware, userController.getMyReviews);
 router.get('/my-comments', authMiddleware, userController.getMyComments);
 router.get('/my-lectures', authMiddleware, userController.getMyLectures);
-router.get('/instructor-introduction', authMiddleware, userController.getInstructorIntroduction);
+router.patch(
+  '/instructor-introduction',
+  authMiddleware,
+  userController.updateInstructorIntroduction
+);
 
 module.exports = router;

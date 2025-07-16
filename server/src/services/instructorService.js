@@ -17,19 +17,23 @@ exports.getTotalStudentCountByInstructor = async (instructorId) => {
 
 // 특정 강사의 전체 리뷰 수
 exports.getTotalReviewCountByInstructor = async (instructorId) => {
-  const result = await db.query(`
+  const result = await db.query(
+    `
     SELECT COUNT(r.id) AS total_review_count
     FROM lectures l
     LEFT JOIN reviews r ON l.id = r.lecture_id
     WHERE l.instructor_id = $1
-  `, [instructorId]);
+  `,
+    [instructorId]
+  );
 
   return result.rows[0];
 };
 
 // 특정 강사 리뷰 전체 보기
 exports.getAllReviewsWithComments = async (instructorId) => {
-  const result = await db.query(`
+  const result = await db.query(
+    `
     SELECT
       r.*,
       u.nickname AS student_nickname,
@@ -47,7 +51,24 @@ exports.getAllReviewsWithComments = async (instructorId) => {
     WHERE l.instructor_id = $1
     GROUP BY r.id, u.nickname, l.title, rc.content, rc.created_at, iu.nickname
     ORDER BY r.created_at DESC;
-  `, [instructorId]);
+  `,
+    [instructorId]
+  );
 
   return result.rows;
+};
+
+// 소개글 조회
+exports.getInstructorIntroduction = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT introduction
+    FROM instructor_profiles
+    WHERE instructor_id = $1
+  `,
+    [instructorId]
+  );
+
+  if (result.rows.length === 0) return null;
+  return result.rows[0].introduction;
 };
