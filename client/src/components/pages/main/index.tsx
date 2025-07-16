@@ -6,12 +6,12 @@ import "./index.css";
 interface Lecture {
   id: number;
   title: string;
-  price: number;
+  price: number | string;
   category: string;
-  thumbnailUrl: string;
+  thumbnail: string;
 }
 
-const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기", "예술", "연희활동"];
+const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기", "예술"];
 
 const MainPage: React.FC = () => {
   const location = useLocation();
@@ -32,7 +32,7 @@ const MainPage: React.FC = () => {
   useEffect(() => {
     const fetchLectures = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/lectures");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/lectures`);
         setLectures(response.data);
       } catch (error) {
         console.error("강의 데이터를 불러오는데 실패했습니다.", error);
@@ -60,6 +60,11 @@ const MainPage: React.FC = () => {
     return acc;
   }, {} as Record<string, Lecture[]>);
 
+  const renderPrice = (price: number | string) => {
+    const num = Number(price);
+    return isNaN(num) ? String(price) : num.toFixed(2);
+  };
+
   return (
     <div className="main-wrapper">
       <div className="scroll-container">
@@ -72,11 +77,15 @@ const MainPage: React.FC = () => {
                     groupedLectures[category].map((lecture) => (
                       <div className="card" key={lecture.id}>
                         <div className="thumbnail-wrapper">
-                          <img className="thumbnail" src={lecture.thumbnailUrl} alt={lecture.title} />
+                          <img
+                            className="thumbnail"
+                            src={lecture.thumbnail}
+                            alt={lecture.title}
+                          />
                         </div>
                         <div className="card-content">
                           <div className="title">{lecture.title}</div>
-                          <div className="price">{lecture.price.toFixed(2)}</div>
+                          <div className="price">{renderPrice(lecture.price)}</div>
                         </div>
                       </div>
                     ))
@@ -94,11 +103,15 @@ const MainPage: React.FC = () => {
                   filteredLectures.map((lecture) => (
                     <div className="card" key={lecture.id}>
                       <div className="thumbnail-wrapper">
-                        <img className="thumbnail" src={lecture.thumbnailUrl} alt={lecture.title} />
+                        <img
+                          className="thumbnail"
+                          src={lecture.thumbnail}
+                          alt={lecture.title}
+                        />
                       </div>
                       <div className="card-content">
                         <div className="title">{lecture.title}</div>
-                        <div className="price">{lecture.price.toFixed(2)}</div>
+                        <div className="price">{renderPrice(lecture.price)}</div>
                       </div>
                     </div>
                   ))

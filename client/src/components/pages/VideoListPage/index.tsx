@@ -14,13 +14,13 @@ const VideoListPage = () => {
 
   useEffect(() => {
     // 강의 제목 불러오기
-    fetch(`http://localhost:5000/api/lectures/${lectureId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/lectures/${lectureId}`)
       .then((res) => res.json())
       .then((data) => setLectureTitle(data.title))
       .catch((err) => console.error('강의 정보 오류', err));
 
     // 커리큘럼(영상 목록) 불러오기
-    fetch(`http://localhost:5000/api/lectures/${lectureId}/curriculum`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/lectures/${lectureId}/curriculum`)
       .then((res) => res.json())
       .then((data) => setVideos(data))
       .catch((err) => console.error('커리큘럼 오류', err));
