@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import styled from "styled-components";
+import React, { useState, useRef, useEffect } from 'react';
+import styled from 'styled-components';
 import {
   FiCheckCircle,
   FiDownload,
@@ -11,9 +11,9 @@ import {
   FiMaximize2,
   FiCamera,
   FiShare2,
-} from "react-icons/fi";
-import { MdSlowMotionVideo } from "react-icons/md";
-import { BsChevronLeft, BsChevronRight, BsChatLeftText } from "react-icons/bs";
+} from 'react-icons/fi';
+import { MdSlowMotionVideo } from 'react-icons/md';
+import { BsChevronLeft, BsChevronRight, BsChatLeftText } from 'react-icons/bs';
 
 // styled-components ----------------
 const TopBar = styled.div`
@@ -68,7 +68,7 @@ const ControlsBar = styled.div<{ visible: boolean }>`
   left: 0;
   bottom: 0;
   opacity: ${({ visible }) => (visible ? 1 : 0)};
-  pointer-events: ${({ visible }) => (visible ? "auto" : "none")};
+  pointer-events: ${({ visible }) => (visible ? 'auto' : 'none')};
   transition: opacity 0.2s;
   z-index: 20;
 `;
@@ -116,7 +116,7 @@ const VolumeWrapper = styled.div`
 /* VolumePopup: 위치를 progressBar보다 위쪽으로 */
 const VolumePopup = styled.div`
   position: absolute;
-  bottom: 42px;  /* 높여서 진행바 위로 */
+  bottom: 42px; /* 높여서 진행바 위로 */
   left: 0;
   background: #232323;
   border-radius: 10px;
@@ -124,7 +124,7 @@ const VolumePopup = styled.div`
   align-items: center;
   z-index: 22;
   padding: 10px 12px;
-  box-shadow: 0 2px 8px rgba(30,30,30,0.16);
+  box-shadow: 0 2px 8px rgba(30, 30, 30, 0.16);
 `;
 const VolumeSlider = styled.input`
   width: 90px;
@@ -209,7 +209,7 @@ const CurriculumItem = styled.li<{ active?: boolean; done?: boolean }>`
   display: flex;
   align-items: center;
   padding: 10px 0;
-  background: ${({ active }) => (active ? "#e9faf1" : "#fff")};
+  background: ${({ active }) => (active ? '#e9faf1' : '#fff')};
   border-radius: 10px;
   margin-bottom: 3px;
   font-weight: ${({ active }) => (active ? 700 : 400)};
@@ -239,7 +239,11 @@ const ItemButton = styled.button`
 `;
 // 추가 스타일
 const Overlay = styled.div`
-  position: fixed; left: 0; top: 0; right: 0; bottom: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 1001;
 `;
 const Popup = styled.div`
@@ -251,7 +255,7 @@ const Popup = styled.div`
   padding: 18px 24px 18px 24px;
   min-width: 170px;
   color: #fff;
-  box-shadow: 0 4px 16px rgba(30,30,30,0.20);
+  box-shadow: 0 4px 16px rgba(30, 30, 30, 0.2);
   z-index: 1002;
   overflow-y: auto;
   max-height: 270px;
@@ -263,7 +267,9 @@ const PopupTitle = styled.div`
   text-align: center;
 `;
 const PlaybackSlider = styled.input`
-  width: 120px; margin: 0 0 12px 0; accent-color: #fff;
+  width: 120px;
+  margin: 0 0 12px 0;
+  accent-color: #fff;
 `;
 const PlaybackValue = styled.div`
   text-align: center;
@@ -286,7 +292,8 @@ const SettingsRow = styled.div`
   margin-bottom: 18px;
 `;
 const Select = styled.select`
-  width: 100%; padding: 5px 7px;
+  width: 100%;
+  padding: 5px 7px;
   border-radius: 6px;
   background: #232323;
   color: #fff;
@@ -296,57 +303,57 @@ const Select = styled.select`
 // ================= 데이터 =================
 const curriculum = [
   {
-    title: "4. 주석과 시작점",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    title: '4. 주석과 시작점',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     done: true,
   },
   {
-    title: "5. 입력과 출력",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    title: '5. 입력과 출력',
+    videoUrl: 'https://www.w3schools.com/html/movie.mp4',
     done: true,
   },
   {
-    title: "6. 변수 선언과 출력",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    title: '6. 변수 선언과 출력',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     done: true,
   },
   {
-    title: "7. 조건문 (v2)",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    title: '7. 조건문 (v2)',
+    videoUrl: 'https://www.w3schools.com/html/movie.mp4',
     done: true,
   },
   {
-    title: "8. 반복문 (v2)",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    title: '8. 반복문 (v2)',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     done: false,
   },
   {
-    title: "9. 비교연산자와 반복문·조건문 문제 풀이 (v2)",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    title: '9. 비교연산자와 반복문·조건문 문제 풀이 (v2)',
+    videoUrl: 'https://www.w3schools.com/html/movie.mp4',
     done: false,
   },
   {
-    title: "10. 함수(메서드) 선언과 호출",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    title: '10. 함수(메서드) 선언과 호출',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     done: false,
   },
   {
-    title: "11. 연산자와 기출문제",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    title: '11. 연산자와 기출문제',
+    videoUrl: 'https://www.w3schools.com/html/movie.mp4',
     done: false,
   },
   {
-    title: "12. switch-case문",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    title: '12. switch-case문',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     done: false,
   },
 ];
 
 const qualityOptions = [
-  { value: "auto", label: "자동" },
-  { value: "1080p", label: "1080p" },
-  { value: "720p", label: "720p" },
-  { value: "540p", label: "540p" },
+  { value: 'auto', label: '자동' },
+  { value: '1080p', label: '1080p' },
+  { value: '720p', label: '720p' },
+  { value: '540p', label: '540p' },
 ];
 
 export const StreamingPage = () => {
@@ -361,11 +368,11 @@ export const StreamingPage = () => {
   const [showPlayback, setShowPlayback] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSettings, setShowSettings] = useState(false);
-  const [quality, setQuality] = useState("auto");
+  const [quality, setQuality] = useState('auto');
   const [showCaptureAlert, setShowCaptureAlert] = useState(false);
 
   const fullscreenRef = useRef<HTMLDivElement>(null);
-  const barTimeout = useRef<any>(null);
+  const barTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // 볼륨 0이면 muted, 아니면 unmuted
@@ -374,7 +381,6 @@ export const StreamingPage = () => {
     videoRef.current.muted = volume === 0;
     videoRef.current.volume = volume / 100;
   }, [volume]);
-
 
   // 전체화면 진입/해제
   const handleFullscreen = () => {
@@ -389,20 +395,20 @@ export const StreamingPage = () => {
   useEffect(() => {
     const handleChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
-      setShowBar(!!document.fullscreenElement ? false : true);
+      setShowBar(document.fullscreenElement ? false : true);
     };
-    document.addEventListener("fullscreenchange", handleChange);
-    return () => document.removeEventListener("fullscreenchange", handleChange);
+    document.addEventListener('fullscreenchange', handleChange);
+    return () => document.removeEventListener('fullscreenchange', handleChange);
   }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isFullscreen && e.key === "Escape") {
+      if (isFullscreen && e.key === 'Escape') {
         document.exitFullscreen();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen]);
 
   const handleDoubleClick = (e: React.MouseEvent) => {
@@ -494,16 +500,16 @@ export const StreamingPage = () => {
     const handlePlay = () => setPaused(false);
     const handlePause = () => setPaused(true);
 
-    video.addEventListener("timeupdate", updateTime);
-    video.addEventListener("durationchange", updateDuration);
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
+    video.addEventListener('timeupdate', updateTime);
+    video.addEventListener('durationchange', updateDuration);
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
 
     return () => {
-      video.removeEventListener("timeupdate", updateTime);
-      video.removeEventListener("durationchange", updateDuration);
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
+      video.removeEventListener('timeupdate', updateTime);
+      video.removeEventListener('durationchange', updateDuration);
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
     };
   }, [currentIdx]);
 
@@ -512,22 +518,22 @@ export const StreamingPage = () => {
     if (e) e.stopPropagation();
     const video = videoRef.current;
     if (!video) return;
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
       if (blob) {
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `capture_${Date.now()}.png`;
         a.click();
         setShowCaptureAlert(true);
         setTimeout(() => setShowCaptureAlert(false), 1300);
       }
-    }, "image/png");
+    }, 'image/png');
   };
 
   // 배속 조절 슬라이더
@@ -570,15 +576,15 @@ export const StreamingPage = () => {
       // setShowVolume(false); // 볼륨은 hover로 제어
     };
     if (showPlayback || showSettings) {
-      window.addEventListener("mousedown", handleClickOutside);
-      return () => window.removeEventListener("mousedown", handleClickOutside);
+      window.addEventListener('mousedown', handleClickOutside);
+      return () => window.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showPlayback, showSettings]);
 
   const formatTime = (sec: number) => {
-    if (!isFinite(sec)) return "00:00";
-    const m = String(Math.floor(sec / 60)).padStart(2, "0");
-    const s = String(Math.floor(sec % 60)).padStart(2, "0");
+    if (!isFinite(sec)) return '00:00';
+    const m = String(Math.floor(sec / 60)).padStart(2, '0');
+    const s = String(Math.floor(sec % 60)).padStart(2, '0');
     return `${m}:${s}`;
   };
 
@@ -598,21 +604,18 @@ export const StreamingPage = () => {
           </TopBarBack>
           <TopBarTitle>{curriculum[currentIdx].title}</TopBarTitle>
         </TopBar>
-        <VideoArea
-          style={{ height: "100%", width: "100%" }}
-          onMouseMove={handleBarMouseMove}
-        >
+        <VideoArea style={{ height: '100%', width: '100%' }} onMouseMove={handleBarMouseMove}>
           <video
             ref={videoRef}
             src={curriculum[currentIdx].videoUrl}
             controls={false}
             style={{
-              width: "100%",
-              height: "100%",
-              background: "#000",
+              width: '100%',
+              height: '100%',
+              background: '#000',
             }}
             onClick={handlePlayToggle}
-            onLoadedMetadata={e => {
+            onLoadedMetadata={(e) => {
               setDuration((e.target as HTMLVideoElement).duration);
               setCurrent(0);
               setPaused(true);
@@ -625,16 +628,26 @@ export const StreamingPage = () => {
               </ProgressBarWrap>
               <VideoControlBar>
                 <ControlLeft>
-                  <button style={{ background: "none", border: "none", color: "#fff", cursor: "pointer" }} onClick={handlePlayToggle}>
-                    {paused ? <FiPlay style={{ fontSize: 22 }} /> : <FiPause style={{ fontSize: 22 }} />}
+                  <button
+                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}
+                    onClick={handlePlayToggle}
+                  >
+                    {paused ? (
+                      <FiPlay style={{ fontSize: 22 }} />
+                    ) : (
+                      <FiPause style={{ fontSize: 22 }} />
+                    )}
                   </button>
-                  <div style={{ fontSize: 15, minWidth: 82, textAlign: "right" }}>
+                  <div style={{ fontSize: 15, minWidth: 82, textAlign: 'right' }}>
                     {formatTime(current)} / {formatTime(duration)}
                   </div>
                   {/* 볼륨 컨트롤 */}
                   <VolumeWrapper
                     onClick={handleVolumeClick}
-                    onMouseEnter={() => { setIsVolumeHover(true); setShowVolume(true); }}
+                    onMouseEnter={() => {
+                      setIsVolumeHover(true);
+                      setShowVolume(true);
+                    }}
                     onMouseLeave={() => setIsVolumeHover(false)}
                   >
                     {volume === 0 ? (
@@ -644,20 +657,23 @@ export const StreamingPage = () => {
                     )}
                     {showVolume && (
                       <VolumePopup
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                         onMouseEnter={() => setIsVolumeHover(true)}
                         onMouseLeave={() => setIsVolumeHover(false)}
                       >
                         <button
                           style={{
-                            background: "none",
-                            border: "none",
-                            color: "#fff",
+                            background: 'none',
+                            border: 'none',
+                            color: '#fff',
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             marginRight: 3,
                           }}
-                          onClick={e => { e.stopPropagation(); changeVolume(-10); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            changeVolume(-10);
+                          }}
                           tabIndex={-1}
                         >
                           -
@@ -668,18 +684,21 @@ export const StreamingPage = () => {
                           max={100}
                           value={volume}
                           onChange={handleVolumeChange}
-                          onClick={e => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
                         />
                         <button
                           style={{
-                            background: "none",
-                            border: "none",
-                            color: "#fff",
+                            background: 'none',
+                            border: 'none',
+                            color: '#fff',
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             marginLeft: 3,
                           }}
-                          onClick={e => { e.stopPropagation(); changeVolume(10); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            changeVolume(10);
+                          }}
                           tabIndex={-1}
                         >
                           +
@@ -689,24 +708,24 @@ export const StreamingPage = () => {
                   </VolumeWrapper>
                 </ControlLeft>
                 <ControlRight>
-                  <span style={{ position: "relative" }}>
-                    <FiCamera title="캡처" style={{ cursor: "pointer" }} onClick={handleCapture} />
+                  <span style={{ position: 'relative' }}>
+                    <FiCamera title="캡처" style={{ cursor: 'pointer' }} onClick={handleCapture} />
                     {showCaptureAlert && (
-                      <Popup style={{ right: "0", bottom: "38px", padding: "8px 18px" }}>
+                      <Popup style={{ right: '0', bottom: '38px', padding: '8px 18px' }}>
                         <span style={{ fontSize: 15 }}>이미지 저장 완료!</span>
                       </Popup>
                     )}
                   </span>
-                  <span style={{ position: "relative" }}>
+                  <span style={{ position: 'relative' }}>
                     <MdSlowMotionVideo
                       title="재생속도"
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: 'pointer' }}
                       onClick={handlePlaybackClick}
                     />
                     {showPlayback && (
                       <>
                         <Overlay onClick={() => setShowPlayback(false)} />
-                        <Popup onClick={e => e.stopPropagation()}>
+                        <Popup onClick={(e) => e.stopPropagation()}>
                           <PopupTitle>재생속도</PopupTitle>
                           <PlaybackSlider
                             type="range"
@@ -717,27 +736,29 @@ export const StreamingPage = () => {
                             onChange={handlePlaybackSlider}
                           />
                           <PlaybackValue>
-                            {playbackRate} <span style={{ fontSize: 13, color: "#fff" }}>X</span>
+                            {playbackRate} <span style={{ fontSize: 13, color: '#fff' }}>X</span>
                           </PlaybackValue>
                         </Popup>
                       </>
                     )}
                   </span>
-                  <span style={{ position: "relative" }}>
+                  <span style={{ position: 'relative' }}>
                     <FiSettings
                       title="설정"
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: 'pointer' }}
                       onClick={handleSettingsClick}
                     />
                     {showSettings && (
                       <>
                         <Overlay onClick={() => setShowSettings(false)} />
-                        <SettingsModal onClick={e => e.stopPropagation()}>
+                        <SettingsModal onClick={(e) => e.stopPropagation()}>
                           <SettingsRow>
                             <div style={{ fontSize: 14, marginBottom: 6 }}>해상도</div>
                             <Select value={quality} onChange={handleQualityChange}>
-                              {qualityOptions.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              {qualityOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
                               ))}
                             </Select>
                           </SettingsRow>
@@ -745,18 +766,27 @@ export const StreamingPage = () => {
                       </>
                     )}
                   </span>
-                  <FiMaximize2 title="전체화면" style={{ cursor: "pointer" }} onClick={handleFullscreen} />
+                  <FiMaximize2
+                    title="전체화면"
+                    style={{ cursor: 'pointer' }}
+                    onClick={handleFullscreen}
+                  />
                 </ControlRight>
               </VideoControlBar>
               <BottomBar>
                 <NaviButton onClick={() => currentIdx > 0 && handleCurriculumClick(currentIdx - 1)}>
                   <BsChevronLeft style={{ marginRight: 5 }} /> 이전
                 </NaviButton>
-                <NaviButton onClick={() => currentIdx < curriculum.length - 1 && handleCurriculumClick(currentIdx + 1)}>
+                <NaviButton
+                  onClick={() =>
+                    currentIdx < curriculum.length - 1 && handleCurriculumClick(currentIdx + 1)
+                  }
+                >
                   다음 <BsChevronRight style={{ marginLeft: 5 }} />
                 </NaviButton>
                 <ReviewButton>
-                  <BsChatLeftText style={{ marginRight: 6 }} />수강평
+                  <BsChatLeftText style={{ marginRight: 6 }} />
+                  수강평
                 </ReviewButton>
                 <Spacer />
                 <ItemButton>
@@ -774,16 +804,26 @@ export const StreamingPage = () => {
               </ProgressBarWrap>
               <VideoControlBar>
                 <ControlLeft>
-                  <button style={{ background: "none", border: "none", color: "#fff", cursor: "pointer" }} onClick={handlePlayToggle}>
-                    {paused ? <FiPlay style={{ fontSize: 22 }} /> : <FiPause style={{ fontSize: 22 }} />}
+                  <button
+                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}
+                    onClick={handlePlayToggle}
+                  >
+                    {paused ? (
+                      <FiPlay style={{ fontSize: 22 }} />
+                    ) : (
+                      <FiPause style={{ fontSize: 22 }} />
+                    )}
                   </button>
-                  <div style={{ fontSize: 15, minWidth: 82, textAlign: "right" }}>
+                  <div style={{ fontSize: 15, minWidth: 82, textAlign: 'right' }}>
                     {formatTime(current)} / {formatTime(duration)}
                   </div>
                   {/* 볼륨 컨트롤 */}
                   <VolumeWrapper
                     onClick={handleVolumeClick}
-                    onMouseEnter={() => { setIsVolumeHover(true); setShowVolume(true); }}
+                    onMouseEnter={() => {
+                      setIsVolumeHover(true);
+                      setShowVolume(true);
+                    }}
                     onMouseLeave={() => setIsVolumeHover(false)}
                   >
                     {volume === 0 ? (
@@ -793,20 +833,23 @@ export const StreamingPage = () => {
                     )}
                     {showVolume && (
                       <VolumePopup
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                         onMouseEnter={() => setIsVolumeHover(true)}
                         onMouseLeave={() => setIsVolumeHover(false)}
                       >
                         <button
                           style={{
-                            background: "none",
-                            border: "none",
-                            color: "#fff",
+                            background: 'none',
+                            border: 'none',
+                            color: '#fff',
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             marginRight: 3,
                           }}
-                          onClick={e => { e.stopPropagation(); changeVolume(-10); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            changeVolume(-10);
+                          }}
                           tabIndex={-1}
                         >
                           -
@@ -817,18 +860,21 @@ export const StreamingPage = () => {
                           max={100}
                           value={volume}
                           onChange={handleVolumeChange}
-                          onClick={e => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
                         />
                         <button
                           style={{
-                            background: "none",
-                            border: "none",
-                            color: "#fff",
+                            background: 'none',
+                            border: 'none',
+                            color: '#fff',
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             marginLeft: 3,
                           }}
-                          onClick={e => { e.stopPropagation(); changeVolume(10); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            changeVolume(10);
+                          }}
                           tabIndex={-1}
                         >
                           +
@@ -838,24 +884,24 @@ export const StreamingPage = () => {
                   </VolumeWrapper>
                 </ControlLeft>
                 <ControlRight>
-                  <span style={{ position: "relative" }}>
-                    <FiCamera title="캡처" style={{ cursor: "pointer" }} onClick={handleCapture} />
+                  <span style={{ position: 'relative' }}>
+                    <FiCamera title="캡처" style={{ cursor: 'pointer' }} onClick={handleCapture} />
                     {showCaptureAlert && (
-                      <Popup style={{ right: "0", bottom: "38px", padding: "8px 18px" }}>
+                      <Popup style={{ right: '0', bottom: '38px', padding: '8px 18px' }}>
                         <span style={{ fontSize: 15 }}>이미지 저장 완료!</span>
                       </Popup>
                     )}
                   </span>
-                  <span style={{ position: "relative" }}>
+                  <span style={{ position: 'relative' }}>
                     <MdSlowMotionVideo
                       title="재생속도"
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: 'pointer' }}
                       onClick={handlePlaybackClick}
                     />
                     {showPlayback && (
                       <>
                         <Overlay onClick={() => setShowPlayback(false)} />
-                        <Popup onClick={e => e.stopPropagation()}>
+                        <Popup onClick={(e) => e.stopPropagation()}>
                           <PopupTitle>재생속도</PopupTitle>
                           <PlaybackSlider
                             type="range"
@@ -866,27 +912,29 @@ export const StreamingPage = () => {
                             onChange={handlePlaybackSlider}
                           />
                           <PlaybackValue>
-                            {playbackRate} <span style={{ fontSize: 13, color: "#fff" }}>X</span>
+                            {playbackRate} <span style={{ fontSize: 13, color: '#fff' }}>X</span>
                           </PlaybackValue>
                         </Popup>
                       </>
                     )}
                   </span>
-                  <span style={{ position: "relative" }}>
+                  <span style={{ position: 'relative' }}>
                     <FiSettings
                       title="설정"
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: 'pointer' }}
                       onClick={handleSettingsClick}
                     />
                     {showSettings && (
                       <>
                         <Overlay onClick={() => setShowSettings(false)} />
-                        <SettingsModal onClick={e => e.stopPropagation()}>
+                        <SettingsModal onClick={(e) => e.stopPropagation()}>
                           <SettingsRow>
                             <div style={{ fontSize: 14, marginBottom: 6 }}>해상도</div>
                             <Select value={quality} onChange={handleQualityChange}>
-                              {qualityOptions.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              {qualityOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
                               ))}
                             </Select>
                           </SettingsRow>
@@ -894,18 +942,27 @@ export const StreamingPage = () => {
                       </>
                     )}
                   </span>
-                  <FiMaximize2 title="전체화면" style={{ cursor: "pointer" }} onClick={handleFullscreen} />
+                  <FiMaximize2
+                    title="전체화면"
+                    style={{ cursor: 'pointer' }}
+                    onClick={handleFullscreen}
+                  />
                 </ControlRight>
               </VideoControlBar>
               <BottomBar>
                 <NaviButton onClick={() => currentIdx > 0 && handleCurriculumClick(currentIdx - 1)}>
                   <BsChevronLeft style={{ marginRight: 5 }} /> 이전
                 </NaviButton>
-                <NaviButton onClick={() => currentIdx < curriculum.length - 1 && handleCurriculumClick(currentIdx + 1)}>
+                <NaviButton
+                  onClick={() =>
+                    currentIdx < curriculum.length - 1 && handleCurriculumClick(currentIdx + 1)
+                  }
+                >
                   다음 <BsChevronRight style={{ marginLeft: 5 }} />
                 </NaviButton>
                 <ReviewButton>
-                  <BsChatLeftText style={{ marginRight: 6 }} />수강평
+                  <BsChatLeftText style={{ marginRight: 6 }} />
+                  수강평
                 </ReviewButton>
                 <Spacer />
                 <ItemButton>
@@ -932,9 +989,7 @@ export const StreamingPage = () => {
                   onClick={() => handleCurriculumClick(idx)}
                 >
                   <ItemLeft>
-                    <ItemStatus>
-                      {item.done ? <FiCheckCircle /> : null}
-                    </ItemStatus>
+                    <ItemStatus>{item.done ? <FiCheckCircle /> : null}</ItemStatus>
                     <ItemTitle>{item.title}</ItemTitle>
                   </ItemLeft>
                   <ItemButton>

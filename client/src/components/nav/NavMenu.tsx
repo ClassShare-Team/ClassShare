@@ -9,6 +9,13 @@ export const NavMenu = () => {
       <Dropdown label="수강 중인 강의" items={['내 강의실', '진도 현황']} />
       <StyledLink to="/boards">게시판</StyledLink>
       <Dropdown label="쉐어톡" items={['오픈 쉐어톡', '1:1 쉐어톡']} />
+
+      {/* ✨ 마이페이지 Dropdown 추가 ✨ */}
+      <Dropdown
+        label="마이페이지"
+        items={['내 강의', '내 리뷰', '결제 내역', '설정', '문의 내역']}
+        navigateTo="/mypage/student"
+      />
     </MenuWrapper>
   );
 };
