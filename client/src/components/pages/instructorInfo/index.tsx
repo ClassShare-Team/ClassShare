@@ -159,6 +159,8 @@ const Container = styled.div`
   display: flex;
   padding: 40px;
   gap: 40px;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
 `;
 
 const Left = styled.div`
@@ -205,9 +207,11 @@ const Value = styled.div`
 
 const EditButton = styled.button`
   margin-top: 20px;
-  padding: 10px 24px;
-  border: 1px solid black;
-  background: ${({ theme }) => theme.colors.purple100};
+  padding: 8px 20px;
+  background-color: ${({ theme }) => theme.colors.purple};
+  color: ${({ theme }) => theme.colors.white};
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
 `;
 
