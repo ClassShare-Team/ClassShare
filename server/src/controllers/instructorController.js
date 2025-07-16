@@ -43,3 +43,16 @@ exports.getInstructorIntroduction = async (req, res) => {
   if (!introduction) return res.status(404).json({ message: '강사 프로필 없음' });
   res.json({ introduction });
 };
+
+// 특정 강사의 전체 강의 목록 조회
+exports.getLectures = async (req, res) => {
+  const { instructorId } = req.params;
+
+  try {
+    const lectures = await instructorService.getLecturesByInstructor(instructorId);
+    return res.json({ lectures });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to fetch lectures.' });
+  }
+};

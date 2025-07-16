@@ -6,5 +6,6 @@ router.get('/:instructorId/student-count', instructorController.getTotalStudentC
 router.get('/:instructorId/review-count', instructorController.getTotalReviewCount); // 리뷰 수
 router.get('/:instructorId/reviews-with-comments', instructorController.getAllReviewsWithComments); // 리뷰 조회
 router.get('/:id/instructor-introduction', instructorController.getInstructorIntroduction); //소개글 조회
+router.get('/:instructorId/lectures', instructorController.getLectures); // 강의 목록 조회
 
 module.exports = router;

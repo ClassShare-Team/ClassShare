@@ -72,3 +72,18 @@ exports.getInstructorIntroduction = async (instructorId) => {
   if (result.rows.length === 0) return null;
   return result.rows[0].introduction;
 };
+
+// 특정 강사의 전체 강의 목록 조회
+exports.getLecturesByInstructor = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT l.id, l.title, l.description, l.price, l.category, l.thumbnail, l.created_at
+    FROM lectures l
+    WHERE l.instructor_id = $1
+    ORDER BY l.created_at DESC
+    `,
+    [instructorId]
+  );
+
+  return result.rows;
+};
