@@ -36,7 +36,7 @@ const InstructorInfoPage = () => {
         fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/review-count`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
+        fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/instructor-introduction`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch(`${import.meta.env.VITE_API_URL}/users/my-lectures`, {
@@ -50,13 +50,13 @@ const InstructorInfoPage = () => {
       const lectureData = await lectureRes.json();
 
       setInfo({
-        introduction: profileData.instructor_profile?.introduction || '',
+        introduction: profileData.introduction || '',
         studentCount: Number(studentData.total_student_count) || 0,
         reviewCount: Number(reviewData.total_review_count) || 0,
         lectures: Array.isArray(lectureData) ? lectureData : [],
       });
 
-      setIntroductionText(profileData.instructor_profile?.introduction || '');
+      setIntroductionText(profileData.introduction || '');
     } catch (err) {
       console.error('강사 정보 조회 실패:', err);
     }
@@ -245,7 +245,7 @@ const SectionTitle = styled.h3`
 const SectionContent = styled.div`
   margin-top: 12px;
   padding: 16px;
-  background: #fafafa;
+  background: ${({ theme }) => theme.colors.white};
   border: 1px solid ${({ theme }) => theme.colors.gray100};
   min-height: 80px;
   white-space: pre-wrap;
@@ -267,7 +267,7 @@ const LectureCount = styled.span`
 const LectureSectionContent = styled.div`
   margin-top: 12px;
   padding: 16px;
-  background: #fafafa;
+  background: ${({ theme }) => theme.colors.white};
   border: 1px solid ${({ theme }) => theme.colors.gray100};
   min-height: 100px;
 `;
