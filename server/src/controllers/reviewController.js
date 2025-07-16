@@ -1,4 +1,5 @@
 const reviewService = require('../services/reviewService');
+const db = require('../db');
 
 // 리뷰 작성
 exports.create = async (req, res) => {
