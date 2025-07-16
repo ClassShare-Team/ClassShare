@@ -43,3 +43,32 @@ exports.createReview = async ({ lectureId, userId, rating, content }) => {
   );
   return rows[0];
 };
+
+// 리뷰 답변 존재 여부 체크
+exports.getReviewCommentByReview = async (reviewId) => {
+  const result = await db.query(`SELECT id FROM review_comments WHERE review_id = $1`, [reviewId]);
+  return result.rows[0] || null;
+};
+
+// 리뷰 답변 생성 또는 수정
+exports.upsertReviewComment = async ({ reviewId, userId, content }) => {
+  const existing = await exports.getReviewCommentByReview(reviewId);
+
+  if (existing) {
+    await db.query(
+      `
+      UPDATE review_comments SET content = $1, created_at = NOW()
+      WHERE review_id = $2
+    `,
+      [content, reviewId]
+    );
+  } else {
+    await db.query(
+      `
+      INSERT INTO review_comments (review_id, user_id, content)
+      VALUES ($1, $2, $3)
+    `,
+      [reviewId, userId, content]
+    );
+  }
+};
