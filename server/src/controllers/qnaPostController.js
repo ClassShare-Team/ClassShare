@@ -1,4 +1,5 @@
 const qnaPostService = require('../services/qnaPostService');
+const db = require('../db');
 
 // Q&A 포스트 올리기
 exports.createQnaPost = async (req, res) => {
