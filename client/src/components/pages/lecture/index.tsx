@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -214,6 +215,7 @@ const CreateLecturePage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const navigate = useNavigate();
 
   const handleAddVideo = () => setVideos([...videos, { title: '', file: null }]);
   //분기처리
@@ -226,6 +228,10 @@ const CreateLecturePage: React.FC = () => {
   };
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) setThumbnail(e.target.files[0]);
+  };
+
+  const handleGoBack = () => {
+    navigate(-1);
   };
 
   const handleSubmit = async () => {
@@ -315,7 +321,7 @@ const CreateLecturePage: React.FC = () => {
           <FormCard>
             <FormTitleRow>
               <FormTitle>내 강의 만들기</FormTitle>
-              <Button variant="default" type="button">
+              <Button variant="default" type="button" onClick={handleGoBack}>
                 뒤로 가기
               </Button>
               <Button variant="primary" type="button" onClick={handleSubmit}>
