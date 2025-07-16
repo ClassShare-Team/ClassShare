@@ -48,6 +48,8 @@ const InstructorInfoPage = () => {
       const reviewData = await reviewRes.json();
       const profileData = await profileRes.json();
       const lectureData = await lectureRes.json();
+      //강의 목록 테스트
+      console.log('lectureData:', lectureData);
 
       setInfo({
         introduction: profileData.introduction || '',
@@ -114,7 +116,7 @@ const InstructorInfoPage = () => {
 
       <Right>
         <Section>
-          <SectionTitle>소개</SectionTitle>
+          <SectionTitle>강사 소개</SectionTitle>
           <SectionContent>
             {editMode ? (
               <textarea
