@@ -34,10 +34,10 @@ const InstructorInfoPage = () => {
         fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/review-count`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${import.meta.env.VITE_API_URL}/user/me`, {
+        fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${import.meta.env.VITE_API_URL}/user/my-lectures`, {
+        fetch(`${import.meta.env.VITE_API_URL}/users/my-lectures`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
