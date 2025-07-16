@@ -1,15 +1,14 @@
-import React from 'react';
 import styled from 'styled-components';
 import logoImg from '@/assets/logo.png';
 
 interface LogoProps {
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 export const Logo = ({ onClick }: LogoProps) => {
   return (
     <Wrapper onClick={onClick}>
-      <Image src={logoImg} alt="classShare 로고" />
+      <Image src={logoImg} alt="ClassShare 로고" />
       <Text>ClassShare</Text>
     </Wrapper>
   );
@@ -31,5 +30,6 @@ const Image = styled.img`
 const Text = styled.div`
   font-size: 20px;
   font-weight: 700;
+  user-select: none;
   color: ${({ theme }) => theme.colors.black};
 `;

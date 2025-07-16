@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/nav/Logo';
@@ -11,11 +10,17 @@ export const Header = () => {
   const navigate = useNavigate();
   const { user } = useUser();
 
+  const handleLogoClick = () => {
+
+    localStorage.setItem("selectedCategory", "전체");
+    window.location.href = "/main"; 
+  };
+
   return (
     <HeaderWrapper>
       <TopRow>
         <LeftArea>
-          <Logo onClick={() => navigate('/')} />
+          <Logo onClick={handleLogoClick} />
         </LeftArea>
         <CenterArea>
           <SearchBar />

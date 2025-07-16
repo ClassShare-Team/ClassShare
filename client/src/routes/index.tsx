@@ -1,4 +1,3 @@
-import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import App from '@/App';
 import RegisterPage from '@/components/pages/register';
@@ -9,11 +8,16 @@ import TokenPage from '@/components/pages/token';
 import { OAuthFinalizePage } from '@/components/pages/oauth/finalize';
 import VerifyEmailPage from '@/components/pages/verifyEmail';
 import StreamingPage from '@/components/pages/streamingpage';
+import BoardPage from '@/components/pages/board';
+import BoardCreatePage from '@/components/pages/boardCreate';
+import VideoListPage from '@/components/pages/VideoListPage';
+import BoardPostDetailPage from '@/components/pages/boardPostDetail';
+import LecturePage from '@/components/pages/lectureApply';
+import InstructorInfoPage from '@/components/pages/instructorInfo';
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* App 레이아웃 아래에 들어가는 기존 라우트들 */}
       <Route path="/" element={<App />}>
         <Route index element={<MainPage />} />
         <Route path="register" element={<RegisterPage />} />
@@ -23,9 +27,14 @@ export const AppRoutes = () => {
         <Route path="token" element={<TokenPage />} />
         <Route path="oauth/finalize" element={<OAuthFinalizePage />} />
         <Route path="verifyEmail" element={<VerifyEmailPage />} />
+        <Route path="boards" element={<BoardPage />} />
+        <Route path="boards/create" element={<BoardCreatePage />} />
+        <Route path="lecture/:lectureId/videos" element={<VideoListPage />} />
+        <Route path="boards/posts/:id" element={<BoardPostDetailPage />} />
+        <Route path="streamingpage" element={<StreamingPage />} />
+        <Route path="applypage" element={<LecturePage />} />
+        <Route path="instructor-info" element={<InstructorInfoPage />} />
       </Route>
-      {/* layout(App) 없이, 단독으로 streamingpage 라우트 */}
-      <Route path="/streamingpage" element={<StreamingPage />} />
     </Routes>
   );
 };

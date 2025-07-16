@@ -200,12 +200,6 @@ const CurriculumSection = styled.div`
   padding: 0 24px;
   flex: 1 1 0;
 `;
-const SectionTitle = styled.div`
-  font-weight: 600;
-  font-size: 15px;
-  color: #767676;
-  margin-bottom: 16px;
-`;
 const CurriculumList = styled.ul`
   list-style: none;
   margin: 0;
@@ -929,7 +923,6 @@ export const StreamingPage = () => {
         <RightSidebar>
           <SidebarTitle>커리큘럼</SidebarTitle>
           <CurriculumSection>
-            <SectionTitle>섹션 2. 쾌속 언어 공통 문법 빠르게 풀어보기</SectionTitle>
             <CurriculumList>
               {curriculum.map((item, idx) => (
                 <CurriculumItem

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -45,7 +45,7 @@ export const OAuthFinalizePage = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/auth/oauth/finalize', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/oauth/finalize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

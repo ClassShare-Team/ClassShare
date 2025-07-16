@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import googleIcon from '@/assets/google-icon.png';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:5000/auth/oauth/google';
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/oauth/google`;
   };
 
   const handleLogin = async () => {
@@ -24,7 +24,7 @@ export const LoginPage = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/auth/login', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -99,7 +99,7 @@ export const LoginPage = () => {
 };
 
 const PageContainer = styled.div`
-  background-color: ${({ theme }) => theme.colors.white};
+  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   width: 100%;
   min-height: 100vh;
   display: flex;

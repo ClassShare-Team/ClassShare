@@ -1,92 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import './index.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useLocation } from "react-router-dom";
+import "./index.css";
 
 interface Lecture {
   id: number;
   title: string;
+  price: number | string;
   category: string;
-  price: string;
-  image: string;
-  tag: string;
+  thumbnail: string;
 }
 
-const dummyLectures: Lecture[] = [
-  {
-    id: 1,
-    title: 'JavaScript 입문',
-    category: '개발',
-    price: '무료',
-    image: '',
-    tag: '프로그래밍',
-  },
-  { id: 2, title: '수채화 기초', category: '예술', price: '25,000원', image: '', tag: '그림' },
-  { id: 3, title: '헬스 기초', category: '운동', price: '15,000원', image: '', tag: '건강' },
-  {
-    id: 4,
-    title: '글쓰기 마스터',
-    category: '글쓰기',
-    price: '30,000원',
-    image: '',
-    tag: '에세이',
-  },
-  { id: 5, title: '기타 초급', category: '음악', price: '무료', image: '', tag: '음악' },
-  { id: 6, title: '초등 수학 기초', category: '교육', price: '무료', image: '', tag: '수학' },
-  {
-    id: 7,
-    title: '과학실험 따라하기',
-    category: '교육',
-    price: '15,000원',
-    image: '',
-    tag: '과학',
-  },
-  { id: 8, title: '영어 회화 스타터', category: '교육', price: '29,000원', image: '', tag: '영어' },
-];
+const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기", "예술"];
 
 const MainPage: React.FC = () => {
+  const location = useLocation();
   const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [filteredLectures, setFilteredLectures] = useState<Lecture[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("전체");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   useEffect(() => {
-    setLectures(dummyLectures);
+    const storedKeyword = localStorage.getItem("searchKeyword") || "";
+    const storedCategory =
+      location.state?.selectedCategory || localStorage.getItem("selectedCategory") || "전체";
+
+    setSearchKeyword(storedKeyword);
+    setSelectedCategory(storedCategory);
+  }, [location.state]);
+
+  useEffect(() => {
+    const fetchLectures = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/lectures`);
+        setLectures(response.data);
+      } catch (error) {
+        console.error("강의 데이터를 불러오는데 실패했습니다.", error);
+      }
+    };
+    fetchLectures();
   }, []);
 
-  const categories = ['교육', '개발', '음악', '요리', '운동', '글쓰기', '예술', '마케팅'];
+  useEffect(() => {
+    let result = [...lectures];
+
+    if (selectedCategory !== "전체") {
+      result = result.filter((lecture) => lecture.category === selectedCategory);
+    }
+
+    if (searchKeyword) {
+      result = result.filter((lecture) => lecture.title.includes(searchKeyword));
+    }
+
+    setFilteredLectures(result);
+  }, [lectures, selectedCategory, searchKeyword]);
+
+  const groupedLectures = categories.reduce((acc, category) => {
+    acc[category] = filteredLectures.filter((lecture) => lecture.category === category);
+    return acc;
+  }, {} as Record<string, Lecture[]>);
+
+  const renderPrice = (price: number | string) => {
+    const num = Number(price);
+    return isNaN(num) ? String(price) : num.toFixed(2);
+  };
 
   return (
     <div className="main-wrapper">
-      {/*
-      <nav className="top-nav">
-        <button>메인</button>
-        <button>수강 중인 강의</button>
-        <button>게시판</button>
-      </nav>
-
-      <div className="category-filter">
-        {["전체", ...categories].map((cat) => (
-          <button key={cat}>{cat}</button>
-        ))}
-      </div>
-*/}
       <div className="scroll-container">
-        {categories.map((category) => (
-          <section className="section" key={category}>
-            <h2>{category}</h2>
-            <div className="card-grid">
-              {lectures.filter((l) => l.category === category).length === 0 ? (
-                <div className="card empty">아직 등록된 클래스가 없습니다.</div>
-              ) : (
-                lectures
-                  .filter((l) => l.category === category)
-                  .map((lec) => (
-                    <div key={lec.id} className="card">
-                      <p className="title">{lec.title}</p>
-                      <span className="tag">{lec.tag}</span>
-                      <strong className="price">{lec.price}</strong>
+        {selectedCategory === "전체"
+          ? categories.map((category) => (
+              <section key={category} className="section">
+                <h2>{category}</h2>
+                <div className="card-grid">
+                  {groupedLectures[category]?.length ? (
+                    groupedLectures[category].map((lecture) => (
+                      <div className="card" key={lecture.id}>
+                        <div className="thumbnail-wrapper">
+                          <img
+                            className="thumbnail"
+                            src={lecture.thumbnail}
+                            alt={lecture.title}
+                          />
+                        </div>
+                        <div className="card-content">
+                          <div className="title">{lecture.title}</div>
+                          <div className="price">{renderPrice(lecture.price)}</div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="empty-card">아직 등록된 클래스가 없습니다.</div>
+                  )}
+                </div>
+              </section>
+            ))
+          : (
+            <section className="section">
+              <h2>{selectedCategory}</h2>
+              <div className="card-grid">
+                {filteredLectures.length ? (
+                  filteredLectures.map((lecture) => (
+                    <div className="card" key={lecture.id}>
+                      <div className="thumbnail-wrapper">
+                        <img
+                          className="thumbnail"
+                          src={lecture.thumbnail}
+                          alt={lecture.title}
+                        />
+                      </div>
+                      <div className="card-content">
+                        <div className="title">{lecture.title}</div>
+                        <div className="price">{renderPrice(lecture.price)}</div>
+                      </div>
                     </div>
                   ))
-              )}
-            </div>
-          </section>
-        ))}
+                ) : (
+                  <div className="empty-card">아직 등록된 클래스가 없습니다.</div>
+                )}
+              </div>
+            </section>
+          )}
       </div>
     </div>
   );
