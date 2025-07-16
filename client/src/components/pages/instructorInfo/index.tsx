@@ -274,6 +274,8 @@ const LectureList = styled.div`
   display: flex;
   gap: 16px;
   margin-top: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 `;
 
 const LectureCard = styled.div<{ isAdd?: boolean }>`
