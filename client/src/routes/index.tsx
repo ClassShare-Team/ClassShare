@@ -32,7 +32,7 @@ export const AppRoutes = () => {
         <Route path="lecture/:lectureId/videos" element={<VideoListPage />} />
         <Route path="boards/posts/:id" element={<BoardPostDetailPage />} />
         <Route path="streamingpage" element={<StreamingPage />} />
-        <Route path="applypage" element={<LecturePage />} />
+        <Route path="lectures/:id/apply" element={<LecturePage />} />
         <Route path="instructor-info" element={<InstructorInfoPage />} />
       </Route>
     </Routes>
