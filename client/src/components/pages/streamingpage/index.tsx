@@ -296,6 +296,7 @@ export const StreamingPage = () => {
               ref={videoRef}
               src={videoUrl}
               controls={false}
+               crossOrigin="anonymous"
               onClick={handlePlayToggle}
               onLoadedMetadata={e => {
                 setDuration((e.target as HTMLVideoElement).duration);
