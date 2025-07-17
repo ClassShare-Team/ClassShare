@@ -10,109 +10,42 @@ import {
 } from "react-icons/fi";
 import useUserInfo from '@/components/hooks/useUserInfo';
 
-const Wrapper = styled.div`
-  display: flex;
-  height: 100vh;
-`;
-
-const VideoSection = styled.div`
-  flex: 1;
-  position: relative;
-  background: #000;
-`;
-
-const VideoArea = styled.div`
-  width: 100%;
-  height: 100%;
-  position: relative;
-`;
-
+/* ---------- Styled Components ---------- */
+const Wrapper = styled.div` display: flex; height: 100vh; `;
+const VideoSection = styled.div` flex: 1; position: relative; background: #000; `;
+const VideoArea = styled.div` width: 100%; height: 100%; position: relative; `;
 const ControlsBar = styled.div<{ visible: boolean }>`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: absolute; bottom: 0; left: 0; right: 0;
   display: ${({ visible }) => (visible ? "flex" : "none")};
-  flex-direction: column;
-  padding: 10px;
+  flex-direction: column; padding: 10px;
   background: rgba(0, 0, 0, 0.4);
 `;
-
-const ProgressBarWrap = styled.div`
-  width: 100%;
-  height: 6px;
-  background: #444;
-  cursor: pointer;
-`;
-
+const ProgressBarWrap = styled.div` width: 100%; height: 6px; background: #444; cursor: pointer; `;
 const ProgressBarFill = styled.div<{ percent: number }>`
-  width: ${({ percent }) => percent}%;
-  height: 100%;
-  background: #fff;
+  width: ${({ percent }) => percent}%; height: 100%; background: #fff;
 `;
-
 const VideoControlBar = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
-  padding: 5px 10px;
+  display: flex; justify-content: space-between; align-items: center;
+  color: white; padding: 5px 10px;
 `;
-
-const ControlLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const ControlRight = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
+const ControlLeft = styled.div` display: flex; align-items: center; gap: 10px; `;
+const ControlRight = styled.div` display: flex; align-items: center; `;
 const RightSidebar = styled.div`
-  width: 300px;
-  background: #f7f7f7;
-  padding: 20px;
-  overflow-y: auto;
+  width: 300px; background: #f7f7f7; padding: 20px; overflow-y: auto;
 `;
-
-const SidebarTitle = styled.h3`
-  margin-bottom: 10px;
-`;
-
-const CurriculumSection = styled.div``;
-
-const CurriculumList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
+const SidebarTitle = styled.h3` margin-bottom: 10px; `;
+const CurriculumList = styled.ul` list-style: none; padding: 0; margin: 0; `;
 const CurriculumItem = styled.li<{ active: boolean; done: boolean }>`
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 6px;
+  padding: 10px; margin-bottom: 8px; border-radius: 6px;
   background: ${({ active }) => (active ? "#ddd" : "#eee")};
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  opacity: ${({ done }) => (done ? 0.6 : 1)};
+  cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; opacity: ${({ done }) => (done ? 0.6 : 1)};
 `;
-
-const ItemLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
+const ItemLeft = styled.div` display: flex; align-items: center; gap: 8px; `;
 const ItemStatus = styled.div``;
+const ItemTitle = styled.div` font-weight: bold; `;
 
-const ItemTitle = styled.div`
-  font-weight: bold;
-`;
-
+/* ---------- Component ---------- */
 export const StreamingPage = () => {
   const { lectureId } = useParams<{ lectureId: string }>();
   const [searchParams] = useSearchParams();
@@ -134,12 +67,21 @@ export const StreamingPage = () => {
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const barTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /* ---------- Load Curriculum ---------- */
   useEffect(() => {
     const fetchCurriculum = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`, { withCredentials: true });
-        const curriculumData = Array.isArray(res.data) ? res.data : res.data?.curriculum || [];
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            withCredentials: true,
+          }
+        );
 
+        const curriculumData = Array.isArray(res.data) ? res.data : res.data?.curriculum || [];
         const updated = curriculumData.map((v: any) => ({ ...v, done: v.is_completed }));
         setCurriculum(updated);
 
@@ -156,8 +98,9 @@ export const StreamingPage = () => {
       }
     };
     fetchCurriculum();
-  }, [lectureId, selectedVideoId]);
+  }, [lectureId, selectedVideoId, accessToken]);
 
+  /* ---------- Load Video ---------- */
   useEffect(() => {
     if (!videoId || !accessToken) return;
 
@@ -174,10 +117,8 @@ export const StreamingPage = () => {
           return;
         }
         setVideoUrl(res.data.video_url);
-        if (videoRef.current) {
-          videoRef.current.load();
-          videoRef.current.play().catch(e => console.error("Video play failed:", e));
-        }
+        videoRef.current?.load();
+        videoRef.current?.play().catch(e => console.error("Video play failed:", e));
       } catch (err) {
         console.error("영상 불러오기 실패", err);
       }
@@ -201,6 +142,7 @@ export const StreamingPage = () => {
     fetchProgress();
   }, [videoId, accessToken]);
 
+  /* ---------- Save Progress ---------- */
   useEffect(() => {
     const saveProgress = async () => {
       if (!videoId || !accessToken) return;
@@ -208,10 +150,7 @@ export const StreamingPage = () => {
         const isCompleted = current >= duration - 3;
         await axios.post(
           `${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`,
-          {
-            currentSeconds: current,
-            isCompleted,
-          },
+          { currentSeconds: current, isCompleted },
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -249,6 +188,7 @@ export const StreamingPage = () => {
     };
   }, [videoId, current, duration, currentIdx, curriculum, accessToken]);
 
+  /* ---------- Volume & Controls ---------- */
   useEffect(() => {
     if (!videoRef.current) return;
     videoRef.current.volume = volume / 100;
@@ -276,15 +216,18 @@ export const StreamingPage = () => {
     setCurrent(0);
   };
 
+  /* ---------- Render ---------- */
   return (
     <Wrapper ref={fullscreenRef}>
       <VideoSection>
-        <VideoArea onMouseMove={() => {
-          if (!isFullscreen) return;
-          setShowBar(true);
-          if (barTimeout.current) clearTimeout(barTimeout.current);
-          barTimeout.current = setTimeout(() => setShowBar(false), 5000);
-        }}>
+        <VideoArea
+          onMouseMove={() => {
+            if (!isFullscreen) return;
+            setShowBar(true);
+            if (barTimeout.current) clearTimeout(barTimeout.current);
+            barTimeout.current = setTimeout(() => setShowBar(false), 5000);
+          }}
+        >
           {videoUrl && (
             <video
               ref={videoRef}
@@ -311,14 +254,20 @@ export const StreamingPage = () => {
                 <button onClick={handlePlayToggle} style={{ background: "none", border: "none", color: "#fff" }}>
                   {paused ? <FiPlay /> : <FiPause />}
                 </button>
-                <div>{Math.floor(current / 60)}:{Math.floor(current % 60).toString().padStart(2, '0')} / {Math.floor(duration / 60)}:{Math.floor(duration % 60).toString().padStart(2, '0')}</div>
+                <div>
+                  {Math.floor(current / 60)}:{Math.floor(current % 60).toString().padStart(2, '0')} /{" "}
+                  {Math.floor(duration / 60)}:{Math.floor(duration % 60).toString().padStart(2, '0')}
+                </div>
               </ControlLeft>
               <ControlRight>
-                <FiMaximize2 style={{ cursor: "pointer" }} onClick={() => {
-                  const el = fullscreenRef.current;
-                  if (!document.fullscreenElement && el) el.requestFullscreen();
-                  else if (document.fullscreenElement) document.exitFullscreen();
-                }} />
+                <FiMaximize2
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const el = fullscreenRef.current;
+                    if (!document.fullscreenElement && el) el.requestFullscreen();
+                    else if (document.fullscreenElement) document.exitFullscreen();
+                  }}
+                />
               </ControlRight>
             </VideoControlBar>
           </ControlsBar>
@@ -327,23 +276,21 @@ export const StreamingPage = () => {
 
       <RightSidebar>
         <SidebarTitle>커리큘럼</SidebarTitle>
-        <CurriculumSection>
-          <CurriculumList>
-            {curriculum.map((item, idx) => (
-              <CurriculumItem
-                key={idx}
-                active={currentIdx === idx}
-                done={item.done}
-                onClick={() => handleCurriculumClick(idx)}
-              >
-                <ItemLeft>
-                  <ItemStatus>{item.done && <FiCheckCircle />}</ItemStatus>
-                  <ItemTitle>{item.title}</ItemTitle>
-                </ItemLeft>
-              </CurriculumItem>
-            ))}
-          </CurriculumList>
-        </CurriculumSection>
+        <CurriculumList>
+          {curriculum.map((item, idx) => (
+            <CurriculumItem
+              key={idx}
+              active={currentIdx === idx}
+              done={item.done}
+              onClick={() => handleCurriculumClick(idx)}
+            >
+              <ItemLeft>
+                <ItemStatus>{item.done && <FiCheckCircle />}</ItemStatus>
+                <ItemTitle>{item.title}</ItemTitle>
+              </ItemLeft>
+            </CurriculumItem>
+          ))}
+        </CurriculumList>
       </RightSidebar>
     </Wrapper>
   );
