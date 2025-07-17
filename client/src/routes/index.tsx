@@ -12,7 +12,7 @@ import BoardPage from '@/components/pages/board';
 import BoardCreatePage from '@/components/pages/boardCreate';
 import VideoListPage from '@/components/pages/VideoListPage';
 import BoardPostDetailPage from '@/components/pages/boardPostDetail';
-import LecturePage from '@/components/pages/lectureApply';
+import LectureApplyPage from '@/components/pages/lectureApply';
 import InstructorInfoPage from '@/components/pages/instructorInfo';
 import SearchPage from '@/components/pages/search';
 
@@ -33,7 +33,7 @@ export const AppRoutes = () => {
         <Route path="lecture/:lectureId/videos" element={<VideoListPage />} />
         <Route path="boards/posts/:id" element={<BoardPostDetailPage />} />
         <Route path="streamingpage" element={<StreamingPage />} />
-        <Route path="lectures/:id/apply" element={<LecturePage />} />
+        <Route path="lectures/:id/apply" element={<LectureApplyPage />} />
         <Route path="instructor-info" element={<InstructorInfoPage />} />
         <Route path="search" element={<SearchPage />} />
       </Route>

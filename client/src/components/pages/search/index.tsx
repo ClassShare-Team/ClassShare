@@ -118,7 +118,7 @@ const SearchPage: React.FC = () => {
       <ContentWrapper>
         {matchedInst && (
           <>
-            <h2 className="search-title">크리에이터</h2>
+            <h2 className="search-title">👩‍🎓크리에이터</h2>
             <div className="creator-grid">{renderInstructorCard(matchedInst)}</div>
           </>
         )}
