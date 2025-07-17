@@ -141,10 +141,8 @@ export const StreamingPage = () => {
   useEffect(() => {
     const fetchCurriculum = async () => {
       try {
-        const res = await axios.get(`/lectures/${lectureId}/curriculum`, { withCredentials: true });
-        const curriculumData = Array.isArray(res.data)
-          ? res.data
-          : res.data.curriculum;
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`, { withCredentials: true });
+        const curriculumData = Array.isArray(res.data) ? res.data : res.data?.curriculum || [];
 
         const updated = curriculumData.map((v: any) => ({ ...v, done: v.is_completed }));
         setCurriculum(updated);
@@ -169,7 +167,7 @@ export const StreamingPage = () => {
 
     const fetchVideo = async () => {
       try {
-        const res = await axios.get(`/videos/${videoId}`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}`, { withCredentials: true });
         setVideoUrl(res.data.video_url);
       } catch (err) {
         console.error("영상 불러오기 실패", err);
@@ -178,7 +176,7 @@ export const StreamingPage = () => {
 
     const fetchProgress = async () => {
       try {
-        const res = await axios.get(`/videos/${videoId}/progress`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`, { withCredentials: true });
         setCurrent(res.data.current_seconds || 0);
       } catch (err) {
         console.error("진도 불러오기 실패", err);
@@ -195,7 +193,7 @@ export const StreamingPage = () => {
       try {
         const isCompleted = current >= duration - 3;
         await axios.post(
-          `/videos/${videoId}/progress`,
+          `${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`,
           {
             currentSeconds: current,
             isCompleted,
