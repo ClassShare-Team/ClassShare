@@ -123,7 +123,7 @@ export const StreamingPage = () => {
   const { lectureId } = useParams<{ lectureId: string }>();
   const [searchParams] = useSearchParams();
   const selectedVideoId = searchParams.get("videoId");
-  const {accessToken } = useUserInfo();
+  const { accessToken } = useUserInfo();
 
   const [curriculum, setCurriculum] = useState<any[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -165,7 +165,7 @@ export const StreamingPage = () => {
   }, [lectureId, selectedVideoId]);
 
   useEffect(() => {
-    if (!videoId) return;
+    if (!videoId || !accessToken) return;
 
     const fetchVideo = async () => {
       try {
@@ -175,6 +175,10 @@ export const StreamingPage = () => {
             Authorization: `Bearer ${accessToken}`,
           },
         });
+        if (!res.data?.video_url) {
+          console.error("video_url 없음", res.data);
+          return;
+        }
         setVideoUrl(res.data.video_url);
         if (videoRef.current) {
           videoRef.current.load();
