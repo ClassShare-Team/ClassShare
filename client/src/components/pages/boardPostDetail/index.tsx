@@ -1,315 +1,382 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import './index.css';
 import useUserInfo from '@/components/hooks/useUserInfo';
 
-interface Post {
+interface Review {
+  id?: number;
+  nickname: string;
+  content: string;
+  userId?: number;
+}
+
+interface Qna {
+  id?: number;
+  nickname: string;
+  content: string;
+  userId?: number;
+}
+
+interface Lecture {
   id: number;
   title: string;
-  content: string;
-  author: string;
-  created_at: string;
+  description: string;
+  thumbnail: string;
+  price: string;
+  reviews: Review[];
+  qnas?: Qna[];
 }
 
-interface Comment {
-  id: number;
-  content: string;
-  author: string;
-  created_at: string;
-}
+const MAX_REVIEW_LENGTH = 300;
+const MAX_QNA_LENGTH = 300;
 
-const BoardPostDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
+const LectureApplyPage = () => {
+  const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
-  const { user } = useUserInfo();
 
-  const [post, setPost] = useState<Post | null>(null);
+  const { user, accessToken } = useUserInfo();
+
+  const [lecture, setLecture] = useState<Lecture | null>(null);
+  const [enrolled, setEnrolled] = useState(false);
+  const [reviewInput, setReviewInput] = useState('');
+  const [qnaInput, setQnaInput] = useState('');
   const [loading, setLoading] = useState(true);
-  const [comment, setComment] = useState('');
-  const [comments, setComments] = useState<Comment[]>([]);
 
-  const fetchPost = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}`);
-      const data = await res.json();
-      setPost(data.post);
-    } catch (err) {
-      console.error('게시글 불러오기 실패:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchComments = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}/comments`);
-      const data = await res.json();
-      setComments(data.comments);
-    } catch (err) {
-      console.error('댓글 조회 실패:', err);
-    }
-  };
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    fetchPost();
-  }, [id]);
+    const fetchLecture = async () => {
+      if (!id) return;
+      try {
+        setLoading(true);
+        const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
+        const data = await lectureRes.json();
+
+        const reviewRes = await fetch(`${API_URL}/reviews/lectures/${id}`);
+        const reviewData = await reviewRes.json();
+
+        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`);
+        const qnaData = await qnaRes.json();
+
+        setLecture({
+          id: Number(data.id),
+          title: data.title,
+          description: data.description,
+          thumbnail: data.thumbnail,
+          price: data.price,
+          reviews: reviewData.reviews.map((r: any) => ({
+            id: r.review_id,
+            nickname: r.student_nickname,
+            content: r.review_content,
+            userId: r.student_id,
+          })),
+          qnas: qnaData.posts
+            .filter((q: any) => q.category === 'qa')
+            .map((q: any) => ({
+              id: q.id,
+              nickname: q.user_nickname,
+              content: q.title,
+              userId: q.user_id,
+            })),
+        });
+      } catch (err) {
+        console.error(err);
+        setLecture(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLecture();
+  }, [API_URL, id]);
 
   useEffect(() => {
-    if (post) fetchComments();
-  }, [post]);
+    const fetchPurchaseStatus = async () => {
+      if (!accessToken || !id) return;
+      try {
+        const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const data = await res.json();
+        setEnrolled(data.is_purchased === true);
+      } catch (err) {
+        console.error('수강 여부 확인 실패:', err);
+      }
+    };
 
-  const handleSubmit = async () => {
-    if (!comment.trim()) return;
+    fetchPurchaseStatus();
+  }, [accessToken, id]);
 
-    const token = localStorage.getItem('accessToken');
+  useEffect(() => {
+    if (lecture && localStorage.getItem(`enrolled_${lecture.id}`) === 'true') {
+      setEnrolled(true);
+    }
+  }, [lecture]);
 
+  const handleEnroll = async () => {
+    if (!accessToken || !lecture) return alert('로그인이 필요합니다');
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}/comments`, {
+      const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
+          Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ content: comment }),
       });
-      setComment('');
-      await fetchComments();
-      await fetchPost();
-      localStorage.setItem('reloadBoard', 'true');
-    } catch (err) {
-      console.error('댓글 작성 실패:', err);
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || '수강 신청 완료');
+        setEnrolled(true);
+        localStorage.setItem(`enrolled_${lecture.id}`, 'true');
+      } else {
+        alert(data.message || '수강 신청 실패');
+      }
+    } catch {
+      alert('수강 신청 오류');
     }
   };
 
-  const handleDeleteComment = async (commentId: number) => {
-    const token = localStorage.getItem('accessToken');
-
+  const handleSubmitReview = async () => {
+    if (!reviewInput.trim() || !lecture || !user || !accessToken) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/boards/comments/${commentId}`, {
+      const res = await fetch(`${API_URL}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          lectureId: lecture.id,
+          userId: user.id,
+          content: reviewInput.trim(),
+          rating: 5,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setLecture((prev) =>
+          prev
+            ? {
+                ...prev,
+                reviews: [
+                  ...prev.reviews,
+                  {
+                    id: result.id,
+                    nickname: user.nickname,
+                    content: reviewInput.trim(),
+                    userId: user.id,
+                  },
+                ],
+              }
+            : prev
+        );
+        setReviewInput('');
+      } else {
+        alert(result.message || '리뷰 등록 실패');
+      }
+    } catch {
+      alert('리뷰 등록 중 오류 발생');
+    }
+  };
+
+  const handleDeleteReview = async (reviewId?: number) => {
+    if (!reviewId || !accessToken) return;
+    try {
+      const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: 'DELETE',
         headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
+          Authorization: `Bearer ${accessToken}`,
         },
       });
-      fetchComments();
-    } catch (err) {
-      console.error('댓글 삭제 실패:', err);
+      if (res.ok) {
+        setLecture((prev) =>
+          prev ? { ...prev, reviews: prev.reviews.filter((r) => r.id !== reviewId) } : prev
+        );
+      } else {
+        alert('삭제 실패');
+      }
+    } catch {
+      alert('삭제 중 오류 발생');
     }
   };
 
-  if (loading) {
-    return (
-      <Wrapper>
-        <Main>
-          <Loading>로딩 중</Loading>
-        </Main>
-      </Wrapper>
-    );
-  }
+  const handleSubmitQna = async () => {
+    if (!qnaInput.trim() || !lecture || !accessToken) return;
+    try {
+      const res = await fetch(`${API_URL}/qna`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          lecture_id: lecture.id,
+          title: qnaInput.trim(),
+          content: '내용 없음',
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setLecture((prev) =>
+          prev
+            ? {
+                ...prev,
+                qnas: [
+                  ...(prev.qnas || []),
+                  {
+                    id: result.postId,
+                    nickname: user?.nickname || '익명',
+                    content: qnaInput.trim(),
+                    userId: user?.id,
+                  },
+                ],
+              }
+            : prev
+        );
+        setQnaInput('');
+      } else {
+        alert(result.message || '질문 등록 실패');
+      }
+    } catch {
+      alert('질문 등록 실패');
+    }
+  };
 
-  if (!post) {
-    return (
-      <Wrapper>
-        <Main>
-          <ErrorMsg>게시글을 찾을 수 없습니다.</ErrorMsg>
-        </Main>
-      </Wrapper>
-    );
-  }
+  const handleDeleteQna = async (qnaId?: number) => {
+    if (!qnaId || !accessToken) return;
+    try {
+      const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (res.ok) {
+        setLecture((prev) =>
+          prev ? { ...prev, qnas: prev.qnas?.filter((q) => q.id !== qnaId) } : prev
+        );
+      } else {
+        alert('삭제 실패');
+      }
+    } catch {
+      alert('삭제 중 오류 발생');
+    }
+  };
+
+  const handleGoToVideos = () => {
+    if (lecture?.id) navigate(`/lecture/${lecture.id}/videos`);
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (!lecture) return <div>강의 정보를 불러오지 못했습니다.</div>;
+
+  const price = Math.floor(Number(lecture.price));
 
   return (
-    <Wrapper>
-      <Main>
-        <Content>
-          <Title>{post.title}</Title>
-          <InfoText>
-            <span>{new Date(post.created_at).toLocaleString()} 작성</span>
-            <span>{post.author}</span>
-          </InfoText>
-          <Divider />
-          <Body>{post.content}</Body>
-          <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+    <div className="lecture-wrapper">
+      <div className="header-bg">
+        <div className="title-thumbnail-area">
+          <div className="title-area">
+            <h1>{lecture.title}</h1>
+          </div>
+          <div className="thumbnail-area">
+            <img src={lecture.thumbnail} alt="썸네일" className="thumbnail" />
+          </div>
+        </div>
+      </div>
 
-          <CommentSection>
-            {user ? (
-              <CommentForm>
-                <CommentInput
-                  placeholder="댓글을 입력하세요"
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                />
-                <SubmitButton onClick={handleSubmit}>작성</SubmitButton>
-              </CommentForm>
+      <div className="content-area">
+        <div className="left-content">
+          <div className="description-box">
+            <h2>강의 소개</h2>
+            <p className="description">{lecture.description}</p>
+          </div>
+
+          <div className="review-section">
+            <h2>수강생 리뷰</h2>
+            {lecture.reviews.length === 0 ? (
+              <p>아직 등록된 리뷰가 없습니다.</p>
             ) : (
-              <p style={{ color: '#999', fontSize: '14px', marginBottom: '1rem' }}>
-                로그인 후 댓글을 작성할 수 있습니다.
-              </p>
+              <ul>
+                {lecture.reviews.map((r, i) => (
+                  <li key={i}>
+                    <span><strong>{r.nickname}</strong> {r.content}</span>
+                    {user?.id === r.userId && (
+                      <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
+                    )}
+                  </li>
+                ))}
+              </ul>
             )}
+            {user && (
+              <div className="review-input">
+                <textarea
+                  value={reviewInput}
+                  maxLength={MAX_REVIEW_LENGTH}
+                  onChange={(e) => setReviewInput(e.target.value)}
+                  placeholder="리뷰를 작성해주세요."
+                />
+                <button onClick={handleSubmitReview}>리뷰 등록</button>
+              </div>
+            )}
+          </div>
 
-            <CommentList>
-              {comments.map((c) => (
-                <CommentItem key={c.id}>
-                  <CommentHeader>
-                    <span>{c.author}</span>
-                    <span>{new Date(c.created_at).toLocaleString()}</span>
-                  </CommentHeader>
-                  <p>{c.content}</p>
-                  {user?.nickname === c.author && (
-                    <DeleteButton onClick={() => handleDeleteComment(c.id)}>삭제</DeleteButton>
-                  )}
-                </CommentItem>
-              ))}
-            </CommentList>
-          </CommentSection>
-        </Content>
-      </Main>
-    </Wrapper>
+          <div className="qna-section">
+            <h2>Q&A</h2>
+            {lecture.qnas?.length === 0 ? (
+              <p>등록된 질문이 없습니다.</p>
+            ) : (
+              <ul>
+                {lecture.qnas?.map((q, i) => (
+                  <li key={i}>
+                    <span><strong>{q.nickname}</strong> {q.content}</span>
+                    {user?.id === q.userId && (
+                      <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {user && (
+              <div className="qna-input">
+                <textarea
+                  value={qnaInput}
+                  maxLength={MAX_QNA_LENGTH}
+                  onChange={(e) => setQnaInput(e.target.value)}
+                  placeholder="질문을 작성해주세요."
+                />
+                <button onClick={handleSubmitQna}>질문 등록</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="right-content">
+          <div className="price-box">
+            <div className="price">
+              <strong>{price === 0 ? '무료' : `${price.toLocaleString()}원`}</strong>
+            </div>
+            <button
+              className="enroll-btn"
+              onClick={enrolled ? handleGoToVideos : handleEnroll}
+              disabled={!user || !accessToken}
+              style={{
+                background: !user || !accessToken ? '#bbb' : undefined,
+                cursor: !user || !accessToken ? 'not-allowed' : undefined,
+              }}
+            >
+              {enrolled ? '수강하기' : '신청하기'}
+            </button>
+            {!user || !accessToken ? (
+              <div style={{ fontSize: 13, color: '#D32F2F', marginTop: 7 }}>
+                로그인 후 신청할 수 있습니다.
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default BoardPostDetailPage;
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
-`;
-
-const Main = styled.main`
-  flex: 1;
-  padding: 2rem;
-  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
-`;
-
-const Content = styled.div`
-  position: relative;
-  max-width: 800px;
-  min-height: 1200px;
-  margin: 0 auto;
-  background: ${({ theme }) => theme.colors.white};
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-`;
-
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: bold;
-`;
-
-const InfoText = styled.p`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.gray400};
-`;
-
-const Divider = styled.hr`
-  margin: 1.5rem 0;
-  border: none;
-  border-top: 1px solid ${({ theme }) => theme.colors.gray100};
-`;
-
-const Body = styled.div`
-  font-size: 16px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-`;
-
-const BackButton = styled.button`
-  position: absolute;
-  right: 2rem;
-  bottom: 2rem;
-  padding: 8px 16px;
-  background-color: ${({ theme }) => theme.colors.purple100};
-  color: ${({ theme }) => theme.colors.white};
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.purple};
-  }
-`;
-
-const CommentSection = styled.div`
-  margin-top: 2rem;
-`;
-
-const CommentForm = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 1rem;
-`;
-
-const CommentInput = styled.textarea`
-  flex: 1;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid ${({ theme }) => theme.colors.gray300};
-  resize: none;
-`;
-
-const SubmitButton = styled.button`
-  padding: 8px 12px;
-  background: ${({ theme }) => theme.colors.purple100};
-  color: ${({ theme }) => theme.colors.white};
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.purple};
-  }
-`;
-
-const CommentList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const CommentItem = styled.div`
-  padding: 0.75rem;
-  border-radius: 8px;
-  background: #f5f5f5;
-`;
-
-const CommentHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.gray400};
-  margin-bottom: 4px;
-`;
-
-const DeleteButton = styled.button`
-  margin-top: 6px;
-  font-size: 12px;
-  color: red;
-  background: none;
-  border: none;
-  cursor: pointer;
-  align-self: flex-end;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const Loading = styled.div`
-  text-align: center;
-  padding: 4rem;
-`;
-
-const ErrorMsg = styled.div`
-  text-align: center;
-  padding: 4rem;
-  color: red;
-`;
+export default LectureApplyPage;

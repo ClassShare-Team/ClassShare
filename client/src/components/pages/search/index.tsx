@@ -124,7 +124,7 @@ const SearchPage: React.FC = () => {
         )}
 
         <h2 className="search-title" style={{ marginTop: matchedInst ? '64px' : '0px' }}>
-          강의
+          📖강의
         </h2>
 
         <div className="search-category-filter">
