@@ -17,12 +17,12 @@ import InstructorInfoPage from '@/components/pages/instructorInfo';
 import SearchPage from '@/components/pages/search';
 
 import StudentMyCourses from '@/components/pages/mypage/student/myCourses';
-import StudentMyPage from '@/components/pages/mypage/student/mypage';
+import StudentMyPage from '@/components/pages/mypage/student/myPage';
 import StudentMyReviews from '@/components/pages/mypage/student/myReviews';
 import StudentSettings from '@/components/pages/mypage/student/settings';
 
 import InstructorLecture from '@/components/pages/mypage/instructor/myLecture';
-import InstructorMyPage from '@/components/pages/mypage/instructor/mypage';
+import InstructorMyPage from '@/components/pages/mypage/instructor/myPage';
 import InstructorMyStudent from '@/components/pages/mypage/instructor/myStudent';
 import InstructorSettings from '@/components/pages/mypage/instructor/settings';
 

@@ -1,90 +1,86 @@
-import { useEffect, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 
-interface Student {
-  id: number;
-  name: string;
-  email: string;
-  lectureTitle: string;
-  enrolledAt: string;
-}
-
-const InstructorMyStudentPage = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        //수강생 정보가 있는 API 찾아야함
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/instructor/students`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        });
-        if (!res.ok) throw new Error('수강생 정보를 불러오지 못했습니다.');
-        const data = await res.json();
-        setStudents(data);
-      } catch (err) {
-        if (err instanceof Error) setError(err.message);
-        else setError('알 수 없는 오류 발생');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudents();
-  }, []);
+const InstructorMyPage = () => {
+  const navigate = useNavigate();
+  const { userInfo, loading, error } = useMyPageInfo();
 
   if (loading) return <div>로딩 중...</div>;
-  if (error) return <div>오류: {error}</div>;
+  if (error) return <div>오류: {error.message}</div>;
+  if (!userInfo) return <div>유저 정보를 불러오지 못했습니다.</div>;
 
   return (
-    <Container>
-      <h2>수강생 목록</h2>
-      <Table>
-        <thead>
-          <tr>
-            <th>이름</th>
-            <th>이메일</th>
-            <th>강의</th>
-            <th>수강일</th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.map((s) => (
-            <tr key={s.id}>
-              <td>{s.name}</td>
-              <td>{s.email}</td>
-              <td>{s.lectureTitle}</td>
-              <td>{s.enrolledAt}</td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    </Container>
+    <MyPageContainer>
+      <Sidebar>
+        <SidebarHeader>
+          <h3>{userInfo.nickname || '닉네임 없음'}</h3>
+          <p>{userInfo.email}</p>
+        </SidebarHeader>
+        <MenuItem onClick={() => navigate('/instructor/mypage')}>내 정보</MenuItem>
+        <MenuItem onClick={() => navigate('/instructor/mylecture')}>내 강의</MenuItem>
+        <MenuItem onClick={() => navigate('/instructor/mystudent')}>수강생 관리</MenuItem>
+        <MenuItem onClick={() => navigate('/instructor/setting')}>설정</MenuItem>
+      </Sidebar>
+      <Content>
+        <Outlet />
+      </Content>
+    </MyPageContainer>
   );
 };
 
-export default InstructorMyStudentPage;
+export default InstructorMyPage;
 
-const Container = styled.div`
-  padding: 40px;
+const MyPageContainer = styled.div`
+  display: flex;
+  min-height: calc(100vh - 80px);
+  background-color: ${({ theme }) => theme.colors.gray50};
+  padding: 30px 0;
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
+const Sidebar = styled.nav`
+  width: 250px;
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  margin-left: 50px;
+  padding: 30px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
 
-  th,
-  td {
-    padding: 12px;
-    border: 1px solid ${({ theme }) => theme.colors.gray200};
-    text-align: left;
+const SidebarHeader = styled.div`
+  width: 100%;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.gray200};
+  text-align: center;
+
+  h3 {
+    ${({ theme }) => theme.fonts.h2};
   }
 
-  th {
+  p {
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.gray500};
+  }
+`;
+
+const MenuItem = styled.div`
+  font-size: 16px;
+  padding: 12px 0;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  &:hover {
+    color: ${({ theme }) => theme.colors.purple};
     background-color: ${({ theme }) => theme.colors.gray100};
   }
+`;
+
+const Content = styled.div`
+  flex: 1;
+  margin-left: 40px;
+  padding-right: 50px;
 `;
