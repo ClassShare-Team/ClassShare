@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useUser } from '@/contexts/UserContext';
 
 interface Lecture {
   id: number;
@@ -10,14 +11,17 @@ interface Lecture {
 }
 
 const InstructorMyLecturePage = () => {
+  const { user } = useUser();
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
+
     const fetchLectures = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/lectures/my-lectures`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/lectures`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -35,9 +39,9 @@ const InstructorMyLecturePage = () => {
     };
 
     fetchLectures();
-  }, []);
+  }, [user]);
 
-  if (loading) return <div>로딩 중...</div>;
+  if (loading) return <div>로딩 중</div>;
   if (error) return <div>오류: {error}</div>;
 
   return (
