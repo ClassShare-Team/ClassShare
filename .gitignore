@@ -2,6 +2,6 @@
 node_modules/
 docker/.env
 # Client
-
+Client/.env
 # Server
 server/.env
