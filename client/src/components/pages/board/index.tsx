@@ -149,10 +149,7 @@ const BoardPage = () => {
                 <PageButton
                   key={num}
                   active={currentPage === num}
-                  onClick={() => {
-                    if (num <= totalPages) handlePageChange(num);
-                  }}
-                  disabled={num > totalPages}
+                  onClick={() => handlePageChange(num)}
                 >
                   {num}
                 </PageButton>
