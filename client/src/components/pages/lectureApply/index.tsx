@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import useUserInfo from '@/components/hooks/useUserInfo';
 import './index.css';
+
+// ✅ User 타입 정의 추가
+interface User {
+  id: number;
+  nickname: string;
+  token: string;
+}
 
 interface Review {
   id?: number;
@@ -8,12 +16,14 @@ interface Review {
   content: string;
   userId?: number;
 }
+
 interface Qna {
   id?: number;
   nickname: string;
   content: string;
   userId?: number;
 }
+
 interface Lecture {
   id: number;
   title: string;
@@ -23,11 +33,6 @@ interface Lecture {
   reviews: Review[];
   qnas?: Qna[];
 }
-interface User {
-  id: number;
-  nickname: string;
-  token: string;
-}
 
 const MAX_REVIEW_LENGTH = 300;
 const MAX_QNA_LENGTH = 300;
@@ -35,9 +40,12 @@ const MAX_QNA_LENGTH = 300;
 const CreateLecturePage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+
+  // ✅ user 타입 강제 적용
+  const { user } = useUserInfo() as { user: User | null };
+
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const [reviewInput, setReviewInput] = useState('');
   const [qnaInput, setQnaInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -46,11 +54,10 @@ const CreateLecturePage = () => {
   if (!API_URL) throw new Error('VITE_API_URL 환경변수가 설정되어 있지 않습니다!');
 
   useEffect(() => {
-    const fetchLectureAndUser = async () => {
+    const fetchLecture = async () => {
       if (!id) return;
       try {
         setLoading(true);
-
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
         const data = await lectureRes.json();
 
@@ -74,26 +81,11 @@ const CreateLecturePage = () => {
           })),
           qnas: qnaData.posts.map((q: any) => ({
             id: q.id,
-            nickname: '익명', 
+            nickname: '익명',
             content: q.title,
             userId: q.user_id,
           })),
         });
-
-        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!storedUser.token) return;
-
-        const meRes = await fetch(`${API_URL}/users/me`, {
-          headers: { Authorization: `Bearer ${storedUser.token}` },
-        });
-        const meData = await meRes.json();
-        setUser({ ...meData, token: storedUser.token });
-
-        const purchasedRes = await fetch(`${API_URL}/lectures/${id}/purchased`, {
-          headers: { Authorization: `Bearer ${storedUser.token}` },
-        });
-        const purchasedData = await purchasedRes.json();
-        setEnrolled(purchasedData.is_purchased === true);
       } catch (err) {
         console.error(err);
         setLecture(null);
@@ -101,15 +93,37 @@ const CreateLecturePage = () => {
         setLoading(false);
       }
     };
-    fetchLectureAndUser();
+
+    fetchLecture();
   }, [API_URL, id]);
+
+  useEffect(() => {
+    const fetchPurchaseStatus = async () => {
+      if (!user || !lecture) return;
+      try {
+        const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchased`, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+        const data = await res.json();
+        setEnrolled(data.is_purchased === true);
+      } catch (err) {
+        console.error('수강 여부 확인 실패:', err);
+      }
+    };
+
+    fetchPurchaseStatus();
+  }, [user, lecture]);
 
   const handleEnroll = async () => {
     if (!user || !lecture) return alert('로그인이 필요합니다');
     try {
       const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${user.token}` },
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
       });
       const data = await res.json();
       if (res.ok) {
@@ -170,7 +184,9 @@ const CreateLecturePage = () => {
     try {
       const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${user.token}` },
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
       });
       if (res.ok) {
         setLecture((prev) =>
@@ -226,7 +242,9 @@ const CreateLecturePage = () => {
     try {
       const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${user.token}` },
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
       });
       if (res.ok) {
         setLecture((prev) =>
@@ -242,6 +260,8 @@ const CreateLecturePage = () => {
 
   if (loading) return <div>Loading...</div>;
   if (!lecture) return <div>강의 정보를 불러오지 못했습니다.</div>;
+
+  const price = Math.floor(Number(lecture.price));
 
   return (
     <div className="lecture-wrapper">
@@ -320,10 +340,11 @@ const CreateLecturePage = () => {
             )}
           </div>
         </div>
+
         <div className="right-content">
           <div className="price-box">
             <div className="price">
-              <strong>{lecture.price === '0' ? '무료' : `${lecture.price}원`}</strong>
+              <strong>{price === 0 ? '무료' : `${price.toLocaleString()}원`}</strong>
             </div>
             <button
               className="enroll-btn"
