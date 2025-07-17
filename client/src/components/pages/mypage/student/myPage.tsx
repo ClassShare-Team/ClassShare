@@ -15,8 +15,10 @@ const StudentMyPage = () => {
       <Card>
         <ProfileSection>
           <img src={userInfo.profile_image} alt="profile" />
-          <h2>{userInfo.nickname || '닉네임 없음'}</h2>
+          <h2>{userInfo.name || '이름 없음'}</h2>
+          <p>{userInfo.nickname || '닉네임 없음'}</p>
           <p>{userInfo.email}</p>
+          <p>{userInfo.role === 'instructor' ? '강사' : '학생'}</p>
         </ProfileSection>
 
         <NavMenu>
