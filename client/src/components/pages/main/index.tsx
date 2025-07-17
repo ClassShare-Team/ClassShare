@@ -9,9 +9,20 @@ interface Lecture {
   price: number | string;
   category: string;
   thumbnail: string;
+  instructor_nickname?: string;
 }
 
 const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기", "예술"];
+
+const categoryEmojis: Record<string, string> = {
+  교육: "📚",
+  개발: "💻",
+  음악: "🎵",
+  요리: "🍳",
+  운동: "⚽",
+  글쓰기: "✏️",
+  예술: "🎨",
+};
 
 const MainPage: React.FC = () => {
   const location = useLocation();
@@ -64,7 +75,8 @@ const MainPage: React.FC = () => {
 
   const renderPrice = (price: number | string) => {
     const num = Number(price);
-    return isNaN(num) ? String(price) : num.toLocaleString();
+    if (num === 0) return "무료";
+    return isNaN(num) ? String(price) : num.toLocaleString() + "원";
   };
 
   const scroll = (category: string, dir: "left" | "right") => {
@@ -75,13 +87,45 @@ const MainPage: React.FC = () => {
     }
   };
 
+  const renderLectureCard = (lecture: Lecture) => (
+    <div
+      className="card"
+      key={lecture.id}
+      onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
+      style={{ cursor: "pointer" }}
+    >
+      <div className="thumbnail-wrapper">
+        <img className="thumbnail" src={lecture.thumbnail} alt={lecture.title} />
+      </div>
+      <div className="card-content">
+        <div className="title ellipsis-multiline">{lecture.title}</div>
+        <div className="instructor">{lecture.instructor_nickname || "강사 미정"}</div>
+        <div className="price">{renderPrice(lecture.price)}</div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="main-wrapper">
       <div className="scroll-container">
         {selectedCategory === "전체"
           ? categories.map((category) => (
               <section key={category} className="section">
-                <h2 className="category-title">{category}</h2>
+                <div className="section-header" style={{ display: "flex", justifyContent: "space-between" }}>
+                  <h2 className="category-title">
+                    {categoryEmojis[category]} {category}
+                  </h2>
+                  <button
+                    className="more-btn"
+                    style={{ fontSize: "14px", color: "#6F42C1", background: "none", border: "none", cursor: "pointer" }}
+                    onClick={() => {
+                      localStorage.setItem("selectedCategory", category);
+                      navigate("/main", { state: { selectedCategory: category } });
+                    }}
+                  >
+                    더보기
+                  </button>
+                </div>
                 {groupedLectures[category]?.length ? (
                   <div className="carousel-wrapper">
                     <button className="scroll-btn left" onClick={() => scroll(category, "left")}>
@@ -93,26 +137,7 @@ const MainPage: React.FC = () => {
                         scrollRefs.current[category] = el;
                       }}
                     >
-                      {groupedLectures[category].map((lecture) => (
-                        <div
-                          className="card"
-                          key={lecture.id}
-                          onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <div className="thumbnail-wrapper">
-                            <img
-                              className="thumbnail"
-                              src={lecture.thumbnail}
-                              alt={lecture.title}
-                            />
-                          </div>
-                          <div className="card-content">
-                            <div className="title">{lecture.title}</div>
-                            <div className="price">{renderPrice(lecture.price)}</div>
-                          </div>
-                        </div>
-                      ))}
+                      {groupedLectures[category].slice(0, 8).map(renderLectureCard)}
                     </div>
                     <button className="scroll-btn right" onClick={() => scroll(category, "right")}>
                       →
@@ -125,29 +150,12 @@ const MainPage: React.FC = () => {
             ))
           : (
             <section className="section">
-              <h2 className="category-title">{selectedCategory}</h2>
+              <h2 className="category-title">
+                {categoryEmojis[selectedCategory]} {selectedCategory}
+              </h2>
               <div className="card-grid">
                 {filteredLectures.length ? (
-                  filteredLectures.map((lecture) => (
-                    <div
-                      className="card"
-                      key={lecture.id}
-                      onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="thumbnail-wrapper">
-                        <img
-                          className="thumbnail"
-                          src={lecture.thumbnail}
-                          alt={lecture.title}
-                        />
-                      </div>
-                      <div className="card-content">
-                        <div className="title">{lecture.title}</div>
-                        <div className="price">{renderPrice(lecture.price)}</div>
-                      </div>
-                    </div>
-                  ))
+                  filteredLectures.map(renderLectureCard)
                 ) : (
                   <div className="empty-card">아직 등록된 클래스가 없습니다.</div>
                 )}

@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/nav/Logo';
 import { NavMenu } from '@/components/nav/NavMenu';
+import { SearchBar } from './SearchBar';
 import UserMenu from '@/components/common/UserMenu';
 import { useUser } from '@/contexts/UserContext';
 
@@ -20,7 +21,9 @@ export const Header = () => {
         <LeftArea>
           <Logo onClick={handleLogoClick} />
         </LeftArea>
-        <CenterArea></CenterArea>
+        <CenterArea>
+          <SearchBar />
+        </CenterArea>
         <RightArea>
           {user ? (
             <UserMenu />
