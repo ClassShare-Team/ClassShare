@@ -140,6 +140,22 @@ exports.getLectureById = async (id) => {
 };
 
 exports.getCurriculumByLectureId = async (userId, lectureId) => {
+  // 먼저 수강권 구매 여부 확인
+  const { rows } = await db.query(
+    `
+    SELECT 1 FROM lecture_purchases
+    WHERE user_id = $1 AND lecture_id = $2
+    `,
+    [userId, lectureId]
+  );
+
+  if (rows.length === 0) {
+    const err = new Error('수강권 없음');
+    err.status = 403;
+    throw err;
+  }
+
+  // 커리큘럼 조회
   const result = await db.query(
     `
     SELECT

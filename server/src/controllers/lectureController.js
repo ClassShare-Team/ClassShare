@@ -117,6 +117,9 @@ exports.getCurriculumByLectureId = async (req, res) => {
     const curriculum = await lectureService.getCurriculumByLectureId(userId, lectureId);
     return res.status(200).json(curriculum);
   } catch (err) {
+    if (err.status === 403) {
+      return res.status(403).json({ message: '수강권 없음' });
+    }
     console.error(`[GET /lectures/${lectureId}/curriculum] error:`, err);
     return res.status(500).json({ message: '커리큘럼 목록을 불러오는 중 오류가 발생했습니다.' });
   }
