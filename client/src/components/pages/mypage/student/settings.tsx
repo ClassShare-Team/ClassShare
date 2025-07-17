@@ -168,10 +168,10 @@ const SaveButton = styled.button`
 
 const WithdrawButton = styled.button`
   margin-top: 20px;
+  padding: 10 16px;
   background-color: red;
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 12px;
   cursor: pointer;
 `;
