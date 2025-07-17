@@ -118,7 +118,10 @@ const MainPage: React.FC = () => {
                   <button
                     className="more-btn"
                     style={{ fontSize: "14px", color: "#6F42C1", background: "none", border: "none", cursor: "pointer" }}
-                    onClick={() => navigate("/main", { state: { selectedCategory: category } })}
+                    onClick={() => {
+                      localStorage.setItem("selectedCategory", category);
+                      navigate("/main", { state: { selectedCategory: category } });
+                    }}
                   >
                     더보기
                   </button>
@@ -134,7 +137,7 @@ const MainPage: React.FC = () => {
                         scrollRefs.current[category] = el;
                       }}
                     >
-                      {groupedLectures[category].slice(0, 5).map(renderLectureCard)}
+                      {groupedLectures[category].slice(0, 8).map(renderLectureCard)}
                     </div>
                     <button className="scroll-btn right" onClick={() => scroll(category, "right")}>
                       →

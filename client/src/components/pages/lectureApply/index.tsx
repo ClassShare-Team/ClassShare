@@ -23,7 +23,6 @@ interface Lecture {
   reviews: Review[];
   qnas?: Qna[];
 }
-
 interface User {
   id: number;
   nickname: string;
@@ -48,52 +47,53 @@ const CreateLecturePage = () => {
 
   useEffect(() => {
     const fetchLectureAndUser = async () => {
-      if (!id) {
-        setLecture(null);
-        setLoading(false);
-        return;
-      }
+      if (!id) return;
       try {
         setLoading(true);
 
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
         const data = await lectureRes.json();
 
-        const reviews: Review[] = Array.isArray(data.reviews) ? data.reviews : [];
-        const qnas: Qna[] = Array.isArray(data.qnas) ? data.qnas : [];
+        const reviewRes = await fetch(`${API_URL}/reviews/lectures/${id}`);
+        const reviewData = await reviewRes.json();
+
+        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`);
+        const qnaData = await qnaRes.json();
 
         setLecture({
           id: Number(data.id),
-          title: String(data.title ?? ''),
-          description: String(data.description ?? ''),
-          thumbnail: String(data.thumbnail ?? ''),
-          price: String(data.price ?? ''),
-          reviews,
-          qnas,
+          title: data.title,
+          description: data.description,
+          thumbnail: data.thumbnail,
+          price: data.price,
+          reviews: reviewData.reviews.map((r: any) => ({
+            id: r.review_id,
+            nickname: r.student_nickname,
+            content: r.review_content,
+            userId: r.student_id,
+          })),
+          qnas: qnaData.posts.map((q: any) => ({
+            id: q.id,
+            nickname: '익명', 
+            content: q.title,
+            userId: q.user_id,
+          })),
         });
 
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         if (!storedUser.token) return;
 
         const meRes = await fetch(`${API_URL}/users/me`, {
-          headers: {
-            Authorization: `Bearer ${storedUser.token}`,
-          },
+          headers: { Authorization: `Bearer ${storedUser.token}` },
         });
-        if (meRes.ok) {
-          const meData = await meRes.json();
-          setUser({ ...meData, token: storedUser.token });
+        const meData = await meRes.json();
+        setUser({ ...meData, token: storedUser.token });
 
-          const purchasedRes = await fetch(`${API_URL}/lectures/${id}/purchased`, {
-            headers: {
-              Authorization: `Bearer ${storedUser.token}`,
-            },
-          });
-          const purchasedData = await purchasedRes.json();
-          setEnrolled(purchasedData.is_purchased === true);
-        } else {
-          setUser(null);
-        }
+        const purchasedRes = await fetch(`${API_URL}/lectures/${id}/purchased`, {
+          headers: { Authorization: `Bearer ${storedUser.token}` },
+        });
+        const purchasedData = await purchasedRes.json();
+        setEnrolled(purchasedData.is_purchased === true);
       } catch (err) {
         console.error(err);
         setLecture(null);
@@ -101,21 +101,15 @@ const CreateLecturePage = () => {
         setLoading(false);
       }
     };
-
     fetchLectureAndUser();
   }, [API_URL, id]);
 
   const handleEnroll = async () => {
-    if (!user || !lecture) {
-      alert('로그인이 필요합니다');
-      return;
-    }
+    if (!user || !lecture) return alert('로그인이 필요합니다');
     try {
       const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
+        headers: { Authorization: `Bearer ${user.token}` },
       });
       const data = await res.json();
       if (res.ok) {
@@ -125,14 +119,12 @@ const CreateLecturePage = () => {
         alert(data.message || '수강 신청 실패');
       }
     } catch {
-      alert('수강 신청 중 오류가 발생했습니다.');
+      alert('수강 신청 오류');
     }
   };
 
   const handleGoToVideos = () => {
-    if (lecture?.id) {
-      navigate(`/lecture/${lecture.id}/videos`);
-    }
+    if (lecture?.id) navigate(`/lecture/${lecture.id}/videos`);
   };
 
   const handleSubmitReview = async () => {
@@ -146,6 +138,7 @@ const CreateLecturePage = () => {
         },
         body: JSON.stringify({
           lectureId: lecture.id,
+          userId: user.id,
           content: reviewInput.trim(),
           rating: 5,
         }),
@@ -173,13 +166,11 @@ const CreateLecturePage = () => {
   };
 
   const handleDeleteReview = async (reviewId?: number) => {
-    if (!reviewId || !user || !lecture) return;
+    if (!reviewId || !user) return;
     try {
       const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
+        headers: { Authorization: `Bearer ${user.token}` },
       });
       if (res.ok) {
         setLecture((prev) =>
@@ -196,16 +187,16 @@ const CreateLecturePage = () => {
   const handleSubmitQna = async () => {
     if (!qnaInput.trim() || !lecture || !user) return;
     try {
-      const res = await fetch(`${API_URL}/posts`, {
+      const res = await fetch(`${API_URL}/qna`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({
-          title: `${lecture.title}에 대한 질문`,
-          content: qnaInput.trim(),
-          lectureId: lecture.id,
+          lecture_id: lecture.id,
+          title: qnaInput.trim(),
+          content: '',
         }),
       });
       const result = await res.json();
@@ -216,7 +207,7 @@ const CreateLecturePage = () => {
                 ...prev,
                 qnas: [
                   ...(prev.qnas || []),
-                  { id: result.id, nickname: user.nickname, content: qnaInput.trim(), userId: user.id },
+                  { id: result.postId, nickname: user.nickname, content: qnaInput.trim(), userId: user.id },
                 ],
               }
             : prev
@@ -231,13 +222,11 @@ const CreateLecturePage = () => {
   };
 
   const handleDeleteQna = async (qnaId?: number) => {
-    if (!qnaId || !user || !lecture) return;
+    if (!qnaId || !user) return;
     try {
-      const res = await fetch(`${API_URL}/posts/${qnaId}`, {
+      const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
+        headers: { Authorization: `Bearer ${user.token}` },
       });
       if (res.ok) {
         setLecture((prev) =>

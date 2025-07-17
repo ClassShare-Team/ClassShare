@@ -85,7 +85,8 @@
 .review-section h2,
 .qna-section h2 {
   font-size: 18px;
-  margin-bottom: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
 
 .review-section ul,
@@ -111,16 +112,19 @@
   align-items: center;
 }
 
+.review-section li strong,
+.qna-section li strong {
+  margin-right: 8px;
+  color: #6F42C1;
+}
+
 .review-section button,
 .qna-section button {
-  background: #d32f2f;
+  background: none;
   border: none;
-  color: white;
-  padding: 5px 12px;
-  border-radius: 4px;
+  color: #D32F2F;
   font-size: 13px;
   cursor: pointer;
-  margin-left: 12px;
 }
 
 .review-input,
@@ -133,25 +137,30 @@
 
 .review-input textarea,
 .qna-input textarea {
-  width: 100%;
-  min-height: 80px;
-  border: 1px solid #eee;
-  border-radius: 7px;
   padding: 10px;
-  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
   resize: vertical;
+  min-height: 80px;
 }
 
 .review-input button,
 .qna-input button {
   align-self: flex-end;
-  background: #6f42c1;
+  background-color: #6f42c1;
   color: white;
-  font-size: 14px;
-  padding: 6px 16px;
+  padding: 8px 18px;
   border: none;
   border-radius: 6px;
+  font-size: 14px;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.review-input button:hover,
+.qna-input button:hover {
+  background-color: #5a34a1;
 }
 
 .right-content {
