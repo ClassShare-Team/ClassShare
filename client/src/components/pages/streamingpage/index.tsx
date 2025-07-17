@@ -141,7 +141,7 @@ export const StreamingPage = () => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoId, setVideoId] = useState<number | null>(null);
-  const [volume] = useState(70);
+  const [volume, setVolume] = useState(70);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(true);
@@ -241,12 +241,6 @@ export const StreamingPage = () => {
     };
   }, [videoId, current, duration, accessToken]);
 
-  useEffect(() => {
-    if (!videoRef.current) return;
-    videoRef.current.volume = volume / 100;
-    videoRef.current.muted = volume === 0;
-  }, [volume]);
-
   const handlePlayToggle = () => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) videoRef.current.play();
@@ -310,6 +304,24 @@ export const StreamingPage = () => {
                 </button>
                 <div>
                   {Math.floor(current / 60)}:{Math.floor(current % 60).toString().padStart(2, '0')} / {Math.floor(duration / 60)}:{Math.floor(duration % 60).toString().padStart(2, '0')}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span>{volume === 0 ? "🔇" : "🔊"}</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={volume}
+                    onChange={(e) => {
+                      const newVolume = Number(e.target.value);
+                      setVolume(newVolume);
+                      if (videoRef.current) {
+                        videoRef.current.volume = newVolume / 100;
+                        videoRef.current.muted = newVolume === 0;
+                      }
+                    }}
+                    style={{ width: "80px" }}
+                  />
                 </div>
               </ControlLeft>
               <ControlRight>
