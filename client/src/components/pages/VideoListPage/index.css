@@ -1,7 +1,7 @@
 .video-list-container {
   min-height: 100vh;
   padding: 40px 24px;
-  background-color: #f8f9fa; /* 전체 배경 */
+  background-color: #f8f9fa; 
   font-family: 'Pretendard', sans-serif;
   box-sizing: border-box;
 }
