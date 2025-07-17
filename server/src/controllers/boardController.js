@@ -1,15 +1,15 @@
 const db = require('../db');
 
 exports.getPosts = async (req, res) => {
-  const { sort = 'recent', search = '' } = req.query;
+  const { sort = 'recent', search = '', category = 'general', page = 1, limit = 9 } = req.query;
 
+  const offset = (page - 1) * limit;
   let sortClause = 'p.created_at DESC';
   if (sort === 'likes') sortClause = 'likes DESC';
   else if (sort === 'comments') sortClause = 'comments DESC';
 
   try {
-    const result = await db.query(
-      `
+    const query = `
       SELECT
         p.id,
         p.title,
@@ -30,14 +30,20 @@ exports.getPosts = async (req, res) => {
         FROM comments
         GROUP BY post_id
       ) c ON p.id = c.post_id
-      WHERE (p.title ILIKE $1 OR p.content ILIKE $1) AND p.category = 'general'
+      WHERE (p.title ILIKE $1 OR p.content ILIKE $1) AND p.category = $2
       ORDER BY ${sortClause}
-      LIMIT 50
-    `,
-      [`%${search}%`]
-    );
+      LIMIT $3 OFFSET $4;
 
-    res.json({ posts: result.rows });
+      SELECT COUNT(*) FROM posts p
+      WHERE (p.title ILIKE $1 OR p.content ILIKE $1) AND p.category = $2;
+    `;
+
+    const result = await db.query(query, [`%${search}%`, category, limit, offset]);
+
+    const posts = result[0].rows;
+    const totalCount = parseInt(result[1].rows[0].count);
+
+    res.json({ posts, totalCount });
   } catch (err) {
     console.error('게시글 목록 조회 실패:', err);
     res.status(500).json({ message: '게시글 목록 조회 실패' });
