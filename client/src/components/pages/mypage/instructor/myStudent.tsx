@@ -27,6 +27,8 @@ const InstructorMyStudentPage = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
+      if (!token) throw new Error('로그인이 필요합니다.');
+
       const base = `${import.meta.env.VITE_API_URL}/instructor/me/students`;
       const url = lectureId === 'all' ? `${base}/all` : `${base}/by-lecture?lectureId=${lectureId}`;
 
@@ -35,9 +37,10 @@ const InstructorMyStudentPage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (!res.ok) throw new Error('수강생 정보를 불러오지 못했습니다.');
       const data = await res.json();
-      setStudents(data);
+      setStudents(data.students || data);
     } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError('알 수 없는 오류 발생');
@@ -49,16 +52,24 @@ const InstructorMyStudentPage = () => {
   const fetchLectures = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/instructor/me/lectures`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const instructorId = localStorage.getItem('userId');
+      if (!token || !instructorId) throw new Error('로그인이 필요합니다.');
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/instructor/${instructorId}/lectures`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (!res.ok) throw new Error('강의 정보를 불러오지 못했습니다.');
       const data = await res.json();
       setLectureList(data);
     } catch (err) {
-      console.error(err);
+      if (err instanceof Error) setError(err.message);
+      else setError('알 수 없는 오류 발생');
     }
   };
 
