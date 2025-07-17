@@ -3,12 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './index.css';
 
 interface Review {
+  id?: number;
   nickname: string;
   content: string;
+  userId?: number;
 }
 interface Qna {
+  id?: number;
   nickname: string;
   content: string;
+  userId?: number;
 }
 interface Lecture {
   id: number;
@@ -53,22 +57,10 @@ const CreateLecturePage = () => {
         setLoading(true);
 
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
-        const contentType = lectureRes.headers.get('content-type');
-        const text = await lectureRes.text();
-        if (!contentType?.includes('application/json')) throw new Error('강의 JSON 오류');
-        const data = JSON.parse(text);
+        const data = await lectureRes.json();
 
-        const reviews: Review[] = Array.isArray(data.reviews)
-          ? data.reviews.map((r: any) =>
-              typeof r === 'string' ? { nickname: '익명', content: r } : r
-            )
-          : [];
-
-        const qnas: Qna[] = Array.isArray(data.qnas)
-          ? data.qnas.map((q: any) =>
-              typeof q === 'string' ? { nickname: '익명', content: q } : q
-            )
-          : [];
+        const reviews: Review[] = Array.isArray(data.reviews) ? data.reviews : [];
+        const qnas: Qna[] = Array.isArray(data.qnas) ? data.qnas : [];
 
         setLecture({
           id: Number(data.id),
@@ -164,7 +156,10 @@ const CreateLecturePage = () => {
           prev
             ? {
                 ...prev,
-                reviews: [...prev.reviews, { nickname: user.nickname, content: reviewInput.trim() }],
+                reviews: [
+                  ...prev.reviews,
+                  { id: result.id, nickname: user.nickname, content: reviewInput.trim(), userId: user.id },
+                ],
               }
             : prev
         );
@@ -174,6 +169,27 @@ const CreateLecturePage = () => {
       }
     } catch {
       alert('리뷰 등록 중 오류 발생');
+    }
+  };
+
+  const handleDeleteReview = async (reviewId?: number) => {
+    if (!reviewId || !user || !lecture) return;
+    try {
+      const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      if (res.ok) {
+        setLecture((prev) =>
+          prev ? { ...prev, reviews: prev.reviews.filter((r) => r.id !== reviewId) } : prev
+        );
+      } else {
+        alert('삭제 실패');
+      }
+    } catch {
+      alert('삭제 중 오류 발생');
     }
   };
 
@@ -198,7 +214,10 @@ const CreateLecturePage = () => {
           prev
             ? {
                 ...prev,
-                qnas: [...(prev.qnas || []), { nickname: user.nickname, content: qnaInput.trim() }],
+                qnas: [
+                  ...(prev.qnas || []),
+                  { id: result.id, nickname: user.nickname, content: qnaInput.trim(), userId: user.id },
+                ],
               }
             : prev
         );
@@ -208,6 +227,27 @@ const CreateLecturePage = () => {
       }
     } catch {
       alert('질문 등록 실패');
+    }
+  };
+
+  const handleDeleteQna = async (qnaId?: number) => {
+    if (!qnaId || !user || !lecture) return;
+    try {
+      const res = await fetch(`${API_URL}/posts/${qnaId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      if (res.ok) {
+        setLecture((prev) =>
+          prev ? { ...prev, qnas: prev.qnas?.filter((q) => q.id !== qnaId) } : prev
+        );
+      } else {
+        alert('삭제 실패');
+      }
+    } catch {
+      alert('삭제 중 오류 발생');
     }
   };
 
@@ -242,6 +282,9 @@ const CreateLecturePage = () => {
                 {lecture.reviews.map((r, i) => (
                   <li key={i}>
                     <strong>{r.nickname}</strong>: {r.content}
+                    {user?.id === r.userId && (
+                      <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -268,6 +311,9 @@ const CreateLecturePage = () => {
                 {lecture.qnas?.map((q, i) => (
                   <li key={i}>
                     <strong>{q.nickname}</strong>: {q.content}
+                    {user?.id === q.userId && (
+                      <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
+                    )}
                   </li>
                 ))}
               </ul>
