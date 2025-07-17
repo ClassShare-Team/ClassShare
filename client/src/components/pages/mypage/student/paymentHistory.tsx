@@ -17,7 +17,7 @@ const StudentPaymentHistoryPage = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/payment-history`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/student/payment-history`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
