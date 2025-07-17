@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { useParams, useSearchParams } from "react-router-dom";
-import { FiCheckCircle, FiPlay, FiPause, FiMaximize2 } from "react-icons/fi";
+import { FiCheckCircle, FiPlay, FiPause } from "react-icons/fi";
 import useUserInfo from '@/components/hooks/useUserInfo';
 
 const Wrapper = styled.div`
@@ -22,18 +22,6 @@ const VideoSection = styled.div`
   justify-content: center;
   align-items: center;
   padding: 16px;
-  video {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    max-height: 80vh;
-  }
-  &:not(:fullscreen) video {
-    width: 66%;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: block;
-  }
 `;
 
 const VideoArea = styled.div`
@@ -83,6 +71,7 @@ const ControlLeft = styled.div`
 const ControlRight = styled.div`
   display: flex;
   align-items: center;
+  gap: 10px;
 `;
 
 const RightSidebar = styled.div`
@@ -131,7 +120,19 @@ const ItemTitle = styled.div`
   font-weight: bold;
 `;
 
-export const StreamingPage = () => {
+const ReviewModal = styled.div`
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  width: 300px;
+  z-index: 1000;
+`;
+
+const StreamingPage = () => {
   const { lectureId } = useParams<{ lectureId: string }>();
   const [searchParams] = useSearchParams();
   const selectedVideoId = searchParams.get("videoId");
@@ -148,6 +149,9 @@ export const StreamingPage = () => {
   const [isFullscreen] = useState(false);
   const [showBar, setShowBar] = useState(true);
 
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewText, setReviewText] = useState("");
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const barTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -162,10 +166,14 @@ export const StreamingPage = () => {
             withCredentials: true,
           }
         );
-        const curriculumData = Array.isArray(res.data) ? res.data : res.data?.curriculum || [];
-        const updated = curriculumData.map((v: any) => ({ ...v, done: v.is_completed }));
+        const updated = (res.data?.curriculum || []).map((v: any) => ({
+          ...v,
+          done: v.is_completed
+        }));
         setCurriculum(updated);
-        const defaultIndex = selectedVideoId ? updated.findIndex((v: any) => v.id === Number(selectedVideoId)) : 0;
+        const defaultIndex = selectedVideoId
+          ? updated.findIndex((v: any) => v.id === Number(selectedVideoId))
+          : 0;
         if (defaultIndex >= 0) {
           setCurrentIdx(defaultIndex);
           setVideoId(updated[defaultIndex].id);
@@ -185,10 +193,6 @@ export const StreamingPage = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
           withCredentials: true,
         });
-        if (!res.data?.video_url) {
-          console.error("video_url 없음", res.data);
-          return;
-        }
         setVideoUrl(res.data.video_url);
       } catch (err) {
         console.error("영상 불러오기 실패", err);
@@ -262,17 +266,32 @@ export const StreamingPage = () => {
     setCurrent(0);
   };
 
+  const handleSubmitReview = async () => {
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/reviews`, {
+        content: reviewText,
+      }, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        withCredentials: true,
+      });
+      alert("수강평이 등록되었습니다.");
+      setReviewText("");
+      setShowReviewModal(false);
+    } catch (err) {
+      console.error("리뷰 등록 실패", err);
+      alert("리뷰 등록에 실패했습니다.");
+    }
+  };
+
   return (
     <Wrapper ref={fullscreenRef}>
       <VideoSection>
-        <VideoArea
-          onMouseMove={() => {
-            if (!isFullscreen) return;
-            setShowBar(true);
-            if (barTimeout.current) clearTimeout(barTimeout.current);
-            barTimeout.current = setTimeout(() => setShowBar(false), 5000);
-          }}
-        >
+        <VideoArea onMouseMove={() => {
+          if (!isFullscreen) return;
+          setShowBar(true);
+          if (barTimeout.current) clearTimeout(barTimeout.current);
+          barTimeout.current = setTimeout(() => setShowBar(false), 5000);
+        }}>
           {videoUrl && (
             <video
               ref={videoRef}
@@ -305,34 +324,38 @@ export const StreamingPage = () => {
                 <div>
                   {Math.floor(current / 60)}:{Math.floor(current % 60).toString().padStart(2, '0')} / {Math.floor(duration / 60)}:{Math.floor(duration % 60).toString().padStart(2, '0')}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span>{volume === 0 ? "🔇" : "🔊"}</span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={volume}
-                    onChange={(e) => {
-                      const newVolume = Number(e.target.value);
-                      setVolume(newVolume);
-                      if (videoRef.current) {
-                        videoRef.current.volume = newVolume / 100;
-                        videoRef.current.muted = newVolume === 0;
-                      }
-                    }}
-                    style={{ width: "80px" }}
-                  />
-                </div>
               </ControlLeft>
               <ControlRight>
-                <FiMaximize2
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    const el = fullscreenRef.current;
-                    if (!document.fullscreenElement && el) el.requestFullscreen();
-                    else if (document.fullscreenElement) document.exitFullscreen();
+                <span>{volume === 0 ? "🔇" : "🔊"}</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={volume}
+                  onChange={(e) => {
+                    const newVolume = Number(e.target.value);
+                    setVolume(newVolume);
+                    if (videoRef.current) {
+                      videoRef.current.volume = newVolume / 100;
+                      videoRef.current.muted = newVolume === 0;
+                    }
                   }}
+                  style={{ width: "80px" }}
                 />
+                <button
+                  onClick={() => setShowReviewModal(true)}
+                  style={{
+                    marginLeft: "10px",
+                    background: "none",
+                    border: "1px solid #fff",
+                    color: "#fff",
+                    padding: "5px 10px",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  }}
+                >
+                  🗨️ 수강평
+                </button>
               </ControlRight>
             </VideoControlBar>
           </ControlsBar>
@@ -356,6 +379,22 @@ export const StreamingPage = () => {
           ))}
         </CurriculumList>
       </RightSidebar>
+
+      {showReviewModal && (
+        <ReviewModal>
+          <textarea
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            rows={4}
+            style={{ width: "100%", marginBottom: "8px" }}
+            placeholder="수강평을 입력하세요..."
+          />
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px" }}>
+            <button onClick={() => setShowReviewModal(false)}>닫기</button>
+            <button onClick={handleSubmitReview} disabled={!reviewText.trim()}>작성</button>
+          </div>
+        </ReviewModal>
+      )}
     </Wrapper>
   );
 };
