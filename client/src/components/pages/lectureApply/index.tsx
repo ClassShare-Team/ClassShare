@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import './index.css';
 import useUserInfo from '@/components/hooks/useUserInfo';
 
-
 interface Review {
   id?: number;
   nickname: string;
@@ -34,7 +33,6 @@ const MAX_QNA_LENGTH = 300;
 const LectureApplyPage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
-
   const { user, accessToken } = useUserInfo();
 
   const [lecture, setLecture] = useState<Lecture | null>(null);
@@ -139,6 +137,18 @@ const LectureApplyPage = () => {
 
   const handleSubmitReview = async () => {
     if (!reviewInput.trim() || !lecture || !user || !accessToken) return;
+
+    const hasReviewed = lecture.reviews.some((r) => r.userId === user.id);
+    if (hasReviewed) {
+      alert('이미 리뷰를 작성하셨습니다.');
+      return;
+    }
+
+    if (!enrolled) {
+      alert('수강 신청한 사용자만 리뷰를 작성할 수 있습니다.');
+      return;
+    }
+
     try {
       const res = await fetch(`${API_URL}/reviews`, {
         method: 'POST',
@@ -309,7 +319,7 @@ const LectureApplyPage = () => {
                 ))}
               </ul>
             )}
-            {user && (
+            {user && enrolled && (
               <div className="review-input">
                 <textarea
                   value={reviewInput}
