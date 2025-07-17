@@ -114,7 +114,7 @@ const BoardPage = () => {
                     style={{ marginLeft: '20px' }}
                     onClick={() => navigate('/boards/create')}
                   >
-                    글쓰기
+                    작성하기
                   </TopButton>
                 </CenterGroup>
               </FilterSection>

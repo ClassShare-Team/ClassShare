@@ -2,7 +2,6 @@
 node_modules/
 docker/.env
 # Client
-client/.env.development
-client/.env.production
+Client/.env
 # Server
 server/.env.development

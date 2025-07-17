@@ -55,7 +55,7 @@ const DropdownLabel = styled.div`
 `;
 
 const DropdownList = styled.ul`
-  position: relative;
+  position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
