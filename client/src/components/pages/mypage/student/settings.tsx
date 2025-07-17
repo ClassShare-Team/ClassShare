@@ -19,7 +19,7 @@ const StudentSettingsPage = () => {
       formData.append('nickname', nickname);
       formData.append('phone', phone);
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -43,7 +43,7 @@ const StudentSettingsPage = () => {
   const handlePasswordChange = async () => {
     if (!password.trim()) return toast.warning('새 비밀번호를 입력해주세요.');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/password`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me/password`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ const StudentSettingsPage = () => {
     const confirm = window.confirm('정말로 회원 탈퇴하시겠습니까? 복구할 수 없습니다.');
     if (!confirm) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
