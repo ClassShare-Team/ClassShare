@@ -14,6 +14,7 @@ import VideoListPage from '@/components/pages/VideoListPage';
 import BoardPostDetailPage from '@/components/pages/boardPostDetail';
 import LecturePage from '@/components/pages/lectureApply';
 import InstructorInfoPage from '@/components/pages/instructorInfo';
+import SearchPage from '@/components/pages/search/search';
 
 export const AppRoutes = () => {
   return (
@@ -34,6 +35,7 @@ export const AppRoutes = () => {
         <Route path="streamingpage" element={<StreamingPage />} />
         <Route path="lectures/:id/apply" element={<LecturePage />} />
         <Route path="instructor-info" element={<InstructorInfoPage />} />
+        <Route path="search" element={<SearchPage />} />
       </Route>
     </Routes>
   );
