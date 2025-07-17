@@ -1,31 +1,33 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './index.css';
+import { FiCheckCircle } from 'react-icons/fi';
 
 interface Video {
+  id: number;
   title: string;
   duration: string;
+  is_completed?: boolean;
 }
 
 const VideoListPage = () => {
   const { lectureId } = useParams<{ lectureId: string }>();
   const [lectureTitle, setLectureTitle] = useState('');
   const [videos, setVideos] = useState<Video[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-      fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}`)
       .then((res) => res.json())
-      .then((data) => {
-        if (!data || !data.title) throw new Error('강의 정보 없음');
-        setLectureTitle(data.title);
-      })
+      .then((data) => setLectureTitle(data?.title || '(제목 없음)'))
       .catch((err) => {
         console.error('강의 정보 오류:', err);
         setLectureTitle('(강의 정보를 불러오지 못했습니다)');
       });
 
-    
-    fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`)
+    fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`, {
+      credentials: 'include',
+    })
       .then((res) => res.json())
       .then((data: Video[]) => setVideos(data))
       .catch((err) => {
@@ -34,17 +36,24 @@ const VideoListPage = () => {
       });
   }, [lectureId]);
 
+  const handleClick = (videoId: number) => {
+    navigate(`/streamingpage/${lectureId}?videoId=${videoId}`);
+  };
+
   return (
     <div className="video-list-container">
       <h2 className="video-list-title">{lectureTitle}</h2>
       <div className="video-list">
-        {videos.map((video, index) => (
-          <div key={index} className="video-card">
+        {videos.map((video) => (
+          <div key={video.id} className="video-card" onClick={() => handleClick(video.id)}>
             <div className="left">
               <span className="icon">🎥</span>
               <span className="title">{video.title}</span>
             </div>
-            <div className="order">{video.duration}</div>
+            <div className="right">
+              <span className="duration">{video.duration}</span>
+              {video.is_completed && <FiCheckCircle className="done-icon" />}
+            </div>
           </div>
         ))}
         {videos.length === 0 && (
