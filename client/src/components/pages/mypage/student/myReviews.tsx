@@ -48,7 +48,6 @@ const StudentMyReviewsPage = () => {
           <ReviewItem key={review.id}>
             <ReviewHeader>
               <h4>{review.lectureTitle}</h4>
-              <span>⭐ {review.rating}</span>
             </ReviewHeader>
             <p>{review.content}</p>
             <Date>{review.createdAt}</Date>

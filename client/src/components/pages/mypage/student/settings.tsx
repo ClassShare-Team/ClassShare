@@ -10,11 +10,21 @@ const StudentSettingsPage = () => {
   const [phone, setPhone] = useState(userInfo?.phone || '');
   const [password, setPassword] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState(userInfo?.profile_image || '');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const formatPhone = (raw: string) => {
     return raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfileImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleProfileSave = async () => {
@@ -23,6 +33,7 @@ const StudentSettingsPage = () => {
       const formData = new FormData();
       if (nickname.trim()) formData.append('nickname', nickname.trim());
       if (phone.trim()) formData.append('phone', phone.trim());
+      if (profileImage) formData.append('profile_image', profileImage);
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
         method: 'PATCH',
@@ -35,11 +46,8 @@ const StudentSettingsPage = () => {
       if (!res.ok) throw new Error('프로필 수정 실패');
       toast.success('프로필이 수정되었습니다.');
     } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error('알 수 없는 오류가 발생했습니다.');
-      }
+      if (err instanceof Error) toast.error(err.message);
+      else toast.error('알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -61,16 +69,16 @@ const StudentSettingsPage = () => {
           new_password: password,
         }),
       });
-      if (!res.ok) throw new Error('비밀번호 변경 실패');
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || '비밀번호 변경 실패');
+
       toast.success('비밀번호가 변경되었습니다.');
       setCurrentPassword('');
       setPassword('');
     } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error('알 수 없는 오류가 발생했습니다.');
-      }
+      if (err instanceof Error) toast.error(err.message);
+      else toast.error('알 수 없는 오류가 발생했습니다.');
     }
   };
 
@@ -99,6 +107,10 @@ const StudentSettingsPage = () => {
   return (
     <Container>
       <h2>설정</h2>
+
+      <Label>프로필 이미지</Label>
+      {previewUrl && <PreviewImage src={previewUrl} alt="미리보기" />}
+      <Input type="file" accept="image/*" onChange={handleProfileImageChange} />
 
       <Label>닉네임</Label>
       <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
@@ -173,4 +185,13 @@ const WithdrawButton = styled.button`
   border: none;
   border-radius: 6px;
   cursor: pointer;
+`;
+
+const PreviewImage = styled.img`
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: 8px;
+  margin-bottom: 12px;
 `;
