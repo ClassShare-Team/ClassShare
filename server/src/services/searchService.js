@@ -19,11 +19,18 @@ exports.searchLecturesWithPagination = async (keyword, page, size) => {
   let instructorLectures = [];
   if (matchedInstructor) {
     const instructorLecturesQuery = `
-      SELECT id, title, description, thumbnail, price
-      FROM lectures
-      WHERE instructor_id = $1
-      ORDER BY created_at DESC;
-    `;
+    SELECT lectures.id,
+           lectures.title,
+           lectures.description,
+           lectures.thumbnail,
+           lectures.price,
+           lectures.category,
+           users.nickname AS instructor
+    FROM lectures
+    JOIN users ON lectures.instructor_id = users.id
+    WHERE lectures.instructor_id = $1
+    ORDER BY lectures.created_at DESC;
+  `;
     const instructorLecturesResult = await db.query(instructorLecturesQuery, [
       matchedInstructor.id,
     ]);
