@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 interface Student {
-  id: number;
-  name: string;
-  email: string;
-  lectureTitle: string;
-  enrolledAt: string;
+  userId: number;
+  nickname: string;
+  profileImage: string;
+  lectureId?: number;
+  lectureTitle?: string;
+  purchasedAt?: string;
 }
 
 interface Lecture {
@@ -40,7 +41,7 @@ const InstructorMyStudentPage = () => {
 
       if (!res.ok) throw new Error('수강생 정보를 불러오지 못했습니다.');
       const data = await res.json();
-      setStudents(data.students || data);
+      setStudents(data.students || []);
     } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError('알 수 없는 오류 발생');
@@ -66,7 +67,7 @@ const InstructorMyStudentPage = () => {
 
       if (!res.ok) throw new Error('강의 정보를 불러오지 못했습니다.');
       const data = await res.json();
-      setLectureList(data);
+      setLectureList(data.lectures || data); // 배열인지 객체인지 확인 후 대응
     } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError('알 수 없는 오류 발생');
@@ -107,9 +108,9 @@ const InstructorMyStudentPage = () => {
 
       <List>
         {students.map((s) => (
-          <StudentCard key={s.id}>
-            <Avatar />
-            <NickName>{s.name}</NickName>
+          <StudentCard key={s.userId}>
+            <Avatar src={s.profileImage || '/default-avatar.png'} alt="profile" />
+            <NickName>{s.nickname}</NickName>
           </StudentCard>
         ))}
       </List>
@@ -118,6 +119,8 @@ const InstructorMyStudentPage = () => {
 };
 
 export default InstructorMyStudentPage;
+
+// ---------- Styled Components ----------
 
 const Container = styled.div`
   padding: 40px;
@@ -152,12 +155,13 @@ const StudentCard = styled.div`
   border-radius: 8px;
 `;
 
-const Avatar = styled.div`
+const Avatar = styled.img`
   width: 36px;
   height: 36px;
   background-color: #ddd;
   border-radius: 50%;
   margin-right: 12px;
+  object-fit: cover;
 `;
 
 const NickName = styled.div`
