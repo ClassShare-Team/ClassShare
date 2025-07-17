@@ -8,6 +8,7 @@ import {
   FiPause,
   FiMaximize2,
 } from "react-icons/fi";
+import useUserInfo from '@/components/hooks/useUserInfo';
 
 const Wrapper = styled.div`
   display: flex;
@@ -122,6 +123,7 @@ export const StreamingPage = () => {
   const { lectureId } = useParams<{ lectureId: string }>();
   const [searchParams] = useSearchParams();
   const selectedVideoId = searchParams.get("videoId");
+  const {accessToken } = useUserInfo();
 
   const [curriculum, setCurriculum] = useState<any[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -167,8 +169,17 @@ export const StreamingPage = () => {
 
     const fetchVideo = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}`, {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
         setVideoUrl(res.data.video_url);
+        if (videoRef.current) {
+          videoRef.current.load();
+          videoRef.current.play().catch(e => console.error("Video play failed:", e));
+        }
       } catch (err) {
         console.error("영상 불러오기 실패", err);
       }
@@ -176,7 +187,12 @@ export const StreamingPage = () => {
 
     const fetchProgress = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`, {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
         setCurrent(res.data.current_seconds || 0);
       } catch (err) {
         console.error("진도 불러오기 실패", err);
@@ -185,11 +201,11 @@ export const StreamingPage = () => {
 
     fetchVideo();
     fetchProgress();
-  }, [videoId]);
+  }, [videoId, accessToken]);
 
   useEffect(() => {
     const saveProgress = async () => {
-      if (!videoId) return;
+      if (!videoId || !accessToken) return;
       try {
         const isCompleted = current >= duration - 3;
         await axios.post(
@@ -198,7 +214,12 @@ export const StreamingPage = () => {
             currentSeconds: current,
             isCompleted,
           },
-          { withCredentials: true }
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
         );
 
         if (isCompleted) {
@@ -228,7 +249,7 @@ export const StreamingPage = () => {
       clearInterval(interval);
       saveProgress();
     };
-  }, [videoId, current, duration, currentIdx, curriculum]);
+  }, [videoId, current, duration, currentIdx, curriculum, accessToken]);
 
   useEffect(() => {
     if (!videoRef.current) return;
