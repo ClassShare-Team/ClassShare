@@ -18,11 +18,11 @@ const BoardPage = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
   const navigate = useNavigate();
-
-  const postsPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(posts.length / postsPerPage));
-
+  const postsPerPage = 9;
+  const totalPages = Math.max(1, Math.ceil(totalCount / postsPerPage));
   const pageButtons = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   const getTimeAgo = (createdAt: string) => {
@@ -36,36 +36,36 @@ const BoardPage = () => {
     return `${days}일 전`;
   };
 
-  const fetchPosts = async (sort = sortType, search = searchQuery) => {
+  const fetchPosts = async (sort = sortType, search = searchQuery, page = currentPage) => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/boards/posts?sort=${sort}&search=${search}`
+        `${import.meta.env.VITE_API_URL}/boards/posts?sort=${sort}&search=${search}&page=${page}&limit=${postsPerPage}`
       );
       const data = await res.json();
       setPosts(data.posts);
-      setCurrentPage(1);
+      setTotalCount(data.totalCount);
     } catch (err) {
       console.error('게시글 불러오기 실패:', err);
     }
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(sortType, searchQuery, 1);
+    setCurrentPage(1);
   }, [sortType]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    fetchPosts(sortType, searchQuery, page);
   };
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages) handlePageChange(currentPage + 1);
   };
 
   const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+    if (currentPage > 1) handlePageChange(currentPage - 1);
   };
-
-  const paginatedPosts = posts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
   return (
     <PageWrapper>
@@ -79,8 +79,9 @@ const BoardPage = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <TopButton onClick={() => fetchPosts()}>검색</TopButton>
+                <TopButton onClick={() => fetchPosts(sortType, searchQuery, 1)}>검색</TopButton>
               </SearchBox>
+
               <FilterSection>
                 <CenterGroup>
                   <FilterButtons>
@@ -97,9 +98,7 @@ const BoardPage = () => {
                             ? '최신순'
                             : type === 'accuracy'
                               ? '정확도순'
-                              : type === 'comments'
-                                ? '댓글 많은순'
-                                : ''}
+                              : '댓글 많은순'}
                         </span>
                       </FilterCheck>
                     ))}
@@ -115,8 +114,8 @@ const BoardPage = () => {
             </FilterList>
 
             <PostList>
-              {paginatedPosts.length > 0
-                ? paginatedPosts.map((post) => (
+              {posts.length > 0
+                ? posts.map((post) => (
                     <PostItem key={post.id} onClick={() => navigate(`/boards/posts/${post.id}`)}>
                       <PostTitle>{post.title}</PostTitle>
                       <PostContent>{post.content}</PostContent>
@@ -130,7 +129,7 @@ const BoardPage = () => {
                       </PostInfo>
                     </PostItem>
                   ))
-                : Array.from({ length: 10 }).map((_, i) => (
+                : Array.from({ length: 9 }).map((_, i) => (
                     <PostItem key={i} className="placeholder" />
                   ))}
             </PostList>
