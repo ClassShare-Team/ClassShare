@@ -25,6 +25,7 @@ const VideoListPage = () => {
         setLectureTitle('(강의 정보를 불러오지 못했습니다)');
       });
 
+   
     fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`, {
       credentials: 'include',
     })
@@ -45,11 +46,7 @@ const VideoListPage = () => {
       <h2 className="video-list-title">{lectureTitle}</h2>
       <div className="video-list">
         {videos.map((video) => (
-          <div
-            key={video.id}
-            className="video-card"
-            onClick={() => handleClick(video.id)}
-          >
+          <div key={video.id} className="video-card" onClick={() => handleClick(video.id)}>
             <div className="left">
               <span className="icon">🎥</span>
               <span className="title">{video.title}</span>
