@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import {
   FiCheckCircle,
   FiPlay,
@@ -28,7 +28,7 @@ const VideoArea = styled.div`
   background: #000;
   position: relative;
 `;
-const ControlsBar = styled.div<{ visible: boolean }>`
+const ControlsBar = styled.div<{ visible: boolean }> `
   width: 100%;
   background: #161616;
   position: absolute;
@@ -46,7 +46,7 @@ const ProgressBarWrap = styled.div`
   cursor: pointer;
   position: relative;
 `;
-const ProgressBarFill = styled.div<{ percent: number }>`
+const ProgressBarFill = styled.div<{ percent: number }> `
   height: 100%;
   background: #19c37d;
   width: ${({ percent }) => percent}%;
@@ -95,7 +95,7 @@ const CurriculumList = styled.ul`
   margin: 0;
   padding: 0;
 `;
-const CurriculumItem = styled.li<{ active?: boolean; done?: boolean }>`
+const CurriculumItem = styled.li<{ active?: boolean; done?: boolean }> `
   display: flex;
   align-items: center;
   padding: 10px 0;
@@ -121,6 +121,8 @@ const ItemTitle = styled.div`
 
 export const StreamingPage = () => {
   const { lectureId } = useParams<{ lectureId: string }>();
+  const [searchParams] = useSearchParams();
+  const selectedVideoId = searchParams.get("videoId");
 
   const [curriculum, setCurriculum] = useState<any[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -141,17 +143,21 @@ export const StreamingPage = () => {
     const fetchLecture = async () => {
       try {
         const res = await axios.get(`/api/lectures/${lectureId}`, { withCredentials: true });
-        setCurriculum(res.data.curriculum);
-        if (res.data.curriculum.length > 0) {
-          setCurrentIdx(0);
-          setVideoId(res.data.curriculum[0].id);
+        const updated = res.data.curriculum.map((v: any) => ({ ...v, done: false }));
+        setCurriculum(updated);
+        const defaultIndex = selectedVideoId
+          ? updated.findIndex((v: any) => v.id === Number(selectedVideoId))
+          : 0;
+        if (defaultIndex >= 0) {
+          setCurrentIdx(defaultIndex);
+          setVideoId(updated[defaultIndex].id);
         }
       } catch (err) {
         console.error("강의 로드 실패", err);
       }
     };
     fetchLecture();
-  }, [lectureId]);
+  }, [lectureId, selectedVideoId]);
 
   useEffect(() => {
     if (!videoId) return;
@@ -182,14 +188,34 @@ export const StreamingPage = () => {
     const saveProgress = async () => {
       if (!videoId) return;
       try {
+        const isCompleted = current >= duration - 3;
         await axios.post(
           `/api/videos/${videoId}/progress`,
           {
             currentSeconds: current,
-            isCompleted: current >= duration - 3,
+            isCompleted,
           },
           { withCredentials: true }
         );
+
+        // 완료 처리 + 다음 영상 자동 넘기기
+        if (isCompleted) {
+          setCurriculum(prev => {
+            const updated = [...prev];
+            const idx = updated.findIndex(v => v.id === videoId);
+            if (idx !== -1) updated[idx].done = true;
+            return updated;
+          });
+
+          if (currentIdx + 1 < curriculum.length) {
+            setTimeout(() => {
+              setCurrentIdx(currentIdx + 1);
+              setVideoId(curriculum[currentIdx + 1].id);
+              setCurrent(0);
+              setPaused(true);
+            }, 2000);
+          }
+        }
       } catch (err) {
         console.error("진도 저장 실패", err);
       }
@@ -200,7 +226,7 @@ export const StreamingPage = () => {
       clearInterval(interval);
       saveProgress();
     };
-  }, [videoId, current, duration]);
+  }, [videoId, current, duration, currentIdx, curriculum]);
 
   useEffect(() => {
     if (!videoRef.current) return;
