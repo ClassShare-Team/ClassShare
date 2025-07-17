@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './index.css';
 import { FiCheckCircle } from 'react-icons/fi';
+import './index.css';
+import useUserInfo from '@/components/hooks/useUserInfo';
 
 interface Video {
   id: number;
@@ -15,9 +16,17 @@ const VideoListPage = () => {
   const [lectureTitle, setLectureTitle] = useState('');
   const [videos, setVideos] = useState<Video[]>([]);
   const navigate = useNavigate();
+  const { accessToken } = useUserInfo();
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}`)
+    if (!accessToken || !lectureId) return;
+
+    fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      credentials: 'include',
+    })
       .then((res) => res.json())
       .then((data) => setLectureTitle(data?.title || '(제목 없음)'))
       .catch((err) => {
@@ -25,8 +34,10 @@ const VideoListPage = () => {
         setLectureTitle('(강의 정보를 불러오지 못했습니다)');
       });
 
-   
     fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
       credentials: 'include',
     })
       .then((res) => res.json())
@@ -35,7 +46,7 @@ const VideoListPage = () => {
         console.error('커리큘럼 오류:', err);
         setVideos([]);
       });
-  }, [lectureId]);
+  }, [lectureId, accessToken]);
 
   const handleClick = (videoId: number) => {
     navigate(`/streamingpage/${lectureId}?videoId=${videoId}`);
