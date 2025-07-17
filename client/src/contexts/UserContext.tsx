@@ -40,7 +40,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         const data = await res.json();
         setUser(data.user);
       } catch (error) {
-        console.error('사용자 정보 불러오기 실패:', error);
+        console.error('유저 정보 불러오기 실패:', error);
         setUser(null);
         setAccessToken(null);
         localStorage.removeItem('accessToken');
@@ -64,7 +64,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(null);
           }
         } catch (e) {
-          console.error('Local Storage에서 user 정보 파싱 실패:', e);
+          console.error('Local Storage에서 user 정보 패싱 실패:', e);
           setUser(null);
         }
       } else {
