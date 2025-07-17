@@ -56,6 +56,10 @@ const InstructorMyStudentPage = () => {
   const fetchLectures = async () => {
     try {
       const { token, instructorId } = getAuthInfo();
+
+      //테스트 콘솔
+      console.log('👤 instructorId 확인:', instructorId);
+
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/instructor/${instructorId}/lectures`,
         {
