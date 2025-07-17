@@ -19,7 +19,7 @@ const useMyPageInfo = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/me`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },

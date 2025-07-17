@@ -1,11 +1,8 @@
-import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import './index.css';
+import useUserInfo from '@/components/hooks/useUserInfo';
 
-interface User {
-  id: number;
-  nickname: string;
-}
 
 interface Review {
   id?: number;
@@ -38,15 +35,7 @@ const LectureApplyPage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
 
-  const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem('accessToken'));
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
+  const { user, accessToken } = useUserInfo();
 
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
@@ -55,48 +44,6 @@ const LectureApplyPage = () => {
   const [loading, setLoading] = useState(true);
 
   const API_URL = import.meta.env.VITE_API_URL;
-
-  useEffect(() => {
-    const currentToken = localStorage.getItem('accessToken');
-    const currentUserData = localStorage.getItem('user');
-
-    setAccessToken(currentToken);
-    if (currentUserData) {
-      try {
-        const parsedUser = JSON.parse(currentUserData);
-        if (parsedUser?.id) setUser(parsedUser);
-        else setUser(null);
-      } catch {
-        console.error('유저 파싱 실패');
-        setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
-
-    const handleStorageChange = () => {
-      const updatedToken = localStorage.getItem('accessToken');
-      const updatedUserData = localStorage.getItem('user');
-
-      setAccessToken(updatedToken);
-      if (updatedUserData) {
-        try {
-          const parsedUser = JSON.parse(updatedUserData);
-          if (parsedUser?.id) setUser(parsedUser);
-          else setUser(null);
-        } catch {
-          console.error('유저 파싱 실패 (storage event)');
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
 
   useEffect(() => {
     const fetchLecture = async () => {

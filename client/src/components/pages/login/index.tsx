@@ -10,7 +10,7 @@ export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassWord] = useState(false);
-  const { setUser } = useUser();
+  const { login } = useUser();
   const navigate = useNavigate();
 
   const handleGoogleLogin = () => {
@@ -42,11 +42,12 @@ export const LoginPage = () => {
       const result = await res.json();
 
       if (!result.accessToken || !result.user) {
-        return toast.error('로그인 실패');
+        toast.error('로그인 실패: 사용자 정보가 불완전합니다.');
+        return;
       }
 
-      localStorage.setItem('accessToken', result.accessToken);
-      setUser(result.user);
+      login(result.accessToken, result.user);
+
       toast.success('로그인 성공');
       navigate('/main');
     } catch (error) {
