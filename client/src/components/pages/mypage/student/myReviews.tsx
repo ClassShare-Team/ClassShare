@@ -17,7 +17,7 @@ const StudentMyReviewsPage = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/my-reviews`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/my-reviews`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },

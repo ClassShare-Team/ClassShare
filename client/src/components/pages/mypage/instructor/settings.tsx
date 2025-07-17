@@ -17,7 +17,7 @@ const InstructorSettingsPage = () => {
       formData.append('nickname', nickname);
       formData.append('phone', phone);
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -41,7 +41,7 @@ const InstructorSettingsPage = () => {
   const handlePasswordChange = async () => {
     if (!password.trim()) return toast.warning('새 비밀번호를 입력해주세요.');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/password`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me/password`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -18,7 +18,7 @@ const InstructorSalesReportPage = () => {
   useEffect(() => {
     const fetchSales = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/instructor/sales`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/instructor/sales`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
