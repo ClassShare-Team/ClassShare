@@ -66,12 +66,23 @@ const InstructorMyStudentPage = () => {
       );
 
       if (!res.ok) throw new Error('강의 정보를 불러오지 못했습니다.');
-      const data = await res.json();
 
-      console.log('강의 응답 확인:', data);
+      const text = await res.text();
+      console.log('📘 강의 응답 원문:', text);
 
-      setLectureList(data);
+      const json = JSON.parse(text);
+
+      // 형태가 배열이면 그대로, 객체 안에 lectures 배열이 있으면 그걸로 설정
+      const lectures = Array.isArray(json)
+        ? json
+        : Array.isArray(json.lectures)
+          ? json.lectures
+          : [];
+
+      console.log('✅ 최종 파싱된 강의 목록:', lectures);
+      setLectureList(lectures);
     } catch (err) {
+      console.error('❌ fetchLectures 오류:', err);
       if (err instanceof Error) setError(err.message);
       else setError('알 수 없는 오류 발생');
     }
