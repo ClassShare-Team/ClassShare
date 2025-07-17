@@ -40,7 +40,7 @@ export const AppRoutes = () => {
         <Route path="boards/create" element={<BoardCreatePage />} />
         <Route path="lecture/:lectureId/videos" element={<VideoListPage />} />
         <Route path="boards/posts/:id" element={<BoardPostDetailPage />} />
-        <Route path="streamingpage" element={<StreamingPage />} />
+        <Route path="streamingpage/:lectureId" element={<StreamingPage />} />
         <Route path="lectures/:id/apply" element={<LectureApplyPage />} />
         <Route path="instructor-info" element={<InstructorInfoPage />} />
         <Route path="search" element={<SearchPage />} />
