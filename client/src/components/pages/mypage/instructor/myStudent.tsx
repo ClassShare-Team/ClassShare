@@ -70,7 +70,7 @@ const InstructorMyStudentPage = () => {
 
       console.log('강의 응답 확인:', data);
 
-      setLectureList(data.lectures);
+      setLectureList(data);
     } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError('알 수 없는 오류 발생');
