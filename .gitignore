@@ -5,4 +5,4 @@ docker/.env
 client/.env.development
 client/.env.production
 # Server
-server/.env
+server/.env.development
