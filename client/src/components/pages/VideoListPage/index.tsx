@@ -25,7 +25,6 @@ const VideoListPage = () => {
         setLectureTitle('(강의 정보를 불러오지 못했습니다)');
       });
 
-
     fetch(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`, {
       credentials: 'include',
     })
@@ -38,19 +37,23 @@ const VideoListPage = () => {
   }, [lectureId]);
 
   const handleClick = (videoId?: number) => {
-  if (!lectureId || !videoId) {
-    console.warn('잘못된 접근: lectureId 또는 videoId 누락');
-    return;
-  }
-  navigate(`/streamingpage/${lectureId}?videoId=${videoId}`);
-};
+    if (!lectureId || videoId === undefined || videoId === null) {
+      console.warn('잘못된 접근: lectureId 또는 videoId 누락');
+      return;
+    }
+    navigate(`/streamingpage/${lectureId}?videoId=${videoId}`);
+  };
 
   return (
     <div className="video-list-container">
       <h2 className="video-list-title">{lectureTitle}</h2>
       <div className="video-list">
         {videos.map((video) => (
-          <div key={video.id} className="video-card" onClick={() => handleClick(video.id)}>
+          <div
+            key={video.id}
+            className="video-card"
+            onClick={() => handleClick(video.id)}
+          >
             <div className="left">
               <span className="icon">🎥</span>
               <span className="title">{video.title}</span>
