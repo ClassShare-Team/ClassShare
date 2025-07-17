@@ -94,9 +94,9 @@ const CreateLecturePage = () => {
 
   useEffect(() => {
     const fetchPurchaseStatus = async () => {
-      if (!token || !lecture) return;
+      if (!token || !id) return;
       try {
-        const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchased`, {
+        const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -109,7 +109,7 @@ const CreateLecturePage = () => {
     };
 
     fetchPurchaseStatus();
-  }, [token, lecture]);
+  }, [token, id]);
 
   const handleEnroll = async () => {
     if (!token || !lecture) return alert('로그인이 필요합니다');
@@ -182,7 +182,7 @@ const CreateLecturePage = () => {
         body: JSON.stringify({
           lecture_id: lecture.id,
           title: qnaInput.trim(),
-          content: '',
+          content: '-',
         }),
       });
       const result = await res.json();
