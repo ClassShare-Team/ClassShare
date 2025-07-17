@@ -57,6 +57,7 @@ const TopRow = styled.div`
 
 const LeftArea = styled.div`
   width: 132px;
+  min-width: 132px;
 `;
 
 const CenterArea = styled.div`

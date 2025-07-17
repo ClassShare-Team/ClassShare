@@ -16,6 +16,14 @@ import LectureApplyPage from '@/components/pages/lectureApply';
 import InstructorInfoPage from '@/components/pages/instructorInfo';
 import SearchPage from '@/components/pages/search';
 
+import StudentMyCourses from '@/components/pages/mypage/student/myCourses';
+import StudentMyReviews from '@/components/pages/mypage/student/myReviews';
+import StudentPaymentHistory from '@/components/pages/mypage/student/paymentHistory';
+import StudentSettings from '@/components/pages/mypage/student/settings';
+import StudentMyPage from '@/components/pages/mypage/student/myPage';
+import InstructorMyPage from '@/components/pages/mypage/instructor/myPage';
+import InstructorSettings from '@/components/pages/mypage/instructor/settings';
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -36,6 +44,14 @@ export const AppRoutes = () => {
         <Route path="lectures/:id/apply" element={<LectureApplyPage />} />
         <Route path="instructor-info" element={<InstructorInfoPage />} />
         <Route path="search" element={<SearchPage />} />
+
+        <Route path="student/mycourse" element={<StudentMyCourses />} />
+        <Route path="student/myreview" element={<StudentMyReviews />} />
+        <Route path="student/paymenthistory" element={<StudentPaymentHistory />} />
+        <Route path="student/setting" element={<StudentSettings />} />
+        <Route path="student/mypage" element={<StudentMyPage />} />
+        <Route path="instructor/mypage" element={<InstructorMyPage />} />
+        <Route path="instructor/setting" element={<InstructorSettings />} />
       </Route>
     </Routes>
   );
