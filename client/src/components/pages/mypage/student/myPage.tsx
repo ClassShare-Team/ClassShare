@@ -36,6 +36,7 @@ const MyPageLayout = styled.div`
   align-items: center;
   padding: 40px;
   background-color: ${({ theme }) => theme.colors.gray100};
+  min-height: calc(100vh - 80px);
 `;
 
 const ProfileSection = styled.section`
