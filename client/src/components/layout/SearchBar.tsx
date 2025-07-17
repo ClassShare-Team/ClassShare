@@ -24,7 +24,15 @@ const SearchWrapper = styled.div`
 
 const InputWrapper = styled.div`
   position: relative;
+  margin-left: 10px;
   width: 460px;
+  @media (max-width: 1024px) {
+    width: 300px;
+  }
+
+  @media (max-width: 768px) {
+    width: 200px;
+  }
 `;
 
 const Input = styled.input`
