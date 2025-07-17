@@ -21,7 +21,6 @@ const StudentMyPage = () => {
       <NavMenu>
         <MenuItem onClick={() => navigate('/student/mycourse')}>내 수강 강의</MenuItem>
         <MenuItem onClick={() => navigate('/student/myreview')}>내 리뷰</MenuItem>
-        <MenuItem onClick={() => navigate('/student/paymenthistory')}>결제 내역</MenuItem>
         <MenuItem onClick={() => navigate('/student/inquiry')}>문의</MenuItem>
         <MenuItem onClick={() => navigate('/student/setting')}>설정</MenuItem>
       </NavMenu>

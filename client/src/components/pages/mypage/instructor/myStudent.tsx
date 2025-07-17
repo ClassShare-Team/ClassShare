@@ -17,6 +17,7 @@ const InstructorMyStudentPage = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
+        //수강생 정보가 있는 API 찾아야함
         const res = await fetch(`${import.meta.env.VITE_API_URL}/instructor/students`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

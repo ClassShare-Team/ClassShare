@@ -19,13 +19,11 @@ import SearchPage from '@/components/pages/search';
 import StudentMyCourses from '@/components/pages/mypage/student/myCourses';
 import StudentMyPage from '@/components/pages/mypage/student/myPage';
 import StudentMyReviews from '@/components/pages/mypage/student/myReviews';
-import StudentPaymentHistory from '@/components/pages/mypage/student/paymentHistory';
 import StudentSettings from '@/components/pages/mypage/student/settings';
 
 import InstructorLecture from '@/components/pages/mypage/instructor/myLecture';
 import InstructorMyPage from '@/components/pages/mypage/instructor/myPage';
 import InstructorMyStudent from '@/components/pages/mypage/instructor/myStudent';
-import InstructorSalesReport from '@/components/pages/mypage/instructor/salesReport';
 import InstructorSettings from '@/components/pages/mypage/instructor/settings';
 
 export const AppRoutes = () => {
@@ -52,13 +50,11 @@ export const AppRoutes = () => {
         <Route path="student/mycourse" element={<StudentMyCourses />} />
         <Route path="student/mypage" element={<StudentMyPage />} />
         <Route path="student/myreview" element={<StudentMyReviews />} />
-        <Route path="student/paymenthistory" element={<StudentPaymentHistory />} />
         <Route path="student/setting" element={<StudentSettings />} />
 
         <Route path="instructor/mylecture" element={<InstructorLecture />} />
         <Route path="instructor/mypage" element={<InstructorMyPage />} />
         <Route path="instructor/mystudent" element={<InstructorMyStudent />} />
-        <Route path="instructor/salesreport" element={<InstructorSalesReport />} />
         <Route path="instructor/setting" element={<InstructorSettings />} />
       </Route>
     </Routes>
