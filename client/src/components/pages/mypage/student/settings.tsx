@@ -84,50 +84,52 @@ const StudentSettingsPage = () => {
 
   return (
     <Container>
-      <h2>설정</h2>
+      <Card>
+        <h2>설정</h2>
 
-      <Label>프로필 이미지</Label>
-      {previewUrl && <PreviewImage src={previewUrl} alt="미리보기" />}
+        <Label>프로필 이미지</Label>
+        {previewUrl && <PreviewImage src={previewUrl} alt="미리보기" />}
 
-      <FileUploadWrapper>
-        <HiddenFileInput
-          type="file"
-          accept="image/*"
-          id="profile-upload"
-          onChange={handleProfileImageChange}
+        <FileUploadWrapper>
+          <HiddenFileInput
+            type="file"
+            accept="image/*"
+            id="profile-upload"
+            onChange={handleProfileImageChange}
+          />
+          <UploadButton as="label" htmlFor="profile-upload">
+            이미지 선택
+          </UploadButton>
+        </FileUploadWrapper>
+
+        <Label>닉네임</Label>
+        <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
+
+        <Label>전화번호</Label>
+        <Input value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} />
+
+        <SaveButton onClick={handleProfileSave} disabled={loading}>
+          {loading ? '저장 중...' : '프로필 저장'}
+        </SaveButton>
+
+        <Label>현재 비밀번호</Label>
+        <Input
+          type="password"
+          value={currentPassword}
+          placeholder="현재 비밀번호"
+          onChange={(e) => setCurrentPassword(e.target.value)}
         />
-        <UploadButton as="label" htmlFor="profile-upload">
-          이미지 선택
-        </UploadButton>
-      </FileUploadWrapper>
 
-      <Label>닉네임</Label>
-      <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
+        <Label>새 비밀번호</Label>
+        <Input
+          type="password"
+          value={password}
+          placeholder="새 비밀번호"
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      <Label>전화번호</Label>
-      <Input value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} />
-
-      <SaveButton onClick={handleProfileSave} disabled={loading}>
-        {loading ? '저장 중...' : '프로필 저장'}
-      </SaveButton>
-
-      <Label>현재 비밀번호</Label>
-      <Input
-        type="password"
-        value={currentPassword}
-        placeholder="현재 비밀번호"
-        onChange={(e) => setCurrentPassword(e.target.value)}
-      />
-
-      <Label>새 비밀번호</Label>
-      <Input
-        type="password"
-        value={password}
-        placeholder="새 비밀번호"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
+        <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
+      </Card>
     </Container>
   );
 };
@@ -140,6 +142,18 @@ const Container = styled.div`
   margin: 0 auto;
   background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   min-height: calc(100vh - 80px);
+`;
+
+const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Label = styled.label`
