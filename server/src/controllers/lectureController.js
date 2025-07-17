@@ -144,7 +144,7 @@ exports.purchaseLecture = async (req, res) => {
 
 exports.checkPurchased = async (req, res) => {
   const { lectureId } = req.params;
-  const { userId } = req.query;
+  const userId = req.user?.id;
 
   if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
 
