@@ -32,24 +32,25 @@ exports.searchLecturesWithPagination = async (keyword, page, size) => {
 
   // 3. 강의 제목/소개 매칭 강의 조회
   const lecturesQuery = `
-    SELECT lectures.id,
-           lectures.title,
-           lectures.description,
-           lectures.thumbnail,
-           lectures.price,
-           users.nickname AS instructor
-    FROM lectures
-    JOIN users ON lectures.instructor_id = users.id
-    WHERE (lectures.title ILIKE $1 OR lectures.description ILIKE $1)
-    ORDER BY lectures.created_at DESC
-    LIMIT $2 OFFSET $3;
-  `;
+  SELECT lectures.id,
+         lectures.title,
+         lectures.description,
+         lectures.thumbnail,
+         lectures.price,
+         lectures.category,
+         users.nickname AS instructor
+  FROM lectures
+  JOIN users ON lectures.instructor_id = users.id
+  WHERE (lectures.title ILIKE $1 OR lectures.description ILIKE $1 OR lectures.category ILIKE $1)
+  ORDER BY lectures.created_at DESC
+  LIMIT $2 OFFSET $3;
+`;
 
   const countQuery = `
-    SELECT COUNT(*) AS total
-    FROM lectures
-    WHERE title ILIKE $1 OR description ILIKE $1;
-  `;
+  SELECT COUNT(*) AS total
+  FROM lectures
+  WHERE title ILIKE $1 OR description ILIKE $1 OR category ILIKE $1;
+`;
 
   const [lecturesResult, countResult] = await Promise.all([
     db.query(lecturesQuery, [searchKeyword, size, offset]),

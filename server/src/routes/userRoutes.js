@@ -13,7 +13,7 @@ router.patch(
 ); // 정보 수정
 router.patch('/notification-settings', authMiddleware, userController.updateNotificationSettings); // 알림 설정
 router.patch('/me/password', authMiddleware, userController.updatePassword); // 비밀번호 변경
-router.post('/inquiries', authMiddleware, userController.createInquiry); // 리뷰 쓰기
+router.post('/inquiries', authMiddleware, userController.createInquiry); // 문의 쓰기
 router.get('/subscriptions', authMiddleware, userController.getMySubscriptions); // 나의 구독 조회 (스펙아웃)
 router.get('/my-reviews', authMiddleware, userController.getMyReviews); // 나의 리뷰 조회
 router.get('/my-comments', authMiddleware, userController.getMyComments); // 나의 댓글 조회
