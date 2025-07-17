@@ -36,11 +36,7 @@ const VideoListPage = () => {
       });
   }, [lectureId]);
 
-  const handleClick = (videoId?: number) => {
-    if (!lectureId || videoId === undefined || videoId === null) {
-      console.warn('잘못된 접근: lectureId 또는 videoId 누락');
-      return;
-    }
+  const handleClick = (videoId: number) => {
     navigate(`/streamingpage/${lectureId}?videoId=${videoId}`);
   };
 
