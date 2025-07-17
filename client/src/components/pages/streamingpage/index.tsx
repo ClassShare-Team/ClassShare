@@ -228,15 +228,18 @@ useEffect(() => {
               controls={false}
               crossOrigin="anonymous"
               onClick={handlePlayToggle}
-              onLoadedMetadata={e => {
-                setDuration((e.target as HTMLVideoElement).duration);
+              onLoadedMetadata={(e) => {
+                const videoEl = e.target as HTMLVideoElement;
+                setDuration(videoEl.duration);
                 setPaused(true);
-              }}
-              onTimeUpdate={() => setCurrent(videoRef.current?.currentTime || 0)}
-              onPlay={() => setPaused(false)}
-              onPause={() => setPaused(true)}
-              style={{ width: "100%", height: "100%", background: "#000" }}
-            />
+                  videoEl.currentTime = current;
+                  videoEl.play().catch(err => console.error("Video play failed:", err));
+                }}
+                onTimeUpdate={() => setCurrent(videoRef.current?.currentTime || 0)}
+                onPlay={() => setPaused(false)}
+                onPause={() => setPaused(true)}
+                style={{ width: "100%", height: "100%", background: "#000" }}
+              />
           )}
           <ControlsBar visible={showBar}>
             <ProgressBarWrap onClick={handleProgressClick}>
