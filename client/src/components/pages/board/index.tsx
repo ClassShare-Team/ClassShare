@@ -49,11 +49,6 @@ const BoardPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchPosts(sortType, searchQuery, 1);
-    setCurrentPage(1);
-  }, [sortType]);
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     fetchPosts(sortType, searchQuery, page);
@@ -67,6 +62,16 @@ const BoardPage = () => {
     if (currentPage > 1) handlePageChange(currentPage - 1);
   };
 
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchPosts(sortType, searchQuery, 1);
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchPosts(sortType, searchQuery, 1);
+  }, [sortType]);
+
   return (
     <PageWrapper>
       <MainContent>
@@ -79,7 +84,7 @@ const BoardPage = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <TopButton onClick={() => fetchPosts(sortType, searchQuery, 1)}>검색</TopButton>
+                <TopButton onClick={handleSearch}>검색</TopButton>
               </SearchBox>
 
               <FilterSection>
