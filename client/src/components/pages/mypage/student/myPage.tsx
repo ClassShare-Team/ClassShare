@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
+import { toast } from 'react-toastify';
 
 const StudentMyPage = () => {
   const navigate = useNavigate();
@@ -10,20 +11,44 @@ const StudentMyPage = () => {
   if (error) return <div>오류: {error.message}</div>;
   if (!userInfo) return <div>유저 정보를 불러오지 못했습니다.</div>;
 
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm('정말로 회원 탈퇴하시겠습니까? 복구할 수 없습니다.');
+    if (!confirmDelete) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      if (!res.ok) throw new Error('회원 탈퇴 실패');
+      toast.success('회원 탈퇴가 완료되었습니다.');
+      localStorage.removeItem('accessToken');
+      navigate('/');
+    } catch (err) {
+      if (err instanceof Error) toast.error(err.message);
+      else toast.error('알 수 없는 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <MyPageLayout>
-      <ProfileSection>
-        <img src={userInfo.profile_image} alt="profile" />
-        <h2>{userInfo.nickname || '닉네임 없음'}</h2>
-        <p>{userInfo.email}</p>
-      </ProfileSection>
+      <Card>
+        <ProfileSection>
+          <img src={userInfo.profile_image} alt="profile" />
+          <h2>{userInfo.name || '이름 없음'}</h2>
+          <InfoText>닉네임: {userInfo.nickname || '닉네임 없음'}</InfoText>
+          <InfoText>이메일: {userInfo.email}</InfoText>
+          <InfoText>역할: {userInfo.role === 'instructor' ? '강사' : '학생'}</InfoText>
+        </ProfileSection>
 
-      <NavMenu>
-        <MenuItem onClick={() => navigate('/student/mycourse')}>내 수강 강의</MenuItem>
-        <MenuItem onClick={() => navigate('/student/myreview')}>내 리뷰</MenuItem>
-        <MenuItem onClick={() => navigate('/student/inquiry')}>문의</MenuItem>
-        <MenuItem onClick={() => navigate('/student/setting')}>설정</MenuItem>
-      </NavMenu>
+        <NavMenu>
+          <MenuItem onClick={() => navigate('/student/mycourse')}>내 수강 강의</MenuItem>
+          <MenuItem onClick={() => navigate('/student/myreview')}>내 리뷰</MenuItem>
+          <MenuItem onClick={() => navigate('/student/setting')}>설정</MenuItem>
+          <DangerMenuItem onClick={handleDeleteAccount}>회원 탈퇴</DangerMenuItem>
+        </NavMenu>
+      </Card>
     </MyPageLayout>
   );
 };
@@ -35,7 +60,20 @@ const MyPageLayout = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  background-color: ${({ theme }) => theme.colors.gray100};
+  background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
+  min-height: calc(100vh - 80px);
+`;
+
+const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const ProfileSection = styled.section`
@@ -81,5 +119,21 @@ const MenuItem = styled.div`
   &:hover {
     background-color: ${({ theme }) => theme.colors.gray200};
     color: ${({ theme }) => theme.colors.purple};
+  }
+`;
+
+const InfoText = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.gray500};
+  margin-top: 6px;
+  white-space: pre-line;
+`;
+
+const DangerMenuItem = styled(MenuItem)`
+  color: red;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.gray200};
+    color: red;
   }
 `;

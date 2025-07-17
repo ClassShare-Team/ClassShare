@@ -62,7 +62,8 @@ export default StudentMyReviewsPage;
 
 const MyReviewsContainer = styled.div`
   padding: 24px;
-  background-color: ${({ theme }) => theme.colors.white};
+  background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
+  min-height: calc(100vh - 80px);
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;

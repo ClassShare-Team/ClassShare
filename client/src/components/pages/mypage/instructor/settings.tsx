@@ -84,7 +84,18 @@ const InstructorSettingsPage = () => {
 
       <Label>프로필 이미지</Label>
       {previewUrl && <PreviewImage src={previewUrl} alt="미리보기" />}
-      <Input type="file" accept="image/*" onChange={handleProfileImageChange} />
+
+      <FileUploadWrapper>
+        <HiddenFileInput
+          type="file"
+          accept="image/*"
+          id="instructor-profile-upload"
+          onChange={handleProfileImageChange}
+        />
+        <UploadButton as="label" htmlFor="instructor-profile-upload">
+          이미지 선택
+        </UploadButton>
+      </FileUploadWrapper>
 
       <Label>닉네임</Label>
       <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
@@ -123,6 +134,8 @@ const Container = styled.div`
   padding: 40px;
   max-width: 600px;
   margin: 0 auto;
+  background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
+  min-height: calc(100vh - 80px);
 `;
 
 const Label = styled.label`
@@ -156,4 +169,24 @@ const PreviewImage = styled.img`
   object-fit: cover;
   margin-top: 8px;
   margin-bottom: 12px;
+`;
+
+const FileUploadWrapper = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const UploadButton = styled.button`
+  padding: 10px 16px;
+  background-color: ${({ theme }) => theme.colors.purple};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
 `;
