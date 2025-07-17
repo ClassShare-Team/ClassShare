@@ -37,6 +37,7 @@ const LectureApplyPage = () => {
 
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
+  const [purchaseChecked, setPurchaseChecked] = useState(false); 
   const [reviewInput, setReviewInput] = useState('');
   const [qnaInput, setQnaInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -91,7 +92,7 @@ const LectureApplyPage = () => {
 
   useEffect(() => {
     const fetchPurchaseStatus = async () => {
-      if (!accessToken || !id) return;
+      if (!accessToken || !id || !user) return;
       try {
         const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -101,11 +102,13 @@ const LectureApplyPage = () => {
       } catch (err) {
         console.error('수강 여부 확인 실패:', err);
         setEnrolled(false);
+      } finally {
+        setPurchaseChecked(true); 
       }
     };
 
     fetchPurchaseStatus();
-  }, [accessToken, id]);
+  }, [accessToken, user, id]);
 
   const handleEnroll = async () => {
     if (!accessToken || !lecture) return alert('로그인이 필요합니다');
@@ -366,17 +369,21 @@ const LectureApplyPage = () => {
             <div className="price">
               <strong>{price === 0 ? '무료' : `${price.toLocaleString()}원`}</strong>
             </div>
-            <button
-              className="enroll-btn"
-              onClick={enrolled ? handleGoToVideos : handleEnroll}
-              disabled={!user || !accessToken}
-              style={{
-                background: !user || !accessToken ? '#bbb' : undefined,
-                cursor: !user || !accessToken ? 'not-allowed' : undefined,
-              }}
-            >
-              {enrolled ? '수강하기' : '신청하기'}
-            </button>
+            {purchaseChecked ? (
+              <button
+                className="enroll-btn"
+                onClick={enrolled ? handleGoToVideos : handleEnroll}
+                disabled={!user || !accessToken}
+                style={{
+                  background: !user || !accessToken ? '#bbb' : undefined,
+                  cursor: !user || !accessToken ? 'not-allowed' : undefined,
+                }}
+              >
+                {enrolled ? '수강하기' : '신청하기'}
+              </button>
+            ) : (
+              <div style={{ height: 48 }} />
+            )}
             {!user || !accessToken ? (
               <div style={{ fontSize: 13, color: '#D32F2F', marginTop: 7 }}>
                 로그인 후 신청할 수 있습니다.
