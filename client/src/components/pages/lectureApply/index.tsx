@@ -49,7 +49,7 @@ const CreateLecturePage = () => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    const handleLoginSync = () => {
+    const syncUserData = () => {
       const userData = localStorage.getItem('user');
       const token = localStorage.getItem('accessToken');
       if (userData) {
@@ -63,12 +63,10 @@ const CreateLecturePage = () => {
       setAccessToken(token);
     };
 
-    window.addEventListener('storage', handleLoginSync);
-    handleLoginSync();
+    syncUserData();
 
-    return () => {
-      window.removeEventListener('storage', handleLoginSync);
-    };
+    window.addEventListener('storage', syncUserData);
+    return () => window.removeEventListener('storage', syncUserData);
   }, []);
 
   useEffect(() => {
