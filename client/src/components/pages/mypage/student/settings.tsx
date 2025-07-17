@@ -175,7 +175,7 @@ const PreviewImage = styled.img`
 
 const FileUploadWrapper = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   margin-top: 8px;
 `;
 
