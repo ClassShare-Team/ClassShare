@@ -31,6 +31,9 @@ interface Lecture {
   qnas?: Qna[];
 }
 
+const MAX_REVIEW_LENGTH = 300;
+const MAX_QNA_LENGTH = 300;
+
 const CreateLecturePage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
@@ -38,6 +41,9 @@ const CreateLecturePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
+  const [reviewInput, setReviewInput] = useState('');
+  const [qnaInput, setQnaInput] = useState('');
+  const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -58,6 +64,7 @@ const CreateLecturePage = () => {
     };
 
     syncUserData();
+
     window.addEventListener('storage', syncUserData);
     return () => window.removeEventListener('storage', syncUserData);
   }, []);
@@ -77,6 +84,7 @@ const CreateLecturePage = () => {
     const fetchLecture = async () => {
       if (!id) return;
       try {
+        setLoading(true);
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
         const data = await lectureRes.json();
 
@@ -110,6 +118,8 @@ const CreateLecturePage = () => {
       } catch (err) {
         console.error(err);
         setLecture(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -164,6 +174,10 @@ const CreateLecturePage = () => {
   const handleGoToVideos = () => {
     if (lecture?.id) navigate(`/lecture/${lecture.id}/videos`);
   };
+
+  // ... 나머지 그대로 유지
+
+  // 마지막 버튼 렌더링 부분만 유지
 
   return (
     <div className="price-box">
