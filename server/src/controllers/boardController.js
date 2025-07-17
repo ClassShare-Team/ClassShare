@@ -1,7 +1,7 @@
 const db = require('../db');
 
 exports.getPosts = async (req, res) => {
-  const { sort = 'recent', search = '', category = 'general', page = 1, limit = 9 } = req.query;
+  const { sort = 'recent', search = '', page = 1, limit = 9 } = req.query;
 
   const offset = (page - 1) * limit;
   let sortClause = 'p.created_at DESC';
@@ -9,7 +9,7 @@ exports.getPosts = async (req, res) => {
   else if (sort === 'comments') sortClause = 'comments DESC';
 
   try {
-    const query = `
+    const postsQuery = `
       SELECT
         p.id,
         p.title,
@@ -30,18 +30,23 @@ exports.getPosts = async (req, res) => {
         FROM comments
         GROUP BY post_id
       ) c ON p.id = c.post_id
-      WHERE (p.title ILIKE $1 OR p.content ILIKE $1) AND p.category = $2
+      WHERE (p.title ILIKE $1 OR p.content ILIKE $1) AND p.category = 'general'
       ORDER BY ${sortClause}
-      LIMIT $3 OFFSET $4;
-
-      SELECT COUNT(*) FROM posts p
-      WHERE (p.title ILIKE $1 OR p.content ILIKE $1) AND p.category = $2;
+      LIMIT $2 OFFSET $3
     `;
 
-    const result = await db.query(query, [`%${search}%`, category, limit, offset]);
+    const countQuery = `
+      SELECT COUNT(*) FROM posts p
+      WHERE (p.title ILIKE $1 OR p.content ILIKE $1) AND p.category = 'general'
+    `;
 
-    const posts = result[0].rows;
-    const totalCount = parseInt(result[1].rows[0].count);
+    const [postsResult, countResult] = await Promise.all([
+      db.query(postsQuery, [`%${search}%`, limit, offset]),
+      db.query(countQuery, [`%${search}%`]),
+    ]);
+
+    const posts = postsResult.rows;
+    const totalCount = parseInt(countResult.rows[0].count);
 
     res.json({ posts, totalCount });
   } catch (err) {
