@@ -44,12 +44,13 @@ const CreateLecturePage = () => {
   const [reviewInput, setReviewInput] = useState('');
   const [qnaInput, setQnaInput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
-  const token = localStorage.getItem('accessToken');
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
+    const token = localStorage.getItem('accessToken');
     if (userData) {
       try {
         const parsedUser = JSON.parse(userData);
@@ -58,6 +59,7 @@ const CreateLecturePage = () => {
         console.error('유저 파싱 실패');
       }
     }
+    setAccessToken(token);
   }, []);
 
   useEffect(() => {
@@ -90,7 +92,7 @@ const CreateLecturePage = () => {
             .filter((q: any) => q.category === 'qa')
             .map((q: any) => ({
               id: q.id,
-              nickname: '익명',
+              nickname: q.user_nickname,
               content: q.title,
               userId: q.user_id,
             })),
@@ -108,10 +110,10 @@ const CreateLecturePage = () => {
 
   useEffect(() => {
     const fetchPurchaseStatus = async () => {
-      if (!token || !id) return;
+      if (!accessToken || !id) return;
       try {
         const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await res.json();
         setEnrolled(data.is_purchased === true);
@@ -121,15 +123,15 @@ const CreateLecturePage = () => {
     };
 
     fetchPurchaseStatus();
-  }, [token, id]);
+  }, [accessToken, id]);
 
   const handleEnroll = async () => {
-    if (!token || !lecture) return alert('로그인이 필요합니다');
+    if (!accessToken || !lecture) return alert('로그인이 필요합니다');
     try {
       const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       const data = await res.json();
@@ -149,13 +151,13 @@ const CreateLecturePage = () => {
   };
 
   const handleSubmitReview = async () => {
-    if (!reviewInput.trim() || !lecture || !user || !token) return;
+    if (!reviewInput.trim() || !lecture || !user || !accessToken) return;
     try {
       const res = await fetch(`${API_URL}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           lectureId: lecture.id,
@@ -187,12 +189,12 @@ const CreateLecturePage = () => {
   };
 
   const handleDeleteReview = async (reviewId?: number) => {
-    if (!reviewId || !token) return;
+    if (!reviewId || !accessToken) return;
     try {
       const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       if (res.ok) {
@@ -208,13 +210,13 @@ const CreateLecturePage = () => {
   };
 
   const handleSubmitQna = async () => {
-    if (!qnaInput.trim() || !lecture || !token) return;
+    if (!qnaInput.trim() || !lecture || !accessToken) return;
     try {
       const res = await fetch(`${API_URL}/qna`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           lecture_id: lecture.id,
@@ -245,12 +247,12 @@ const CreateLecturePage = () => {
   };
 
   const handleDeleteQna = async (qnaId?: number) => {
-    if (!qnaId || !token) return;
+    if (!qnaId || !accessToken) return;
     try {
       const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       if (res.ok) {
