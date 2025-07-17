@@ -9,15 +9,20 @@ const StudentSettingsPage = () => {
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [phone, setPhone] = useState(userInfo?.phone || '');
   const [password, setPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const formatPhone = (raw: string) => {
+    return raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
+  };
 
   const handleProfileSave = async () => {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append('nickname', nickname);
-      formData.append('phone', phone);
+      if (nickname.trim()) formData.append('nickname', nickname.trim());
+      if (phone.trim()) formData.append('phone', phone.trim());
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
         method: 'PATCH',
@@ -41,7 +46,9 @@ const StudentSettingsPage = () => {
   };
 
   const handlePasswordChange = async () => {
-    if (!password.trim()) return toast.warning('새 비밀번호를 입력해주세요.');
+    if (!currentPassword.trim() || !password.trim()) {
+      return toast.warning('현재 비밀번호와 새 비밀번호를 모두 입력해주세요.');
+    }
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me/password`, {
         method: 'PATCH',
@@ -49,10 +56,14 @@ const StudentSettingsPage = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: password,
+        }),
       });
       if (!res.ok) throw new Error('비밀번호 변경 실패');
       toast.success('비밀번호가 변경되었습니다.');
+      setCurrentPassword('');
       setPassword('');
     } catch (err) {
       if (err instanceof Error) {
@@ -93,19 +104,28 @@ const StudentSettingsPage = () => {
       <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
 
       <Label>전화번호</Label>
-      <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <Input value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} />
 
       <SaveButton onClick={handleProfileSave} disabled={loading}>
         {loading ? '저장 중...' : '프로필 저장'}
       </SaveButton>
 
-      <Label>비밀번호 변경</Label>
+      <Label>현재 비밀번호</Label>
+      <Input
+        type="password"
+        value={currentPassword}
+        placeholder="현재 비밀번호"
+        onChange={(e) => setCurrentPassword(e.target.value)}
+      />
+
+      <Label>새 비밀번호</Label>
       <Input
         type="password"
         value={password}
         placeholder="새 비밀번호"
         onChange={(e) => setPassword(e.target.value)}
       />
+
       <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
 
       <WithdrawButton onClick={handleDeleteAccount}>회원 탈퇴</WithdrawButton>
