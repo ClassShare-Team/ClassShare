@@ -43,7 +43,6 @@ const InstructorMyPage = () => {
         </ProfileSection>
 
         <NavMenu>
-          <MenuItem onClick={() => navigate('/instructor/mypage')}>내 정보</MenuItem>
           <MenuItem onClick={() => navigate('/instructor/mylecture')}>내 강의</MenuItem>
           <MenuItem onClick={() => navigate('/instructor/mystudent')}>수강생 관리</MenuItem>
           <MenuItem onClick={() => navigate('/instructor/setting')}>설정</MenuItem>
