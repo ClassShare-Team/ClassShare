@@ -115,7 +115,7 @@ const Container = styled.div`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 `;
 
 const FilterButton = styled.button<{ active: boolean }>`
@@ -142,8 +142,8 @@ const StudentCard = styled.div`
 `;
 
 const Avatar = styled.div`
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background-color: #ddd;
   border-radius: 50%;
   margin-right: 12px;
