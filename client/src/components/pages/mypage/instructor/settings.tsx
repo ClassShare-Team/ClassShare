@@ -146,7 +146,7 @@ const Card = styled.div`
   box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
   padding: 2.5rem;
   width: 100%;
-  max-width: 600px;
+  max-width: 720px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -169,6 +169,7 @@ const Input = styled.input`
 const SaveButton = styled.button`
   margin-top: 20px;
   padding: 10px 16px;
+  font-size: 14px;
   background-color: ${({ theme }) => theme.colors.purple};
   color: white;
   border: none;
@@ -196,6 +197,7 @@ const HiddenFileInput = styled.input`
 `;
 
 const UploadButton = styled.button`
+  width: 100%;
   padding: 10px 16px;
   background-color: ${({ theme }) => theme.colors.purple};
   color: white;
