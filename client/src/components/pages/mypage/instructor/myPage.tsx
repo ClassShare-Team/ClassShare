@@ -16,9 +16,9 @@ const InstructorMyPage = () => {
         <ProfileSection>
           <img src={userInfo.profile_image} alt="profile" />
           <h2>{userInfo.name || '이름 없음'}</h2>
-          <InfoText>{userInfo.nickname || '닉네임 없음'}</InfoText>
-          <InfoText>{userInfo.email}</InfoText>
-          <InfoText>{userInfo.role === 'instructor' ? '강사' : '학생'}</InfoText>
+          <InfoText>닉네임: {userInfo.nickname || '닉네임 없음'}</InfoText>
+          <InfoText>이메일: {userInfo.email}</InfoText>
+          <InfoText>역할: {userInfo.role === 'instructor' ? '강사' : '학생'}</InfoText>
         </ProfileSection>
 
         <NavMenu>
