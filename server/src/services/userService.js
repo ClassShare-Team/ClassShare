@@ -343,36 +343,52 @@ exports.getMyAllStudents = async (userId, page = 1, size = 10) => {
 exports.getMyStudentsByLecture = async (userId, lectureId, page = 1, size = 10) => {
   const offset = (page - 1) * size;
 
-  // 강의가 내 강의인지 검증
-  const { rowCount } = await db.query(
-    `SELECT 1 FROM lectures WHERE id = $1 AND instructor_id = $2`,
+  // 강의가 내 강의인지 검증 + 강의 제목 가져오기
+  const lectureResult = await db.query(
+    `SELECT title FROM lectures WHERE id = $1 AND instructor_id = $2`,
     [lectureId, userId]
   );
-  if (rowCount === 0) throw { status: 403, message: '해당 강의 접근 권한이 없습니다.' };
+  if (lectureResult.rowCount === 0)
+    throw { status: 403, message: '해당 강의 접근 권한이 없습니다.' };
+
+  const lectureTitle = lectureResult.rows[0].title;
 
   // 전체 수강생 수 조회
   const countResult = await db.query(
-    `
-    SELECT COUNT(*) AS total
-    FROM lecture_purchases
-    WHERE lecture_id = $1
-  `,
+    `SELECT COUNT(*) AS total FROM lecture_purchases WHERE lecture_id = $1`,
     [lectureId]
   );
   const totalCount = parseInt(countResult.rows[0].total, 10);
 
   // 수강생 목록 조회
-  const { rows: students } = await db.query(
+  const { rows: studentsRaw } = await db.query(
     `
-    SELECT u.id AS "userId", u.nickname, u.profile_image AS "profileImage", lp.purchased_at AS "purchasedAt"
+    SELECT
+      u.id AS "userId",
+      u.nickname,
+      u.profile_image AS "profileImage",
+      lp.purchased_at AS "purchasedAt"
     FROM lecture_purchases lp
     JOIN users u ON lp.user_id = u.id
     WHERE lp.lecture_id = $1
     ORDER BY lp.purchased_at DESC
     LIMIT $2 OFFSET $3
-  `,
+    `,
     [lectureId, size, offset]
   );
 
-  return { page, size, totalCount, students };
+  // 각 학생 row에 lectureTitle 포함
+  const students = studentsRaw.map((student) => ({
+    ...student,
+    lectureTitle,
+  }));
+
+  return {
+    page,
+    size,
+    totalCount,
+    lectureId,
+    lectureTitle,
+    students,
+  };
 };
