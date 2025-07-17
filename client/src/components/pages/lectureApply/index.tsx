@@ -37,7 +37,6 @@ const LectureApplyPage = () => {
 
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
-  const [purchaseChecked, setPurchaseChecked] = useState(false); 
   const [reviewInput, setReviewInput] = useState('');
   const [qnaInput, setQnaInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -49,6 +48,7 @@ const LectureApplyPage = () => {
       if (!id) return;
       try {
         setLoading(true);
+
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
         const data = await lectureRes.json();
 
@@ -57,6 +57,12 @@ const LectureApplyPage = () => {
 
         const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`);
         const qnaData = await qnaRes.json();
+
+        const detailRes = await fetch(`${API_URL}/lectures/${id}/detail`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const detail = await detailRes.json();
+        setEnrolled(detail.is_purchased === true);
 
         setLecture({
           id: Number(data.id),
@@ -88,27 +94,7 @@ const LectureApplyPage = () => {
     };
 
     fetchLecture();
-  }, [API_URL, id]);
-
-  useEffect(() => {
-    const fetchPurchaseStatus = async () => {
-      if (!accessToken || !id || !user) return;
-      try {
-        const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        const data = await res.json();
-        setEnrolled(data.is_purchased === true);
-      } catch (err) {
-        console.error('수강 여부 확인 실패:', err);
-        setEnrolled(false);
-      } finally {
-        setPurchaseChecked(true); 
-      }
-    };
-
-    fetchPurchaseStatus();
-  }, [accessToken, user, id]);
+  }, [API_URL, id, accessToken]);
 
   const handleEnroll = async () => {
     if (!accessToken || !lecture) return alert('로그인이 필요합니다');
@@ -126,6 +112,9 @@ const LectureApplyPage = () => {
         setEnrolled(true);
       } else {
         alert(data.message || '수강 신청 실패');
+        if (data.message === '이미 구매한 강의입니다.') {
+          setEnrolled(true);
+        }
       }
     } catch {
       alert('수강 신청 오류');
@@ -143,17 +132,9 @@ const LectureApplyPage = () => {
 
   const handleSubmitReview = async () => {
     if (!reviewInput.trim() || !lecture || !user || !accessToken) return;
-
     const hasReviewed = lecture.reviews.some((r) => r.userId === user.id);
-    if (hasReviewed) {
-      alert('이미 리뷰를 작성하셨습니다.');
-      return;
-    }
-
-    if (!enrolled) {
-      alert('수강 신청한 사용자만 리뷰를 작성할 수 있습니다.');
-      return;
-    }
+    if (hasReviewed) return alert('이미 리뷰를 작성하셨습니다.');
+    if (!enrolled) return alert('수강 신청한 사용자만 리뷰를 작성할 수 있습니다.');
 
     try {
       const res = await fetch(`${API_URL}/reviews`, {
@@ -201,9 +182,7 @@ const LectureApplyPage = () => {
     try {
       const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       if (res.ok) {
         setLecture((prev) =>
@@ -264,9 +243,7 @@ const LectureApplyPage = () => {
     try {
       const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       if (res.ok) {
         setLecture((prev) =>
@@ -369,21 +346,17 @@ const LectureApplyPage = () => {
             <div className="price">
               <strong>{price === 0 ? '무료' : `${price.toLocaleString()}원`}</strong>
             </div>
-            {purchaseChecked ? (
-              <button
-                className="enroll-btn"
-                onClick={enrolled ? handleGoToVideos : handleEnroll}
-                disabled={!user || !accessToken}
-                style={{
-                  background: !user || !accessToken ? '#bbb' : undefined,
-                  cursor: !user || !accessToken ? 'not-allowed' : undefined,
-                }}
-              >
-                {enrolled ? '수강하기' : '신청하기'}
-              </button>
-            ) : (
-              <div style={{ height: 48 }} />
-            )}
+            <button
+              className="enroll-btn"
+              onClick={enrolled ? handleGoToVideos : handleEnroll}
+              disabled={!user || !accessToken}
+              style={{
+                background: !user || !accessToken ? '#bbb' : undefined,
+                cursor: !user || !accessToken ? 'not-allowed' : undefined,
+              }}
+            >
+              {enrolled ? '수강하기' : '신청하기'}
+            </button>
             {!user || !accessToken ? (
               <div style={{ fontSize: 13, color: '#D32F2F', marginTop: 7 }}>
                 로그인 후 신청할 수 있습니다.
