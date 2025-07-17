@@ -277,3 +277,32 @@ exports.updateInstructorIntroduction = async (userId, introduction) => {
   if (result.rows.length === 0) return null;
   return result.rows[0].introduction;
 };
+
+// 회원 탈퇴
+exports.deleteUser = async (userId) => {
+  const client = await db.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // 공통 삭제
+    await client.query(`DELETE FROM follows WHERE follower_id = $1 OR following_id = $1`, [userId]);
+    await client.query(`DELETE FROM notifications WHERE user_id = $1`, [userId]);
+    await client.query(`DELETE FROM inquiries WHERE user_id = $1`, [userId]);
+    await client.query(`DELETE FROM posts WHERE user_id = $1`, [userId]);
+    await client.query(`DELETE FROM comments WHERE user_id = $1`, [userId]);
+    await client.query(`DELETE FROM progress WHERE user_id = $1`, [userId]);
+
+    // 마지막으로 유저 삭제 (CASCADE 연쇄 삭제)
+    await client.query(`DELETE FROM users WHERE id = $1`, [userId]);
+
+    await client.query('COMMIT');
+    return { success: true, message: '회원 탈퇴 완료' };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('회원 탈퇴 실패:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
