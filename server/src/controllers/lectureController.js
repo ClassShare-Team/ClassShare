@@ -141,3 +141,25 @@ exports.purchaseLecture = async (req, res) => {
     return res.status(500).json({ message: '결제 처리 중 오류가 발생했습니다.' });
   }
 };
+
+// 강의 단건 조회 (강의결제페이지용)
+exports.getLectureDetailById = async (req, res) => {
+  const userId = req.user?.id;
+  const lectureId = parseInt(req.params.id, 10);
+
+  if (!userId || isNaN(lectureId)) {
+    return res.status(400).json({ message: '잘못된 요청입니다.' });
+  }
+
+  try {
+    const lecture = await lectureService.getLectureDetailById(lectureId, userId);
+    if (!lecture) {
+      return res.status(404).json({ message: '강의를 찾을 수 없습니다.' });
+    }
+
+    return res.json(lecture);
+  } catch (err) {
+    console.error('[GET /lectures/:id/detail] error:', err);
+    return res.status(500).json({ message: '강의 정보를 불러오는 중 오류가 발생했습니다.' });
+  }
+};

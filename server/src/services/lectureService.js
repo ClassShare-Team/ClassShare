@@ -197,3 +197,24 @@ exports.purchaseLecture = async (userId, lectureId) => {
 
   return { success: true, price: 0 };
 };
+
+// 강의 단건 조회 (결제페이지용)
+exports.getLectureDetailById = async (lectureId, userId) => {
+  const result = await db.query(
+    `
+    SELECT
+      l.*,
+      u.nickname AS instructor_nickname,
+      EXISTS (
+        SELECT 1 FROM lecture_purchases lp
+        WHERE lp.lecture_id = l.id AND lp.user_id = $2
+      ) AS is_purchased
+    FROM lectures l
+    JOIN users u ON l.instructor_id = u.id
+    WHERE l.id = $1
+    `,
+    [lectureId, userId]
+  );
+
+  return result.rows[0] || null;
+};
