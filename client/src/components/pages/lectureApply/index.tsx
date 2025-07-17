@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import useUserInfo from '@/components/hooks/useUserInfo';
 import './index.css';
 
 interface User {
   id: number;
   nickname: string;
-  token: string;
 }
 
 interface Review {
@@ -39,22 +37,30 @@ const MAX_QNA_LENGTH = 300;
 const CreateLecturePage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
-  const { user } = useUserInfo() as { user: User | null };
 
+  const [user, setUser] = useState<User | null>(null);
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
   const [reviewInput, setReviewInput] = useState('');
   const [qnaInput, setQnaInput] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const API_URL = import.meta.env.VITE_API_URL;
-  if (!API_URL) throw new Error('VITE_API_URL 환경변수가 설정되어 있지 않습니다!');
-
   const token = localStorage.getItem('accessToken');
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchLecture = async () => {
       if (!id) return;
       try {
+        setLoading(true);
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
         const data = await lectureRes.json();
 
@@ -86,6 +92,8 @@ const CreateLecturePage = () => {
       } catch (err) {
         console.error(err);
         setLecture(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -94,12 +102,10 @@ const CreateLecturePage = () => {
 
   useEffect(() => {
     const fetchPurchaseStatus = async () => {
-      if (!token || !id) return;
+      if (!token || !lecture) return;
       try {
-        const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchased`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         setEnrolled(data.is_purchased === true);
@@ -109,7 +115,7 @@ const CreateLecturePage = () => {
     };
 
     fetchPurchaseStatus();
-  }, [token, id]);
+  }, [token, lecture]);
 
   const handleEnroll = async () => {
     if (!token || !lecture) return alert('로그인이 필요합니다');
@@ -130,6 +136,10 @@ const CreateLecturePage = () => {
     } catch {
       alert('수강 신청 오류');
     }
+  };
+
+  const handleGoToVideos = () => {
+    if (lecture?.id) navigate(`/lecture/${lecture.id}/videos`);
   };
 
   const handleSubmitReview = async () => {
@@ -170,8 +180,29 @@ const CreateLecturePage = () => {
     }
   };
 
+  const handleDeleteReview = async (reviewId?: number) => {
+    if (!reviewId || !token) return;
+    try {
+      const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setLecture((prev) =>
+          prev ? { ...prev, reviews: prev.reviews.filter((r) => r.id !== reviewId) } : prev
+        );
+      } else {
+        alert('삭제 실패');
+      }
+    } catch {
+      alert('삭제 중 오류 발생');
+    }
+  };
+
   const handleSubmitQna = async () => {
-    if (!qnaInput.trim() || !lecture || !user || !token) return;
+    if (!qnaInput.trim() || !lecture || !token) return;
     try {
       const res = await fetch(`${API_URL}/qna`, {
         method: 'POST',
@@ -182,7 +213,7 @@ const CreateLecturePage = () => {
         body: JSON.stringify({
           lecture_id: lecture.id,
           title: qnaInput.trim(),
-          content: '-',
+          content: '내용 없음',
         }),
       });
       const result = await res.json();
@@ -193,7 +224,7 @@ const CreateLecturePage = () => {
                 ...prev,
                 qnas: [
                   ...(prev.qnas || []),
-                  { id: result.postId, nickname: user.nickname, content: qnaInput.trim(), userId: user.id },
+                  { id: result.postId, nickname: user?.nickname || '익명', content: qnaInput.trim(), userId: user?.id },
                 ],
               }
             : prev
@@ -207,17 +238,41 @@ const CreateLecturePage = () => {
     }
   };
 
-  const price = Math.floor(Number(lecture?.price));
+  const handleDeleteQna = async (qnaId?: number) => {
+    if (!qnaId || !token) return;
+    try {
+      const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setLecture((prev) =>
+          prev ? { ...prev, qnas: prev.qnas?.filter((q) => q.id !== qnaId) } : prev
+        );
+      } else {
+        alert('삭제 실패');
+      }
+    } catch {
+      alert('삭제 중 오류 발생');
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (!lecture) return <div>강의 정보를 불러오지 못했습니다.</div>;
+
+  const price = Math.floor(Number(lecture.price));
 
   return (
     <div className="lecture-wrapper">
       <div className="header-bg">
         <div className="title-thumbnail-area">
           <div className="title-area">
-            <h1>{lecture?.title}</h1>
+            <h1>{lecture.title}</h1>
           </div>
           <div className="thumbnail-area">
-            <img src={lecture?.thumbnail} alt="썸네일" className="thumbnail" />
+            <img src={lecture.thumbnail} alt="썸네일" className="thumbnail" />
           </div>
         </div>
       </div>
@@ -225,18 +280,21 @@ const CreateLecturePage = () => {
         <div className="left-content">
           <div className="description-box">
             <h2>강의 소개</h2>
-            <p className="description">{lecture?.description}</p>
+            <p className="description">{lecture.description}</p>
           </div>
 
           <div className="review-section">
             <h2>수강생 리뷰</h2>
-            {lecture?.reviews.length === 0 ? (
+            {lecture.reviews.length === 0 ? (
               <p>아직 등록된 리뷰가 없습니다.</p>
             ) : (
-              <ul className="review-list">
-                {lecture?.reviews.map((r, i) => (
-                  <li key={i} className="review-item">
-                    <strong>{r.nickname}</strong>: {r.content}
+              <ul>
+                {lecture.reviews.map((r, i) => (
+                  <li key={i}>
+                    <span><strong>{r.nickname}</strong>: {r.content}</span>
+                    {user?.id === r.userId && (
+                      <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -256,13 +314,16 @@ const CreateLecturePage = () => {
 
           <div className="qna-section">
             <h2>Q&A</h2>
-            {lecture?.qnas?.length === 0 ? (
+            {lecture.qnas?.length === 0 ? (
               <p>등록된 질문이 없습니다.</p>
             ) : (
-              <ul className="qna-list">
-                {lecture?.qnas?.map((q, i) => (
-                  <li key={i} className="qna-item">
-                    <strong>{q.nickname}</strong>: {q.content}
+              <ul>
+                {lecture.qnas?.map((q, i) => (
+                  <li key={i}>
+                    <span><strong>{q.nickname}</strong>: {q.content}</span>
+                    {user?.id === q.userId && (
+                      <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -280,6 +341,7 @@ const CreateLecturePage = () => {
             )}
           </div>
         </div>
+
         <div className="right-content">
           <div className="price-box">
             <div className="price">
@@ -287,7 +349,7 @@ const CreateLecturePage = () => {
             </div>
             <button
               className="enroll-btn"
-              onClick={enrolled ? () => navigate(`/lecture/${lecture?.id}/videos`) : handleEnroll}
+              onClick={enrolled ? handleGoToVideos : handleEnroll}
               disabled={!user}
               style={{
                 background: !user ? '#bbb' : undefined,
