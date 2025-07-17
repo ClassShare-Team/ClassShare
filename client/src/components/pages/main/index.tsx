@@ -120,7 +120,7 @@ const MainPage: React.FC = () => {
                     style={{ fontSize: "14px", color: "#6F42C1", background: "none", border: "none", cursor: "pointer" }}
                     onClick={() => {
                       localStorage.setItem("selectedCategory", category);
-                      navigate("/main", { state: { selectedCategory: category } });
+                      navigate("/", { state: { selectedCategory: category } });
                     }}
                   >
                     더보기

@@ -9,7 +9,6 @@ import {
   FiMaximize2,
 } from "react-icons/fi";
 
-
 const Wrapper = styled.div`
   display: flex;
   height: 100vh;
@@ -142,12 +141,18 @@ export const StreamingPage = () => {
   useEffect(() => {
     const fetchCurriculum = async () => {
       try {
-        const res = await axios.get(`/api/lectures/${lectureId}/curriculum`, { withCredentials: true });
-        const updated = res.data.map((v: any) => ({ ...v, done: v.is_completed }));
+        const res = await axios.get(`/lectures/${lectureId}/curriculum`, { withCredentials: true });
+        const curriculumData = Array.isArray(res.data)
+          ? res.data
+          : res.data.curriculum;
+
+        const updated = curriculumData.map((v: any) => ({ ...v, done: v.is_completed }));
         setCurriculum(updated);
+
         const defaultIndex = selectedVideoId
           ? updated.findIndex((v: any) => v.id === Number(selectedVideoId))
           : 0;
+
         if (defaultIndex >= 0) {
           setCurrentIdx(defaultIndex);
           setVideoId(updated[defaultIndex].id);
@@ -164,7 +169,7 @@ export const StreamingPage = () => {
 
     const fetchVideo = async () => {
       try {
-        const res = await axios.get(`/api/videos/${videoId}`, { withCredentials: true });
+        const res = await axios.get(`/videos/${videoId}`, { withCredentials: true });
         setVideoUrl(res.data.video_url);
       } catch (err) {
         console.error("영상 불러오기 실패", err);
@@ -173,7 +178,7 @@ export const StreamingPage = () => {
 
     const fetchProgress = async () => {
       try {
-        const res = await axios.get(`/api/videos/${videoId}/progress`, { withCredentials: true });
+        const res = await axios.get(`/videos/${videoId}/progress`, { withCredentials: true });
         setCurrent(res.data.current_seconds || 0);
       } catch (err) {
         console.error("진도 불러오기 실패", err);
@@ -190,7 +195,7 @@ export const StreamingPage = () => {
       try {
         const isCompleted = current >= duration - 3;
         await axios.post(
-          `/api/videos/${videoId}/progress`,
+          `/videos/${videoId}/progress`,
           {
             currentSeconds: current,
             isCompleted,
@@ -198,7 +203,6 @@ export const StreamingPage = () => {
           { withCredentials: true }
         );
 
-        // 완료 처리 + 다음 영상 자동 넘기기
         if (isCompleted) {
           setCurriculum(prev => {
             const updated = [...prev];
