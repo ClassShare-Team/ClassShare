@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { useParams, useSearchParams } from "react-router-dom";
-import { FiCheckCircle, FiPlay, FiPause, FiMaximize2 } from "react-icons/fi";
+import { FiCheckCircle, FiPlay, FiPause } from "react-icons/fi";
 import useUserInfo from '@/components/hooks/useUserInfo';
 
 const Wrapper = styled.div`
