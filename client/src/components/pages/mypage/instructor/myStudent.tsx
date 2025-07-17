@@ -166,6 +166,7 @@ const FilterButton = styled.button<{ active: boolean }>`
 const List = styled.div`
   display: flex;
   flex-direction: column;
+  margin-top: 24px;
   gap: 16px;
 `;
 
