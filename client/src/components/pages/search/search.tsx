@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import './index.css';
 
+/* ---------- 타입 ---------- */
 interface Lecture {
   id: number;
   title: string;
@@ -12,7 +13,6 @@ interface Lecture {
   category?: string;
   instructor_nickname?: string;
 }
-
 interface Instructor {
   id: number;
   nickname: string;
@@ -20,6 +20,7 @@ interface Instructor {
   lectures: Lecture[];
 }
 
+/* ---------- 상수 ---------- */
 const categories = ['전체', '교육', '개발', '음악', '요리', '운동', '글쓰기', '예술'];
 
 const SearchPage: React.FC = () => {
@@ -29,16 +30,15 @@ const SearchPage: React.FC = () => {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [matchedInst, setMatchedInst] = useState<Instructor | null>(null);
   const [selectedCat, setSelectedCat] = useState('전체');
-  const [totalPages, setTotalPages] = useState(1);
 
-  const page = Number(params.get('page') || '1');
-  const q = params.get('q')?.trim() || '';
-
+  /* 검색 API 호출 */
   useEffect(() => {
+    const q = params.get('q')?.trim() || '';
     if (!q) return;
+
     const fetch = async () => {
       try {
-        const url = `${import.meta.env.VITE_API_URL}/search?q=${encodeURIComponent(q)}&page=${page}`;
+        const url = `${import.meta.env.VITE_API_URL}/search?q=${encodeURIComponent(q)}&page=1`;
         const { data } = await axios.get(url);
         const apiLectures = data.lectures || [];
         const instructorLectures = data.matched_instructor?.lectures || [];
@@ -50,14 +50,14 @@ const SearchPage: React.FC = () => {
 
         setLectures(combinedLectures);
         setMatchedInst(data.matched_instructor || null);
-        setTotalPages(data.totalPages || 1);
       } catch (err) {
         console.error('검색 실패:', err);
       }
     };
     fetch();
-  }, [q, page]);
+  }, [params]);
 
+  /* 카테고리 필터링 (강의에만 적용) */
   const displayedLectures =
     selectedCat === '전체' ? lectures : lectures.filter((l) => l.category === selectedCat);
 
