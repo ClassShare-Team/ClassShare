@@ -5,8 +5,8 @@ interface Course {
   id: number;
   title: string;
   thumbnail: string;
-  instructor: string;
-  enrolledAt: string;
+  instructorNickname: string;
+  purchasedAt: string;
 }
 
 const StudentMyCoursesPage = () => {
@@ -22,9 +22,12 @@ const StudentMyCoursesPage = () => {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
         });
+
         if (!res.ok) throw new Error('수강 강의를 불러오지 못했습니다.');
+
         const data = await res.json();
-        setCourses(data);
+
+        setCourses(data.lectures);
       } catch (err) {
         if (err instanceof Error) setError(err.message);
         else setError('알 수 없는 오류');
@@ -52,10 +55,10 @@ const StudentMyCoursesPage = () => {
                 <div>
                   <strong>{course.title}</strong>
                 </div>
-                <div>{course.instructor}</div>
+                <div>{course.instructorNickname}</div>
               </div>
             </CourseInfo>
-            <div>{course.enrolledAt}</div>
+            <div>{new Date(course.purchasedAt).toLocaleDateString()}</div>
           </CourseItem>
         ))}
       </CourseList>
