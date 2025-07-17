@@ -38,13 +38,21 @@ const CreateLecturePage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem('accessToken'));
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
   const [reviewInput, setReviewInput] = useState('');
   const [qnaInput, setQnaInput] = useState('');
   const [loading, setLoading] = useState(true);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -63,21 +71,9 @@ const CreateLecturePage = () => {
       setAccessToken(token);
     };
 
-    syncUserData();
     window.addEventListener('storage', syncUserData);
     return () => window.removeEventListener('storage', syncUserData);
   }, []);
-
-  useEffect(() => {
-    if (!accessToken) return;
-    const userData = localStorage.getItem('user');
-    if (!user && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        if (parsedUser?.id) setUser(parsedUser);
-      } catch {}
-    }
-  }, [accessToken]);
 
   useEffect(() => {
     const fetchLecture = async () => {
