@@ -17,7 +17,7 @@ const InstructorMyLecturePage = () => {
   useEffect(() => {
     const fetchLectures = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/lectures/my`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/lectures/my-lectures`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },

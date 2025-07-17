@@ -14,8 +14,8 @@ const InstructorSettingsPage = () => {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append('nickname', nickname);
-      formData.append('phone', phone);
+      if (nickname.trim()) formData.append('nickname', nickname.trim());
+      if (phone.trim()) formData.append('phone', phone.trim());
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
         method: 'PATCH',
