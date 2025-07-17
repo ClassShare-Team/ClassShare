@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom'; 
+import { useParams, useNavigate } from 'react-router-dom';
 import './index.css';
-
 
 interface Review {
   nickname: string;
@@ -24,36 +23,13 @@ interface Lecture {
 const MAX_REVIEW_LENGTH = 300;
 const MAX_QNA_LENGTH = 300;
 
-const user = JSON.parse(localStorage.getItem('user') || '{}');
-const isLoggedIn = !!user?.id;
-const userNickname = user?.nickname || '익명';
-
-
-function isReview(obj: unknown): obj is Review {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    'nickname' in obj &&
-    typeof (obj as { nickname?: unknown }).nickname === 'string' &&
-    'content' in obj &&
-    typeof (obj as { content?: unknown }).content === 'string'
-  );
-}
-function isQna(obj: unknown): obj is Qna {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    'nickname' in obj &&
-    typeof (obj as { nickname?: unknown }).nickname === 'string' &&
-    'content' in obj &&
-    typeof (obj as { content?: unknown }).content === 'string'
-  );
-}
-
 const CreateLecturePage = () => {
   const { id } = useParams<{ id?: string }>();
+  const navigate = useNavigate();
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewInput, setReviewInput] = useState('');
   const [showQnaModal, setShowQnaModal] = useState(false);
@@ -61,80 +37,88 @@ const CreateLecturePage = () => {
   const [qnas, setQnas] = useState<Qna[]>([]);
   const [loading, setLoading] = useState(true);
 
-
   const API_URL = import.meta.env.VITE_API_URL;
-  if (!API_URL) {
-    throw new Error('VITE_API_URL 환경변수가 설정되어 있지 않습니다!');
-  }
+  if (!API_URL) throw new Error('VITE_API_URL 환경변수가 설정되어 있지 않습니다!');
 
   useEffect(() => {
-    if (!id) {
-      setLecture(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    fetch(`${API_URL}/lectures/${id}`)
-      .then(async (res) => {
-        const contentType = res.headers.get('content-type');
-        const text = await res.text();
-        if (!contentType?.includes('application/json')) {
-          console.error('서버 응답이 JSON이 아님:', text);
-          setLecture(null);
-          setLoading(false);
-          alert('서버가 올바른 JSON을 반환하지 않았습니다!\n(백엔드가 켜져 있는지, VITE_API_URL이 올바른지 확인하세요.)');
-          return;
-        }
-        try {
-          const data = JSON.parse(text);
+    const fetchLectureAndUser = async () => {
+      if (!id) {
+        setLecture(null);
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
 
-
+        const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
+        const contentType = lectureRes.headers.get('content-type');
+        const text = await lectureRes.text();
+        if (!contentType?.includes('application/json')) throw new Error('강의 JSON 오류');
+        const data = JSON.parse(text);
 
         const reviews: Review[] = Array.isArray(data.reviews)
-          ? data.reviews.map((r: unknown) => {
-              if (typeof r === 'string') return { nickname: '익명', content: r };
-              if (isReview(r)) return { nickname: r.nickname, content: r.content };
-              return { nickname: '익명', content: '' };
-            })
+          ? data.reviews.map((r: any) =>
+              typeof r === 'string' ? { nickname: '익명', content: r } : r
+            )
           : [];
 
         const qnas: Qna[] = Array.isArray(data.qnas)
-          ? data.qnas.map((q: unknown) => {
-              if (typeof q === 'string') return { nickname: '익명', content: q };
-              if (isQna(q)) return { nickname: q.nickname, content: q.content };
-              return { nickname: '익명', content: '' };
-            })
+          ? data.qnas.map((q: any) =>
+              typeof q === 'string' ? { nickname: '익명', content: q } : q
+            )
           : [];
-  
 
+        setLecture({
+          id: Number(data.id),
+          title: String(data.title ?? ''),
+          description: String(data.description ?? ''),
+          thumbnail: String(data.thumbnail ?? ''),
+          price: String(data.price ?? ''),
+          reviews,
+          qnas,
+        });
 
-          setLecture({
-            id: Number(data.id),
-            title: String(data.title ?? ''),
-            description: String(data.description ?? ''),
-            thumbnail: String(data.thumbnail ?? ''),
-            price: String(data.price ?? ''),
-            reviews,
-            qnas,
-          });
-        } catch {
-          console.error('JSON 파싱 실패:', text);
-          setLecture(null);
-          alert('서버 응답 파싱에 실패했습니다. (json 에러)');
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!storedUser.token) {
+          setIsLoggedIn(false);
+          setUser(null);
+          return;
         }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('강의 불러오기 실패:', err);
+
+        const meRes = await fetch(`${API_URL}/users/me`, {
+          headers: {
+            Authorization: `Bearer ${storedUser.token}`,
+          },
+        });
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          setIsLoggedIn(true);
+          setUser({ ...meData, token: storedUser.token });
+
+          const purchasedRes = await fetch(`${API_URL}/lectures/${id}/purchased`, {
+            headers: {
+              Authorization: `Bearer ${storedUser.token}`,
+            },
+          });
+          const purchasedData = await purchasedRes.json();
+          setEnrolled(purchasedData.is_purchased === true);
+        } else {
+          setIsLoggedIn(false);
+          setUser(null);
+        }
+      } catch (err) {
+        console.error(err);
         setLecture(null);
+      } finally {
         setLoading(false);
-        alert('강의 정보를 불러오는 데 실패했습니다.');
-      });
+      }
+    };
+
+    fetchLectureAndUser();
   }, [API_URL, id]);
 
- 
   const handleEnroll = async () => {
-    if (!isLoggedIn || !lecture) {
+    if (!isLoggedIn || !lecture || !user) {
       alert('로그인이 필요합니다');
       return;
     }
@@ -152,17 +136,21 @@ const CreateLecturePage = () => {
       } else {
         alert(data.message || '수강 신청 실패');
       }
-    } catch (error) {
-      console.error('수강 신청 실패:', error);
+    } catch {
       alert('수강 신청 중 오류가 발생했습니다.');
     }
   };
 
+  const handleGoToVideos = () => {
+    if (lecture?.id) {
+      navigate(`/lecture/${lecture.id}/videos`);
+    }
+  };
 
   const handleSubmitReview = async () => {
-    if (!reviewInput.trim() || !lecture) return;
+    if (!reviewInput.trim() || !lecture || !user) return;
     try {
-      const response = await fetch(`${API_URL}/reviews`, {
+      const res = await fetch(`${API_URL}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,13 +163,13 @@ const CreateLecturePage = () => {
           content: reviewInput.trim(),
         }),
       });
-      const result = await response.json();
-      if (response.ok) {
+      const result = await res.json();
+      if (res.ok) {
         setLecture((prev) =>
           prev
             ? {
                 ...prev,
-                reviews: [...prev.reviews, { nickname: userNickname, content: reviewInput.trim() }],
+                reviews: [...prev.reviews, { nickname: user.nickname, content: reviewInput.trim() }],
               }
             : prev
         );
@@ -190,23 +178,15 @@ const CreateLecturePage = () => {
       } else {
         alert(result.message || '리뷰 등록 실패');
       }
-    } catch (err) {
-      console.error('리뷰 등록 오류:', err);
+    } catch {
       alert('리뷰 등록 중 오류 발생');
     }
   };
 
-  const handleChangeReview = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (e.target.value.length <= MAX_REVIEW_LENGTH) {
-      setReviewInput(e.target.value);
-    }
-  };
-
- 
   const handleSubmitQna = async () => {
-    if (!qnaInput.trim() || !lecture) return;
+    if (!qnaInput.trim() || !lecture || !user) return;
     try {
-      const response = await fetch(`${API_URL}/posts`, {
+      const res = await fetch(`${API_URL}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,22 +197,15 @@ const CreateLecturePage = () => {
           content: qnaInput.trim(),
         }),
       });
-      if (response.ok) {
-        setQnas((prev) => [...prev, { nickname: userNickname, content: qnaInput.trim() }]);
+      if (res.ok) {
+        setQnas((prev) => [...prev, { nickname: user.nickname, content: qnaInput.trim() }]);
         setQnaInput('');
         setShowQnaModal(false);
       } else {
         alert('질문 등록 실패');
       }
-    } catch (err) {
-      console.error('QnA 등록 오류:', err);
+    } catch {
       alert('질문 등록 실패');
-    }
-  };
-
-  const handleChangeQna = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (e.target.value.length <= MAX_QNA_LENGTH) {
-      setQnaInput(e.target.value);
     }
   };
 
@@ -256,7 +229,7 @@ const CreateLecturePage = () => {
               className="modal-textarea"
               placeholder="리뷰를 입력해 주세요 (최대 300자)"
               value={reviewInput}
-              onChange={handleChangeReview}
+              onChange={(e) => setReviewInput(e.target.value)}
               maxLength={MAX_REVIEW_LENGTH}
               autoFocus
             />
@@ -281,7 +254,7 @@ const CreateLecturePage = () => {
               className="modal-textarea"
               placeholder="질문을 입력해 주세요 (최대 300자)"
               value={qnaInput}
-              onChange={handleChangeQna}
+              onChange={(e) => setQnaInput(e.target.value)}
               maxLength={MAX_QNA_LENGTH}
               autoFocus
             />
@@ -312,21 +285,14 @@ const CreateLecturePage = () => {
             {enrolled && (
               <button
                 className="enroll-btn"
-                style={{
-                  position: 'absolute',
-                  top: 16,
-                  right: 24,
-                  padding: '6px 16px',
-                  fontSize: '14px',
-                  zIndex: 1,
-                }}
+                style={{ position: 'absolute', top: 16, right: 24 }}
                 onClick={() => setShowReviewModal(true)}
               >
                 리뷰 작성하기
               </button>
             )}
             <ul>
-              {lecture.reviews && lecture.reviews.length > 0 ? (
+              {lecture.reviews.length > 0 ? (
                 lecture.reviews.map((review, idx) => (
                   <li key={idx} className="review-item">
                     <span style={{ fontWeight: 600, color: '#6F42C1', marginRight: 8 }}>
@@ -345,21 +311,14 @@ const CreateLecturePage = () => {
             {enrolled && (
               <button
                 className="enroll-btn"
-                style={{
-                  position: 'absolute',
-                  top: 16,
-                  right: 24,
-                  padding: '6px 16px',
-                  fontSize: '14px',
-                  zIndex: 1,
-                }}
+                style={{ position: 'absolute', top: 16, right: 24 }}
                 onClick={() => setShowQnaModal(true)}
               >
                 Q&amp;A 작성하기
               </button>
             )}
             <ul>
-              {qnas && qnas.length > 0 ? (
+              {qnas.length > 0 ? (
                 qnas.map((qna, idx) => (
                   <li key={idx} className="review-item">
                     <span style={{ fontWeight: 600, color: '#6F42C1', marginRight: 8 }}>
@@ -377,12 +336,12 @@ const CreateLecturePage = () => {
         <div className="right-content">
           <div className="price-box">
             <div className="price">
-              <strong>무료</strong>
+              <strong>{lecture.price === '0' ? '무료' : `${lecture.price}원`}</strong>
             </div>
             <button
               className="enroll-btn"
-              onClick={handleEnroll}
-              disabled={enrolled}
+              onClick={enrolled ? handleGoToVideos : handleEnroll}
+              disabled={!isLoggedIn}
               style={{
                 background: !isLoggedIn ? '#bbb' : undefined,
                 cursor: !isLoggedIn ? 'not-allowed' : undefined,

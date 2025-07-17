@@ -1,13 +1,12 @@
-/* 전체 페이지 배경은 page-container 클래스에서 설정 */
+
 .page-container {
   background: linear-gradient(to bottom, #FEF7FF, #F0F9FF);
   min-height: 100vh;
 }
 
-/* 이하 기존 내용은 그대로 */
+
 .lecture-wrapper {
   font-family: 'Pretendard', sans-serif;
-  /* background: linear-gradient(to bottom, #f8f9fa, #e9ecef); */ /* <- 필요하면 주석처리 */
   padding: 40px;
   min-height: 100vh;
   box-sizing: border-box;
