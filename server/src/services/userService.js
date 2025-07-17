@@ -285,15 +285,7 @@ exports.deleteUser = async (userId) => {
   try {
     await client.query('BEGIN');
 
-    // 공통 삭제
-    await client.query(`DELETE FROM follows WHERE follower_id = $1 OR following_id = $1`, [userId]);
-    await client.query(`DELETE FROM notifications WHERE user_id = $1`, [userId]);
-    await client.query(`DELETE FROM inquiries WHERE user_id = $1`, [userId]);
-    await client.query(`DELETE FROM posts WHERE user_id = $1`, [userId]);
-    await client.query(`DELETE FROM comments WHERE user_id = $1`, [userId]);
-    await client.query(`DELETE FROM progress WHERE user_id = $1`, [userId]);
-
-    // 마지막으로 유저 삭제 (CASCADE 연쇄 삭제)
+    // CASCADE가 처리해주므로 users 하나만 삭제
     await client.query(`DELETE FROM users WHERE id = $1`, [userId]);
 
     await client.query('COMMIT');
