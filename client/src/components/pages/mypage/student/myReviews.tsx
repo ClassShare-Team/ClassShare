@@ -24,7 +24,7 @@ const StudentMyReviewsPage = () => {
         });
         if (!res.ok) throw new Error('리뷰 정보를 불러오지 못했습니다.');
         const data = await res.json();
-        setReviews(data);
+        setReviews(data.reviews || []);
       } catch (err) {
         if (err instanceof Error) setError(err.message);
         else setError('알 수 없는 오류');
