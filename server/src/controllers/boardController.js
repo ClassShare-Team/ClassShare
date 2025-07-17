@@ -30,7 +30,7 @@ exports.getPosts = async (req, res) => {
         FROM comments
         GROUP BY post_id
       ) c ON p.id = c.post_id
-      WHERE p.title ILIKE $1 OR p.content ILIKE $1
+      WHERE (p.title ILIKE $1 OR p.content ILIKE $1) AND p.category = 'general'
       ORDER BY ${sortClause}
       LIMIT 50
     `,
