@@ -2,6 +2,7 @@ import { useNavigate, Outlet } from 'react-router-dom';
 import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 import { toast } from 'react-toastify';
+import DefaultProfileImage from '@/assets/UserProfileLogo.png';
 
 const InstructorMyPage = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const InstructorMyPage = () => {
     <MyPageLayout>
       <Card>
         <ProfileSection>
-          <img src={userInfo.profile_image} alt="profile" />
+          <img src={userInfo.profile_image || DefaultProfileImage} alt="profile" />
           <h2>{userInfo.name || '이름 없음'}</h2>
           <InfoText>닉네임: {userInfo.nickname || '닉네임 없음'}</InfoText>
           <InfoText>이메일: {userInfo.email}</InfoText>
