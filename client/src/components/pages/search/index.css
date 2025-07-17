@@ -62,7 +62,7 @@
 /* 검색 결과 없을 때 안내 */
 .empty-search {
   width: 100%;
-  min-height: 200px;
+  min-height: 100vh;
   padding: 40px 20px;
   background-color: #fafafa;
   border: 2px dashed #ccc;
