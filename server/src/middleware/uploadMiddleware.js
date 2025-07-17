@@ -14,7 +14,6 @@ const uploadProfileImage = multer({
   storage: multerS3({
     s3,
     bucket: process.env.AWS_S3_BUCKET,
-    acl: 'public-read',
     key: (_req, file, cb) => {
       const filename = `profiles/profile_${Date.now()}${path.extname(file.originalname)}`;
       cb(null, filename);
