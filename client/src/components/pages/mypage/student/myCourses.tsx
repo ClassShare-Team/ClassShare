@@ -24,6 +24,9 @@ const StudentMyCoursesPage = () => {
         });
         if (!res.ok) throw new Error('수강 강의를 불러오지 못했습니다.');
         const data = await res.json();
+
+        //data 콘솔 로그
+        console.log('응답 데이터:', data);
         setCourses(data);
       } catch (err) {
         if (err instanceof Error) setError(err.message);
