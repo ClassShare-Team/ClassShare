@@ -1,41 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Search as SearchIcon } from './Search';
 import { theme } from '@/components/styles/theme';
 
-export const SearchBar: React.FC = () => {
-  const navigate = useNavigate();
-  const [keyword, setKeyword] = useState('');
-
-  // 공백이 아닌 검색어가 있을 때만 /search 페이지로 이동
-  const handleSearch = () => {
-    const trimmed = keyword.trim();
-    if (trimmed.length === 0) return;
-    navigate(`/search?q=${encodeURIComponent(trimmed)}`);
-  };
-
-  // 엔터 키로도 검색이 실행되도록 처리
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
+export const SearchBar = () => {
   return (
     <SearchWrapper>
       <InputWrapper>
-        <Input
-          placeholder="나에게 필요한 강의를 찾아보세요"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+        <Input placeholder="나에게 필요한 강의를 찾아보세요" />
         <IconWrapper>
           <SearchIcon width={20} height={20} color={theme.colors.gray200} />
         </IconWrapper>
       </InputWrapper>
-      <SearchButton onClick={handleSearch}>검색</SearchButton>
+      <SearchButton>검색</SearchButton>
     </SearchWrapper>
   );
 };
