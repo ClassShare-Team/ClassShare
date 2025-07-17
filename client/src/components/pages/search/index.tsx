@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import UserProfileLogo from '@/assets/UserProfileLogo.png';
 import styled from 'styled-components';
 import './index.css';
 
@@ -48,9 +49,12 @@ const SearchPage: React.FC = () => {
         const instructorLectures = data.matched_instructor?.lectures || [];
 
         // ✅ 중복 제거
-        const combinedLectures = [...apiLectures, ...instructorLectures].filter(
-          (lec, index, self) => index === self.findIndex((l) => l.id === lec.id)
-        );
+        const combinedLectures = [...apiLectures, ...instructorLectures]
+          .map((lecture) => ({
+            ...lecture,
+            instructor_nickname: lecture.instructor || lecture.instructor_nickname,
+          }))
+          .filter((lec, index, self) => index === self.findIndex((l) => l.id === lec.id));
 
         setLectures(combinedLectures);
         setMatchedInst(data.matched_instructor || null);
@@ -81,7 +85,11 @@ const SearchPage: React.FC = () => {
       style={{ cursor: 'pointer' }}
     >
       <div className="instructor-profile-wrapper">
-        <img className="instructor-profile" src={inst.profile_image} alt={inst.nickname} />
+        <img
+          className="instructor-profile"
+          src={inst.profile_image || UserProfileLogo}
+          alt={inst.nickname}
+        />
       </div>
       <div className="instructor-nickname">{inst.nickname}</div>
     </div>
@@ -115,6 +123,10 @@ const SearchPage: React.FC = () => {
           </>
         )}
 
+        <h2 className="search-title" style={{ marginTop: matchedInst ? '64px' : '0px' }}>
+          강의
+        </h2>
+
         <div className="search-category-filter">
           {categories.map((c) => (
             <button
@@ -127,7 +139,6 @@ const SearchPage: React.FC = () => {
           ))}
         </div>
 
-        <h2 className="search-title">강의</h2>
         {displayedLectures.length ? (
           <>
             <div className="lecture-grid">{displayedLectures.map(renderLectureCard)}</div>
