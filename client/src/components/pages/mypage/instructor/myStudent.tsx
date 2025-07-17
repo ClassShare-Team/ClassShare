@@ -67,7 +67,10 @@ const InstructorMyStudentPage = () => {
 
       if (!res.ok) throw new Error('강의 정보를 불러오지 못했습니다.');
       const data = await res.json();
-      setLectureList(data.lectures || data); // 배열인지 객체인지 확인 후 대응
+
+      console.log('강의 응답 확인:', data);
+
+      setLectureList(data.lectures);
     } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError('알 수 없는 오류 발생');
