@@ -29,7 +29,7 @@ const InstructorMyStudentPage = () => {
       const token = localStorage.getItem('accessToken');
       if (!token) throw new Error('로그인이 필요합니다.');
 
-      const base = `${import.meta.env.VITE_API_URL}/instructor/me/students`;
+      const base = `${import.meta.env.VITE_API_URL}/users/me/students`;
       const url = lectureId === 'all' ? `${base}/all` : `${base}/by-lecture?lectureId=${lectureId}`;
 
       const res = await fetch(url, {
