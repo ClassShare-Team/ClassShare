@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./index.css";
 
 interface Lecture {
@@ -15,6 +15,7 @@ const categories = ["교육", "개발", "음악", "요리", "운동", "글쓰기
 
 const MainPage: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [filteredLectures, setFilteredLectures] = useState<Lecture[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("전체");
@@ -93,7 +94,12 @@ const MainPage: React.FC = () => {
                       }}
                     >
                       {groupedLectures[category].map((lecture) => (
-                        <div className="card" key={lecture.id}>
+                        <div
+                          className="card"
+                          key={lecture.id}
+                          onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <div className="thumbnail-wrapper">
                             <img
                               className="thumbnail"
@@ -123,7 +129,12 @@ const MainPage: React.FC = () => {
               <div className="card-grid">
                 {filteredLectures.length ? (
                   filteredLectures.map((lecture) => (
-                    <div className="card" key={lecture.id}>
+                    <div
+                      className="card"
+                      key={lecture.id}
+                      onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
+                      style={{ cursor: "pointer" }}
+                    >
                       <div className="thumbnail-wrapper">
                         <img
                           className="thumbnail"

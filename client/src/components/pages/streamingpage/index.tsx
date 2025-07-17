@@ -365,7 +365,7 @@ export const StreamingPage = () => {
   const [showCaptureAlert, setShowCaptureAlert] = useState(false);
 
   const fullscreenRef = useRef<HTMLDivElement>(null);
-  const barTimeout = useRef<any>(null);
+  const barTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // 볼륨 0이면 muted, 아니면 unmuted
@@ -387,13 +387,13 @@ export const StreamingPage = () => {
   };
 
   useEffect(() => {
-    const handleChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-      setShowBar(!!document.fullscreenElement ? false : true);
-    };
-    document.addEventListener("fullscreenchange", handleChange);
-    return () => document.removeEventListener("fullscreenchange", handleChange);
-  }, []);
+  const handleChange = () => {
+    setIsFullscreen(!!document.fullscreenElement);
+    setShowBar(!document.fullscreenElement); 
+  };
+  document.addEventListener("fullscreenchange", handleChange);
+  return () => document.removeEventListener("fullscreenchange", handleChange);
+}, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
