@@ -12,18 +12,20 @@ const InstructorMyPage = () => {
 
   return (
     <MyPageLayout>
-      <ProfileSection>
-        <img src={userInfo.profile_image} alt="profile" />
-        <h2>{userInfo.nickname || '닉네임 없음'}</h2>
-        <p>{userInfo.email}</p>
-      </ProfileSection>
+      <Card>
+        <ProfileSection>
+          <img src={userInfo.profile_image} alt="profile" />
+          <h2>{userInfo.nickname || '닉네임 없음'}</h2>
+          <p>{userInfo.email}</p>
+        </ProfileSection>
 
-      <NavMenu>
-        <MenuItem onClick={() => navigate('/instructor/mypage')}>내 정보</MenuItem>
-        <MenuItem onClick={() => navigate('/instructor/mylecture')}>내 강의</MenuItem>
-        <MenuItem onClick={() => navigate('/instructor/mystudent')}>수강생 관리</MenuItem>
-        <MenuItem onClick={() => navigate('/instructor/setting')}>설정</MenuItem>
-      </NavMenu>
+        <NavMenu>
+          <MenuItem onClick={() => navigate('/instructor/mypage')}>내 정보</MenuItem>
+          <MenuItem onClick={() => navigate('/instructor/mylecture')}>내 강의</MenuItem>
+          <MenuItem onClick={() => navigate('/instructor/mystudent')}>수강생 관리</MenuItem>
+          <MenuItem onClick={() => navigate('/instructor/setting')}>설정</MenuItem>
+        </NavMenu>
+      </Card>
 
       <Content>
         <Outlet />
@@ -39,8 +41,20 @@ const MyPageLayout = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  background-color: ${({ theme }) => theme.colors.gray100};
+  background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   min-height: calc(100vh - 80px);
+`;
+
+const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const ProfileSection = styled.section`
