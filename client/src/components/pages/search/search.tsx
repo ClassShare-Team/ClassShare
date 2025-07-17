@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
+import './index.css';
 
 interface Lecture {
   id: number;
@@ -9,6 +10,7 @@ interface Lecture {
   price: number | string;
   thumbnail: string;
   category?: string;
+  instructor_nickname?: string;
 }
 
 interface Instructor {
@@ -38,7 +40,15 @@ const SearchPage: React.FC = () => {
       try {
         const url = `${import.meta.env.VITE_API_URL}/search?q=${encodeURIComponent(q)}&page=${page}`;
         const { data } = await axios.get(url);
-        setLectures(data.lectures || []);
+        const apiLectures = data.lectures || [];
+        const instructorLectures = data.matched_instructor?.lectures || [];
+
+        // 중복 제거 (강사 강의가 중복될 수 있으니까 id 기준 filter)
+        const combinedLectures = [...apiLectures, ...instructorLectures].filter(
+          (lec, index, self) => index === self.findIndex((l) => l.id === lec.id)
+        );
+
+        setLectures(combinedLectures);
         setMatchedInst(data.matched_instructor || null);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
@@ -52,98 +62,112 @@ const SearchPage: React.FC = () => {
     selectedCat === '전체' ? lectures : lectures.filter((l) => l.category === selectedCat);
 
   const fmtPrice = (p: number | string) =>
-    isNaN(Number(p)) ? String(p) : Number(p).toLocaleString();
+    isNaN(Number(p)) ? String(p) : Number(p).toLocaleString() + '원';
 
   const handlePageChange = (newPage: number) => {
     navigate(`/search?q=${encodeURIComponent(q)}&page=${newPage}`);
   };
 
+  const renderInstructorCard = (inst: Instructor) => (
+    <div
+      className="instructor-card"
+      onClick={() => navigate(`/instructors/${inst.id}`)}
+      style={{ cursor: 'pointer' }}
+    >
+      <div className="instructor-profile-wrapper">
+        <img className="instructor-profile" src={inst.profile_image} alt={inst.nickname} />
+      </div>
+      <div className="instructor-nickname">{inst.nickname}</div>
+    </div>
+  );
+
+  const renderLectureCard = (lecture: Lecture) => (
+    <div
+      className="card"
+      key={lecture.id}
+      onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
+      style={{ cursor: 'pointer' }}
+    >
+      <div className="thumbnail-wrapper">
+        <img className="thumbnail" src={lecture.thumbnail} alt={lecture.title} />
+      </div>
+      <div className="card-content">
+        <div className="title ellipsis-multiline">{lecture.title}</div>
+        <div className="instructor">{lecture.instructor_nickname || '강사 미정'}</div>
+        <div className="price">{fmtPrice(lecture.price)}</div>
+      </div>
+    </div>
+  );
+
   return (
     <Wrapper>
-      {matchedInst && (
-        <>
-          <h2 className="search-title">크리에이터</h2>
-          <div className="creator-grid">
-            <div
-              className="instructor-card"
-              onClick={() => navigate(`/instructors/${matchedInst.id}`)}
+      <ContentWrapper>
+        {matchedInst && (
+          <>
+            <h2 className="search-title">크리에이터</h2>
+            <div className="creator-grid">{renderInstructorCard(matchedInst)}</div>
+          </>
+        )}
+
+        <div className="search-category-filter">
+          {categories.map((c) => (
+            <button
+              key={c}
+              className={`category-btn ${selectedCat === c ? 'active' : ''}`}
+              onClick={() => setSelectedCat(c)}
             >
-              <div className="instructor-profile-wrapper">
-                <img
-                  className="instructor-profile"
-                  src={matchedInst.profile_image}
-                  alt={matchedInst.nickname}
-                />
-              </div>
-              <div className="instructor-content">
-                <div className="instructor-nickname">{matchedInst.nickname}</div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+              {c}
+            </button>
+          ))}
+        </div>
 
-      <div className="search-category-filter">
-        {categories.map((c) => (
-          <button
-            key={c}
-            className={`category-btn ${selectedCat === c ? 'active' : ''}`}
-            onClick={() => setSelectedCat(c)}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
+        <h2 className="search-title">강의</h2>
+        {displayedLectures.length ? (
+          <>
+            <div className="lecture-grid">{displayedLectures.map(renderLectureCard)}</div>
 
-      <h2 className="search-title">강의</h2>
-      {displayedLectures.length ? (
-        <>
-          <div className="lecture-grid">
-            {displayedLectures.map((lec) => (
-              <div
-                key={lec.id}
-                className="card"
-                onClick={() => navigate(`/lectures/${lec.id}/apply`)}
-              >
-                <div className="thumbnail-wrapper">
-                  <img className="thumbnail" src={lec.thumbnail} alt={lec.title} />
-                </div>
-                <div className="card-content">
-                  <div className="title">{lec.title}</div>
-                  <div className="price">{fmtPrice(lec.price)}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Page>
-            <PageButton disabled={page === 1} onClick={() => handlePageChange(page - 1)}>
-              〈
-            </PageButton>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
-              <PageButton key={pNum} active={pNum === page} onClick={() => handlePageChange(pNum)}>
-                {pNum}
+            <Page>
+              <PageButton disabled={page === 1} onClick={() => handlePageChange(page - 1)}>
+                〈
               </PageButton>
-            ))}
-            <PageButton disabled={page === totalPages} onClick={() => handlePageChange(page + 1)}>
-              〉
-            </PageButton>
-          </Page>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
+                <PageButton
+                  key={pNum}
+                  active={pNum === page}
+                  onClick={() => handlePageChange(pNum)}
+                >
+                  {pNum}
+                </PageButton>
+              ))}
+              <PageButton disabled={page === totalPages} onClick={() => handlePageChange(page + 1)}>
+                〉
+              </PageButton>
+            </Page>
 
-          <CurrentPageText>현재 {page} 페이지입니다.</CurrentPageText>
-        </>
-      ) : (
-        <div className="empty-search">검색 결과가 없습니다.</div>
-      )}
+            <CurrentPageText>현재 {page} 페이지입니다.</CurrentPageText>
+          </>
+        ) : (
+          <div className="empty-search">검색 결과가 없습니다.</div>
+        )}
+      </ContentWrapper>
     </Wrapper>
   );
 };
 
 export default SearchPage;
 
-/* ---------------- styled-components ---------------- */
 const Wrapper = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
   padding: 40px 16px;
+  box-sizing: border-box;
+`;
+
+const ContentWrapper = styled.div`
+  width: 100%;
+  max-width: 1271px;
+  padding: 0 16px;
   box-sizing: border-box;
 `;
 
