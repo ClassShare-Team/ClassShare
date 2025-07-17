@@ -233,9 +233,9 @@ const CreateLecturePage = () => {
             {lecture?.reviews.length === 0 ? (
               <p>아직 등록된 리뷰가 없습니다.</p>
             ) : (
-              <ul>
+              <ul className="review-list">
                 {lecture?.reviews.map((r, i) => (
-                  <li key={i}>
+                  <li key={i} className="review-item">
                     <strong>{r.nickname}</strong>: {r.content}
                   </li>
                 ))}
@@ -259,9 +259,9 @@ const CreateLecturePage = () => {
             {lecture?.qnas?.length === 0 ? (
               <p>등록된 질문이 없습니다.</p>
             ) : (
-              <ul>
+              <ul className="qna-list">
                 {lecture?.qnas?.map((q, i) => (
-                  <li key={i}>
+                  <li key={i} className="qna-item">
                     <strong>{q.nickname}</strong>: {q.content}
                   </li>
                 ))}
