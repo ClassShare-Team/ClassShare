@@ -307,7 +307,7 @@ const CreateLecturePage = () => {
             ) : (
               <ul>
                 {lecture.reviews.map((r, i) => (
-                  <li key={i}>
+                  <li key={i} style={{ textAlign: 'left' }}>
                     <span><strong>{r.nickname}</strong> {r.content}</span>
                     {user?.id === r.userId && (
                       <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
@@ -336,7 +336,7 @@ const CreateLecturePage = () => {
             ) : (
               <ul>
                 {lecture.qnas?.map((q, i) => (
-                  <li key={i}>
+                  <li key={i} style={{ textAlign: 'left' }}>
                     <span><strong>{q.nickname}</strong> {q.content}</span>
                     {user?.id === q.userId && (
                       <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
@@ -367,15 +367,15 @@ const CreateLecturePage = () => {
             <button
               className="enroll-btn"
               onClick={enrolled ? handleGoToVideos : handleEnroll}
-              disabled={!user}
+              disabled={!user || !accessToken}
               style={{
-                background: !user ? '#bbb' : undefined,
-                cursor: !user ? 'not-allowed' : undefined,
+                background: !user || !accessToken ? '#bbb' : undefined,
+                cursor: !user || !accessToken ? 'not-allowed' : undefined,
               }}
             >
               {enrolled ? '수강하기' : '신청하기'}
             </button>
-            {!user && (
+            {(!user || !accessToken) && (
               <div style={{ fontSize: 13, color: '#D32F2F', marginTop: 7 }}>
                 로그인 후 신청할 수 있습니다.
               </div>
