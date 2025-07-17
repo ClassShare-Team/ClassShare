@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { useNavigate, Outlet } from 'react-router-dom';
 import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 
@@ -11,54 +11,53 @@ const InstructorMyPage = () => {
   if (!userInfo) return <div>유저 정보를 불러오지 못했습니다.</div>;
 
   return (
-    <MyPageContainer>
-      <Sidebar>
-        <SidebarHeader>
-          <h3>{userInfo.nickname || '닉네임 없음'}</h3>
-          <p>{userInfo.email}</p>
-        </SidebarHeader>
+    <MyPageLayout>
+      <ProfileSection>
+        <img src={userInfo.profile_image} alt="profile" />
+        <h2>{userInfo.nickname || '닉네임 없음'}</h2>
+        <p>{userInfo.email}</p>
+      </ProfileSection>
+
+      <NavMenu>
         <MenuItem onClick={() => navigate('/instructor/mypage')}>내 정보</MenuItem>
         <MenuItem onClick={() => navigate('/instructor/mylecture')}>내 강의</MenuItem>
         <MenuItem onClick={() => navigate('/instructor/mystudent')}>수강생 관리</MenuItem>
         <MenuItem onClick={() => navigate('/instructor/setting')}>설정</MenuItem>
-      </Sidebar>
+      </NavMenu>
+
       <Content>
         <Outlet />
       </Content>
-    </MyPageContainer>
+    </MyPageLayout>
   );
 };
 
 export default InstructorMyPage;
 
-const MyPageContainer = styled.div`
-  display: flex;
-  min-height: calc(100vh - 80px);
-  background-color: ${({ theme }) => theme.colors.gray50};
-  padding: 30px 0;
-`;
-
-const Sidebar = styled.nav`
-  width: 250px;
-  background-color: ${({ theme }) => theme.colors.white};
-  border-radius: 16px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  margin-left: 50px;
-  padding: 30px 0;
+const MyPageLayout = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 40px;
+  background-color: ${({ theme }) => theme.colors.gray100};
+  min-height: calc(100vh - 80px);
 `;
 
-const SidebarHeader = styled.div`
-  width: 100%;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.gray200};
+const ProfileSection = styled.section`
   text-align: center;
+  margin-bottom: 30px;
 
-  h3 {
-    ${({ theme }) => theme.fonts.h2};
+  img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 20px;
+    margin: 8px 0;
   }
 
   p {
@@ -67,20 +66,31 @@ const SidebarHeader = styled.div`
   }
 `;
 
+const NavMenu = styled.nav`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+`;
+
 const MenuItem = styled.div`
   font-size: 16px;
-  padding: 12px 0;
-  cursor: pointer;
-  width: 100%;
   text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: ${({ theme }) => theme.colors.white};
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+
   &:hover {
+    background-color: ${({ theme }) => theme.colors.gray200};
     color: ${({ theme }) => theme.colors.purple};
-    background-color: ${({ theme }) => theme.colors.gray100};
   }
 `;
 
 const Content = styled.div`
-  flex: 1;
-  margin-left: 40px;
-  padding-right: 50px;
+  width: 100%;
+  max-width: 900px;
+  margin-top: 40px;
 `;

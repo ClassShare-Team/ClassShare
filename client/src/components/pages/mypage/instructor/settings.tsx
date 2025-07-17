@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
@@ -12,6 +13,7 @@ const InstructorSettingsPage = () => {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(userInfo?.profile_image || '');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const formatPhone = (raw: string) =>
     raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
@@ -76,6 +78,26 @@ const InstructorSettingsPage = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const confirm = window.confirm('정말로 회원 탈퇴하시겠습니까? 복구할 수 없습니다.');
+    if (!confirm) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      if (!res.ok) throw new Error('회원 탈퇴 실패');
+      toast.success('회원 탈퇴가 완료되었습니다.');
+      localStorage.removeItem('accessToken');
+      navigate('/');
+    } catch (err) {
+      if (err instanceof Error) toast.error(err.message);
+      else toast.error('알 수 없는 오류가 발생했습니다.');
+    }
+  };
+
   if (!userInfo) return <div>유저 정보를 불러오는 중입니다...</div>;
 
   return (
@@ -113,6 +135,8 @@ const InstructorSettingsPage = () => {
       />
 
       <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
+
+      <WithdrawButton onClick={handleDeleteAccount}>회원 탈퇴</WithdrawButton>
     </Container>
   );
 };
@@ -143,6 +167,16 @@ const SaveButton = styled.button`
   margin-top: 20px;
   padding: 10px 16px;
   background-color: ${({ theme }) => theme.colors.purple};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+`;
+
+const WithdrawButton = styled.button`
+  margin-top: 40px;
+  padding: 12px;
+  background-color: red;
   color: white;
   border: none;
   border-radius: 6px;
