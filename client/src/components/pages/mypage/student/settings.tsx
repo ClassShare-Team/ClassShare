@@ -88,7 +88,18 @@ const StudentSettingsPage = () => {
 
       <Label>프로필 이미지</Label>
       {previewUrl && <PreviewImage src={previewUrl} alt="미리보기" />}
-      <Input type="file" accept="image/*" onChange={handleProfileImageChange} />
+
+      <FileUploadWrapper>
+        <HiddenFileInput
+          type="file"
+          accept="image/*"
+          id="profile-upload"
+          onChange={handleProfileImageChange}
+        />
+        <UploadButton as="label" htmlFor="profile-upload">
+          이미지 선택
+        </UploadButton>
+      </FileUploadWrapper>
 
       <Label>닉네임</Label>
       <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
@@ -160,4 +171,24 @@ const PreviewImage = styled.img`
   object-fit: cover;
   margin-top: 8px;
   margin-bottom: 12px;
+`;
+
+const FileUploadWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const UploadButton = styled.button`
+  padding: 10px 16px;
+  background-color: ${({ theme }) => theme.colors.purple};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
 `;
