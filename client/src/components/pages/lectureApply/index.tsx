@@ -51,8 +51,12 @@ const CreateLecturePage = () => {
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
+      try {
+        const parsedUser = JSON.parse(userData);
+        if (parsedUser?.id) setUser(parsedUser);
+      } catch (e) {
+        console.error('유저 파싱 실패');
+      }
     }
   }, []);
 
@@ -82,12 +86,14 @@ const CreateLecturePage = () => {
             content: r.review_content,
             userId: r.student_id,
           })),
-          qnas: qnaData.posts.map((q: any) => ({
-            id: q.id,
-            nickname: '익명',
-            content: q.title,
-            userId: q.user_id,
-          })),
+          qnas: qnaData.posts
+            .filter((q: any) => q.category === 'qa')
+            .map((q: any) => ({
+              id: q.id,
+              nickname: '익명',
+              content: q.title,
+              userId: q.user_id,
+            })),
         });
       } catch (err) {
         console.error(err);
@@ -102,9 +108,9 @@ const CreateLecturePage = () => {
 
   useEffect(() => {
     const fetchPurchaseStatus = async () => {
-      if (!token || !lecture) return;
+      if (!token || !id) return;
       try {
-        const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchased`, {
+        const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -115,7 +121,7 @@ const CreateLecturePage = () => {
     };
 
     fetchPurchaseStatus();
-  }, [token, lecture]);
+  }, [token, id]);
 
   const handleEnroll = async () => {
     if (!token || !lecture) return alert('로그인이 필요합니다');
@@ -291,7 +297,7 @@ const CreateLecturePage = () => {
               <ul>
                 {lecture.reviews.map((r, i) => (
                   <li key={i}>
-                    <span><strong>{r.nickname}</strong>: {r.content}</span>
+                    <span><strong>{r.nickname}</strong> {r.content}</span>
                     {user?.id === r.userId && (
                       <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
                     )}
@@ -320,7 +326,7 @@ const CreateLecturePage = () => {
               <ul>
                 {lecture.qnas?.map((q, i) => (
                   <li key={i}>
-                    <span><strong>{q.nickname}</strong>: {q.content}</span>
+                    <span><strong>{q.nickname}</strong> {q.content}</span>
                     {user?.id === q.userId && (
                       <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
                     )}
