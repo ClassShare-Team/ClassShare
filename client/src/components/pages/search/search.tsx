@@ -30,32 +30,38 @@ const SearchPage: React.FC = () => {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [matchedInst, setMatchedInst] = useState<Instructor | null>(null);
   const [selectedCat, setSelectedCat] = useState('전체');
+  const [totalPages, setTotalPages] = useState(1);
+
+  const page = Number(params.get('page') || '1');
+  const q = params.get('q')?.trim() || '';
 
   /* 검색 API 호출 */
   useEffect(() => {
-    const q = params.get('q')?.trim() || '';
     if (!q) return;
 
     const fetch = async () => {
       try {
-        const url = `${import.meta.env.VITE_API_URL}/search?q=${encodeURIComponent(q)}&page=1`;
+        const url = `${import.meta.env.VITE_API_URL}/search?q=${encodeURIComponent(q)}&page=${page}`;
         const { data } = await axios.get(url);
+
         const apiLectures = data.lectures || [];
         const instructorLectures = data.matched_instructor?.lectures || [];
 
-        // 중복 제거 (강사 강의가 중복될 수 있으니까 id 기준 filter)
+        // ✅ 중복 제거
         const combinedLectures = [...apiLectures, ...instructorLectures].filter(
           (lec, index, self) => index === self.findIndex((l) => l.id === lec.id)
         );
 
         setLectures(combinedLectures);
         setMatchedInst(data.matched_instructor || null);
+        setTotalPages(data.totalPages || 1);
       } catch (err) {
         console.error('검색 실패:', err);
       }
     };
+
     fetch();
-  }, [params]);
+  }, [q, page]);
 
   /* 카테고리 필터링 (강의에만 적용) */
   const displayedLectures =
