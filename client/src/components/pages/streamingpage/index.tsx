@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { useParams, useSearchParams } from "react-router-dom";
-import { FiCheckCircle, FiPlay, FiPause } from "react-icons/fi";
-import useUserInfo from '@/components/hooks/useUserInfo';
+import { FiCheckCircle, FiPlay, FiPause, FiMaximize2 } from "react-icons/fi";
+import useUserInfo from "@/components/hooks/useUserInfo";
 
 const Wrapper = styled.div`
   display: flex;
@@ -159,16 +159,18 @@ const StreamingPage = () => {
   useEffect(() => {
     const fetchCurriculum = async () => {
       try {
+        const headers: any = { withCredentials: true };
+        if (accessToken) {
+          headers.Authorization = `Bearer ${accessToken}`;
+        }
+
         const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/lectures/${lectureId}/curriculum`,
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            withCredentials: true,
-          }
+          { headers }
         );
         const updated = (res.data?.curriculum || []).map((v: any) => ({
           ...v,
-          done: v.is_completed
+          done: v.is_completed,
         }));
         setCurriculum(updated);
         const defaultIndex = selectedVideoId
@@ -186,50 +188,58 @@ const StreamingPage = () => {
   }, [lectureId, selectedVideoId, accessToken]);
 
   useEffect(() => {
-    if (!videoId || !accessToken) return;
+    if (!videoId) return;
+    const headers: any = { withCredentials: true };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     const fetchVideo = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          withCredentials: true,
+          headers,
         });
         setVideoUrl(res.data.video_url);
       } catch (err) {
         console.error("영상 불러오기 실패", err);
       }
     };
+
     const fetchProgress = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          withCredentials: true,
+          headers,
         });
         setCurrent(res.data.current_seconds || 0);
       } catch (err) {
         console.error("진도 불러오기 실패", err);
       }
     };
+
     fetchVideo();
     fetchProgress();
   }, [videoId, accessToken]);
 
   useEffect(() => {
     const saveProgress = async () => {
-      if (!videoId || !accessToken || duration === 0) return;
+      if (!videoId || duration === 0) return;
       try {
         const isCompleted = current >= duration - 3;
+        const headers: any = { withCredentials: true };
+        if (accessToken) {
+          headers.Authorization = `Bearer ${accessToken}`;
+        }
+
         await axios.post(
           `${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`,
           { currentSeconds: current, isCompleted },
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            withCredentials: true,
-          }
+          { headers }
         );
+
         if (isCompleted) {
-          setCurriculum(prev => {
+          setCurriculum((prev) => {
             const updated = [...prev];
-            const idx = updated.findIndex(v => v.id === videoId);
+            const idx = updated.findIndex((v) => v.id === videoId);
             if (idx !== -1) updated[idx].done = true;
             return updated;
           });
@@ -238,6 +248,7 @@ const StreamingPage = () => {
         console.error("진도 저장 실패", err);
       }
     };
+
     const interval = setInterval(saveProgress, 10000);
     return () => {
       clearInterval(interval);
@@ -268,18 +279,26 @@ const StreamingPage = () => {
 
   const handleSubmitReview = async () => {
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/lectures/${lectureId}/reviews`, {
-        content: reviewText,
-      }, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        withCredentials: true,
-      });
+      if (!accessToken) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/lectures/${lectureId}/reviews`,
+        { content: reviewText },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true,
+        }
+      );
+
       alert("수강평이 등록되었습니다.");
       setReviewText("");
       setShowReviewModal(false);
     } catch (err) {
       console.error("리뷰 등록 실패", err);
-      alert("리뷰 등록에 실패했습니다.");
+      alert("리뷰 등록 실패");
     }
   };
 
@@ -304,7 +323,7 @@ const StreamingPage = () => {
                 setDuration(videoEl.duration);
                 setPaused(true);
                 videoEl.currentTime = current;
-                videoEl.play().catch(err => console.error("Video play failed:", err));
+                videoEl.play().catch(console.error);
               }}
               onTimeUpdate={() => setCurrent(videoRef.current?.currentTime || 0)}
               onPlay={() => setPaused(false)}
@@ -351,11 +370,19 @@ const StreamingPage = () => {
                     color: "#fff",
                     padding: "5px 10px",
                     borderRadius: "4px",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   🗨️ 수강평
                 </button>
+                <FiMaximize2
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    const el = fullscreenRef.current;
+                    if (!document.fullscreenElement && el) el.requestFullscreen();
+                    else if (document.fullscreenElement) document.exitFullscreen();
+                  }}
+                />
               </ControlRight>
             </VideoControlBar>
           </ControlsBar>
