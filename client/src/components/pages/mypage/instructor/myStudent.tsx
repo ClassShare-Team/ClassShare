@@ -90,31 +90,36 @@ const InstructorMyStudentPage = () => {
 
   return (
     <Container>
-      <ButtonGroup>
-        <FilterButton active={selectedLectureId === 'all'} onClick={() => handleFilterClick('all')}>
-          전체
-        </FilterButton>
-        {lectureList.map((lecture) => (
+      <Card>
+        <ButtonGroup>
           <FilterButton
-            key={lecture.id}
-            active={selectedLectureId === lecture.id}
-            onClick={() => handleFilterClick(lecture.id)}
+            active={selectedLectureId === 'all'}
+            onClick={() => handleFilterClick('all')}
           >
-            {lecture.title}
+            전체
           </FilterButton>
-        ))}
-      </ButtonGroup>
+          {lectureList.map((lecture) => (
+            <FilterButton
+              key={lecture.id}
+              active={selectedLectureId === lecture.id}
+              onClick={() => handleFilterClick(lecture.id)}
+            >
+              {lecture.title}
+            </FilterButton>
+          ))}
+        </ButtonGroup>
 
-      <h3>수강생: {students.length}명</h3>
+        <h3>수강생: {students.length}명</h3>
 
-      <List>
-        {students.map((s) => (
-          <StudentCard key={s.userId}>
-            <Avatar src={s.profileImage || '/default-avatar.png'} alt="profile" />
-            <NickName>{s.nickname}</NickName>
-          </StudentCard>
-        ))}
-      </List>
+        <List>
+          {students.map((s) => (
+            <StudentCard key={s.userId}>
+              <Avatar src={s.profileImage || '/default-avatar.png'} alt="profile" />
+              <NickName>{s.nickname}</NickName>
+            </StudentCard>
+          ))}
+        </List>
+      </Card>
     </Container>
   );
 };
@@ -123,6 +128,18 @@ export default InstructorMyStudentPage;
 
 const Container = styled.div`
   padding: 40px;
+  background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
+  min-height: calc(100vh - 80px);
+`;
+
+const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
+  padding: 2rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 `;
 
 const Message = styled.div`
