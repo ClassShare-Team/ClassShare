@@ -1,29 +1,31 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { toast } from 'react-toastify'; // 토스트 메시지를 위해 추가
 
+// --- Styled Components (기존 Inquiry.tsx 와 동일) ---
 const InquiryContainer = styled.div`
-  padding: 40px; /* 전체 컨테이너 패딩 증가 */
+  padding: 40px;
   background-color: ${({ theme }) => theme.colors.white};
-  border-radius: 16px; /* 둥근 모서리 더 강화 */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* 그림자 더 부드럽고 넓게 */
-  max-width: 850px; /* 최대 너비 약간 증가 */
-  margin: 40px auto; /* 중앙 정렬 및 상하 여백 */
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  max-width: 850px;
+  margin: 40px auto;
   font-family: ${({ theme }) => theme.fontFamily};
 `;
 
 const Title = styled.h3`
   ${({ theme }) => theme.fonts.h1};
-  font-size: 32px; /* 제목 크기 더 키움 */
-  margin-bottom: 32px; /* 여백 증가 */
+  font-size: 32px;
+  margin-bottom: 32px;
   color: ${({ theme }) => theme.colors.black};
-  text-align: center; /* 중앙 정렬 */
+  text-align: center;
   border-bottom: 1px solid ${({ theme }) => theme.colors.gray200};
-  padding-bottom: 20px; /* 하단 패딩 증가 */
+  padding-bottom: 20px;
 `;
 
 const Description = styled.p`
   color: ${({ theme }) => theme.colors.gray500};
-  margin-bottom: 32px; /* 여백 증가 */
+  margin-bottom: 32px;
   text-align: center;
   line-height: 1.6;
 `;
@@ -38,8 +40,8 @@ const NewInquiryButton = styled.button`
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
   margin-bottom: 24px;
-  width: 100%; /* 너비 100% */
-  font-size: 18px; /* 폰트 크기 조정 */
+  width: 100%;
+  font-size: 18px;
   font-weight: 600;
 
   &:hover {
@@ -60,71 +62,71 @@ const InquiryList = styled.div`
 const InquiryItem = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.gray200};
   border-radius: 8px;
-  padding: 20px; /* 패딩 증가 */
-  padding-right: 100px; /* 삭제 버튼 공간 확보를 위해 오른쪽 패딩 추가 */
-  position: relative; /* 삭제 버튼 위치 지정을 위해 */
+  padding: 20px;
+  padding-right: 100px; /* 삭제 버튼 공간 확보 */
+  position: relative;
 `;
 
 const InquiryHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px; /* 여백 증가 */
+  margin-bottom: 12px;
 
   h4 {
-    font-size: 20px; /* 폰트 크기 증가 */
-    font-weight: 700; /* 더 굵게 */
+    font-size: 20px;
+    font-weight: 700;
     color: ${({ theme }) => theme.colors.black};
   }
   span {
-    font-size: 15px; /* 폰트 크기 조정 */
-    color: ${({ theme }) => theme.colors.gray500}; /* 색상 조정 */
+    font-size: 15px;
+    color: ${({ theme }) => theme.colors.gray500};
     font-weight: 500;
   }
 `;
 
 const InquiryContentDisplay = styled.p`
-  color: ${({ theme }) => theme.colors.gray500}; /* 색상 조정 */
-  margin-bottom: 12px; /* 여백 증가 */
-  line-height: 1.6; /* 줄 간격 조정 */
+  color: ${({ theme }) => theme.colors.gray500};
+  margin-bottom: 12px;
+  line-height: 1.6;
 `;
 
 const InquiryDate = styled.p`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.gray500};
-  text-align: right; /* 날짜 오른쪽 정렬 */
+  text-align: right;
 `;
 
 const AnswerBox = styled.div`
-  margin-top: 20px; /* 여백 증가 */
-  padding: 16px; /* 패딩 증가 */
+  margin-top: 20px;
+  padding: 16px;
   background-color: ${({ theme }) => theme.colors.gray100};
-  border-radius: 8px; /* 둥근 모서리 */
+  border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.gray200};
 
   p {
-    font-size: 15px; /* 폰트 크기 조정 */
+    font-size: 15px;
     color: ${({ theme }) => theme.colors.gray500};
     line-height: 1.5;
   }
   .answer-label {
-    font-weight: 600; /* 더 굵게 */
+    font-weight: 600;
     color: ${({ theme }) => theme.colors.black};
-    margin-bottom: 8px; /* 여백 증가 */
+    margin-bottom: 8px;
   }
   .answer-date {
-    font-size: 13px; /* 폰트 크기 조정 */
+    font-size: 13px;
     color: ${({ theme }) => theme.colors.gray500};
     text-align: right;
-    margin-top: 12px; /* 여백 증가 */
+    margin-top: 12px;
   }
 `;
 
 const InquiryForm = styled.div`
-  margin-top: 30px; /* 폼 상단 여백 */
-  padding: 30px; /* 폼 내부 패딩 */
-  background-color: ${({ theme }) => theme.colors.gray50}; /* 배경색 변경 */
-  border-radius: 12px; /* 둥근 모서리 */
+  margin-top: 30px;
+  padding: 30px;
+  background-color: ${({ theme }) => theme.colors.gray50};
+  border-radius: 12px;
   border: 1px solid ${({ theme }) => theme.colors.gray200};
 `;
 
@@ -142,7 +144,7 @@ const FormInput = styled.input`
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 8px;
   font-size: 16px;
-  margin-bottom: 20px; /* 여백 증가 */
+  margin-bottom: 20px;
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.purple};
@@ -156,8 +158,8 @@ const FormTextarea = styled.textarea`
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 8px;
   font-size: 16px;
-  min-height: 150px; /* 최소 높이 설정 */
-  resize: vertical; /* 수직으로만 크기 조절 가능 */
+  min-height: 150px;
+  resize: vertical;
   margin-bottom: 20px;
   &:focus {
     outline: none;
@@ -167,7 +169,7 @@ const FormTextarea = styled.textarea`
 `;
 
 const SubmitButton = styled(NewInquiryButton)`
-  margin-top: 0; /* NewInquiryButton의 기본 margin-top 제거 */
+  margin-top: 0;
   background-color: ${({ theme }) => theme.colors.purple};
   &:hover {
     background-color: #6a2cdb;
@@ -186,7 +188,7 @@ const Message = styled.p<{ type: 'success' | 'error' }>`
 `;
 
 const DeleteButton = styled.button`
-  background-color: #ef4444; /* Tailwind red-500 */
+  background-color: #ef4444;
   color: white;
   border: none;
   border-radius: 4px;
@@ -194,32 +196,57 @@ const DeleteButton = styled.button`
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
-  position: absolute; /* 문의 항목 우측 상단에 배치 */
+  position: absolute;
   top: 15px;
-  right: 15px; /* 오른쪽 패딩과 맞춰서 위치 조정 */
-  z-index: 10; /* 다른 요소 위에 오도록 */
+  right: 15px;
+  z-index: 10;
 
   &:hover {
-    background-color: #dc2626; /* Tailwind red-600 */
+    background-color: #dc2626;
   }
 `;
 
-const Inquiry = () => {
+// --- 문의 데이터 타입 정의 (학생용과 동일) ---
+interface InquiryItemType {
+  id: number;
+  title: string;
+  content: string;
+  date: string; // "YYYY.MM.DD" 형식
+  status: '답변 대기 중' | '답변 완료';
+  answer?: {
+    // 답변 정보 (운영자가 등록한 답변)
+    text: string;
+    date: string;
+  } | null;
+}
+
+// 백엔드 API 응답 타입을 위한 인터페이스
+interface InquiryPostResponse {
+  message: string;
+  inquiryId: number;
+}
+
+// 컴포넌트 이름을 파일명에 맞춰 'Inquiry'로 변경
+const Inquiry: React.FC = () => {
   const [showInquiryForm, setShowInquiryForm] = useState(false);
   const [inquiryTitle, setInquiryTitle] = useState('');
   const [inquiryContent, setInquiryContent] = useState('');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // API 호출 로딩 상태
+  const API_URL = import.meta.env.VITE_API_URL; // .env 파일에서 API_URL 가져오기
 
-  const [inquiries, setInquiries] = useState(() => {
-    const savedInquiries = localStorage.getItem('inquiries');
+  // 로컬 스토리지에서 문의 내역을 가져오거나 초기화 (강사용 별도 키 사용)
+  const [inquiries, setInquiries] = useState<InquiryItemType[]>(() => {
+    const savedInquiries = localStorage.getItem('instructorInquiries');
     return savedInquiries ? JSON.parse(savedInquiries) : [];
   });
 
+  // 문의 내역이 변경될 때마다 로컬 스토리지에 저장
   useEffect(() => {
-    localStorage.setItem('inquiries', JSON.stringify(inquiries));
+    localStorage.setItem('instructorInquiries', JSON.stringify(inquiries));
   }, [inquiries]);
 
+  // 메시지 자동 숨김
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
@@ -229,19 +256,45 @@ const Inquiry = () => {
     }
   }, [message]);
 
-  const handleSubmitInquiry = () => {
+  // --- 문의 제출 핸들러 (API 호출 로직) ---
+  const handleSubmitInquiry = async () => {
     setMessage(null);
-    setLoading(true);
-
     if (!inquiryTitle.trim() || !inquiryContent.trim()) {
       setMessage({ text: '제목과 내용을 모두 입력해주세요.', type: 'error' });
-      setLoading(false);
       return;
     }
 
-    setTimeout(() => {
-      const newInquiry = {
-        id: inquiries.length > 0 ? Math.max(...inquiries.map((i) => i.id)) + 1 : 1,
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('로그인이 필요합니다.');
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/users/inquiries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: inquiryTitle,
+          content: inquiryContent,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData: { message?: string } = await res.json(); // 에러 데이터 타입 명시
+        throw new Error(errorData.message || '문의 등록에 실패했습니다.');
+      }
+
+      const data: InquiryPostResponse = await res.json(); // API 응답 타입 명시
+      toast.success('문의가 성공적으로 등록되었습니다.');
+      // API에서 반환된 inquiryId를 사용하여 로컬 상태에 추가
+      const newInquiry: InquiryItemType = {
+        id: data.inquiryId, // 백엔드에서 받은 ID 사용
         title: inquiryTitle,
         content: inquiryContent,
         date: new Date()
@@ -251,20 +304,31 @@ const Inquiry = () => {
         status: '답변 대기 중',
         answer: null,
       };
+      setInquiries((prev) => [newInquiry, ...prev]); // 새 문의를 목록 맨 앞에 추가
 
-      setInquiries((prev) => [newInquiry, ...prev]);
-      setMessage({ text: '문의가 성공적으로 등록되었습니다.', type: 'success' });
       setInquiryTitle('');
       setInquiryContent('');
       setShowInquiryForm(false);
+    } catch (error) {
+      // 'error: any' 대신 'error: unknown'으로 변경
+      setMessage({
+        text: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.',
+        type: 'error',
+      });
+      console.error('Inquiry submission error:', error);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
+  // --- 문의 삭제 핸들러 (API가 없으므로 로컬 스토리지에서만 삭제) ---
+  // 백엔드 API가 없기 때문에 로컬에서만 삭제 처리됩니다.
+  // 실제 서비스에서는 삭제 API(`DELETE /users/inquiries/:id`)가 필요합니다.
   const handleDeleteInquiry = (id: number) => {
-    if (window.confirm('정말로 이 문의를 삭제하시겠습니까?')) {
+    if (window.confirm('정말로 이 문의를 삭제하시겠습니까? (로컬에서만 삭제됩니다.)')) {
       setLoading(true);
       setTimeout(() => {
+        // 비동기 로딩 효과를 주기 위해 setTimeout 사용
         const updatedInquiries = inquiries.filter((inquiry) => inquiry.id !== id);
         setInquiries(updatedInquiries);
         setMessage({ text: '문의가 성공적으로 삭제되었습니다.', type: 'success' });
@@ -275,17 +339,14 @@ const Inquiry = () => {
 
   return (
     <InquiryContainer>
-      <Title>1:1 문의</Title>
+      <Title>강사용 1:1 문의</Title> {/* 제목 변경 */}
       <Description>
-        궁금한 점이나 불편한 점을 문의해주세요. 신속하게 답변해 드리겠습니다.
+        운영자에게 문의할 내용을 작성해주세요. 신속하게 답변해 드리겠습니다. {/* 설명 변경 */}
       </Description>
-
       {message && <Message type={message.type}>{message.text}</Message>}
-
       <NewInquiryButton onClick={() => setShowInquiryForm((prev) => !prev)} disabled={loading}>
         {showInquiryForm ? '문의 작성 취소' : '새로운 문의 작성'}
       </NewInquiryButton>
-
       {showInquiryForm && (
         <InquiryForm>
           <FormLabel htmlFor="inquiryTitle">제목:</FormLabel>
@@ -313,7 +374,6 @@ const Inquiry = () => {
           </SubmitButton>
         </InquiryForm>
       )}
-
       <h4
         style={{
           fontSize: '24px',
@@ -325,13 +385,15 @@ const Inquiry = () => {
           paddingBottom: '20px',
         }}
       >
-        내 문의 내역
-      </h4>
+        내가 보낸 문의 내역
+      </h4>{' '}
+      {/* 제목 변경 */}
       <InquiryList>
         {inquiries.length > 0 ? (
           inquiries.map((item) => (
             <InquiryItem key={item.id}>
               {!loading && (
+                // ✅ 백엔드 API가 없으므로 로컬에서만 삭제
                 <DeleteButton onClick={() => handleDeleteInquiry(item.id)}>삭제</DeleteButton>
               )}
               <InquiryHeader>

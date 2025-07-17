@@ -7,6 +7,25 @@ import { useNavigate } from 'react-router-dom';
 // 실제 백엔드 API의 기본 URL을 여기에 입력해주세요.
 const API_BASE_URL = 'http://localhost:5000';
 
+// UserContext에서 가져오는 user 객체의 타입을 정의합니다.
+// 실제 백엔드 응답에 따라 이 인터페이스를 더 정확하게 구성해야 합니다.
+interface User {
+  id: string;
+  email: string;
+  name: string; // 닉네임 대신 'name' 필드 사용
+  phone?: string; // 전화번호는 선택 사항일 수 있으므로 '?' 추가
+  profile_image?: string; // 프로필 이미지도 선택 사항일 수 있으므로 '?' 추가
+  // 다른 사용자 관련 필드가 있다면 여기에 추가합니다.
+}
+
+// 초기 프로필 데이터의 타입을 정의합니다.
+interface InitialProfileData {
+  name: string;
+  phone: string;
+  profile_image: string;
+}
+
+// styled-components 정의 (변경 없음)
 const SettingsContainer = styled.div`
   padding: 40px;
   background-color: ${({ theme }) => theme.colors.white};
@@ -171,25 +190,31 @@ const ProfileImageUploadButton = styled.label`
 `;
 
 const Settings = () => {
-  const { user, setUser } = useUser();
+  // useUser 훅이 반환하는 객체에 User 타입을 적용합니다.
+  const { user, setUser } = useUser() as {
+    user: User | null;
+    setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  };
   const navigate = useNavigate();
 
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
 
-  const [profileName, setProfileName] = useState(user?.name || ''); // 닉네임 -> 백엔드 'name' 필드
-  const [profileEmail, setProfileEmail] = useState(user?.email || '');
-  const [profilePhone, setProfilePhone] = useState<string>(
-    user && 'phone' in user && user.phone ? user.phone : ''
-  );
-  const [profileImage, setProfileImage] = useState(
+  // user?.name이 string임을 보장하고, 초기값에 맞게 타입을 지정합니다.
+  const [profileName, setProfileName] = useState<string>(user?.name || '');
+  const [profileEmail, setProfileEmail] = useState<string>(user?.email || '');
+  // user.phone이 존재하고 string 타입인지 확인합니다.
+  const [profilePhone, setProfilePhone] = useState<string>(user?.phone || '');
+  // profile_image의 초기값에 따라 string 타입을 지정합니다.
+  const [profileImage, setProfileImage] = useState<string>(
     user?.profile_image || 'https://placehold.co/120x120/7a36ff/FFFFFF?text=User'
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const [initialProfileData, setInitialProfileData] = useState({
+  // InitialProfileData 인터페이스를 적용합니다.
+  const [initialProfileData, setInitialProfileData] = useState<InitialProfileData>({
     name: user?.name || '',
-    phone: user && 'phone' in user && user.phone ? user.phone : '',
+    phone: user?.phone || '',
     profile_image: user?.profile_image || 'https://placehold.co/120x120/7a36ff/FFFFFF?text=User',
   });
 
@@ -197,11 +222,11 @@ const Settings = () => {
     if (user) {
       setProfileName(user.name);
       setProfileEmail(user.email);
-      setProfilePhone(user && 'phone' in user && user.phone ? user.phone : '');
+      setProfilePhone(user.phone || ''); // phone이 없을 경우 빈 문자열 할당
       setProfileImage(user.profile_image || 'https://placehold.co/120x120/7a36ff/FFFFFF?text=User');
       setInitialProfileData({
         name: user.name,
-        phone: user && 'phone' in user && user.phone ? user.phone : '',
+        phone: user.phone || '', // phone이 없을 경우 빈 문자열 할당
         profile_image: user.profile_image || 'https://placehold.co/120x120/7a36ff/FFFFFF?text=User',
       });
     } else {
@@ -255,7 +280,8 @@ const Settings = () => {
         localStorage.removeItem('accessToken');
         navigate('/login');
       } else {
-        const apiResponse = await response.json();
+        // 백엔드 응답을 위한 타입 단언
+        const apiResponse: { message?: string } = await response.json();
         let errorMessage = '회원 탈퇴 중 오류가 발생했습니다.';
         if (response.status === 401) {
           errorMessage = '인증 토큰이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.';
@@ -267,7 +293,8 @@ const Settings = () => {
         }
         toast.error(apiResponse.message || errorMessage);
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      // error 타입 명시
       console.error('회원 탈퇴 요청 중 오류 발생:', error);
       toast.error('네트워크 오류 또는 서버 응답 문제 발생.');
     }
@@ -305,7 +332,8 @@ const Settings = () => {
         }),
       });
 
-      const apiResponse = await response.json();
+      // 백엔드 응답을 위한 타입 단언
+      const apiResponse: { message?: string } = await response.json();
 
       if (response.ok) {
         toast.success(apiResponse.message || '비밀번호가 성공적으로 변경되었습니다.');
@@ -323,7 +351,8 @@ const Settings = () => {
         }
         toast.error(apiResponse.message || errorMessage);
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      // error 타입 명시
       console.error('비밀번호 변경 요청 중 오류 발생:', error);
       toast.error('네트워크 오류 또는 서버 응답 문제 발생.');
     }
@@ -338,9 +367,8 @@ const Settings = () => {
     const formData = new FormData();
     let isChanged = false;
 
-    // 백엔드가 'name' 필드를 기대하므로, 'nickname' 대신 'name'을 사용합니다.
     if (profileName !== initialProfileData.name) {
-      formData.append('name', profileName); // ⭐ 변경된 부분 ⭐
+      formData.append('name', profileName);
       isChanged = true;
     }
     if (profilePhone !== initialProfileData.phone) {
@@ -358,45 +386,36 @@ const Settings = () => {
     }
 
     try {
-      // API URL을 백엔드 라우트와 일치시킵니다. (가장 일반적인 프로필 업데이트 엔드포인트)
-      // 백엔드가 이 엔드포인트에서 name과 profile_image를 동시에 처리할 수 있어야 합니다.
       const response = await fetch(`${API_BASE_URL}/users/me`, {
-        // ⭐ 변경된 부분 ⭐
         method: 'PATCH',
         headers: {
-          // FormData를 보낼 때는 Content-Type 헤더를 수동으로 설정하지 않습니다.
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
         body: formData,
       });
 
-      const apiResponse = await response.json();
+      // 백엔드 응답의 유저 데이터를 위한 인터페이스 (백엔드 응답에 맞춰 정확히 정의)
+      interface UpdateProfileResponse {
+        message?: string;
+        user?: User; // 업데이트된 유저 정보가 있을 수 있음
+        profile_image_url?: string; // 업데이트된 프로필 이미지 URL이 별도로 올 수 있음
+      }
+
+      const apiResponse: UpdateProfileResponse = await response.json();
 
       if (response.ok) {
         toast.success(apiResponse.message || '회원 정보가 수정되었습니다.');
-        console.log('업데이트된 유저 정보 (API 응답):', apiResponse.user); // 이 로그 결과를 꼭 확인해야 합니다!
+        console.log('업데이트된 유저 정보 (API 응답):', apiResponse.user);
 
-        // UserContext 업데이트 로직: 백엔드 응답이 주는 정보를 우선적으로 사용합니다.
-        setUser((prevUser) => {
+        setUser((prevUser: User | null) => {
+          // prevUser에 타입 명시
           if (!prevUser) return null;
 
           return {
             ...prevUser,
-            // 'name' 필드 업데이트:
-            // 1. apiResponse.user.name이 있으면 사용 (백엔드가 'name'으로 반환할 경우)
-            // 2. 없으면 현재 profileName 상태 사용
             name: (apiResponse.user && apiResponse.user.name) || profileName,
-
-            // 'email' 필드 업데이트: 백엔드 응답에 email이 있다면 사용
             email: (apiResponse.user && apiResponse.user.email) || prevUser.email,
-
-            // 'phone' 필드 업데이트: 백엔드 응답이 우선, 없으면 현재 profilePhone 상태 사용
-            phone:
-              apiResponse.user && 'phone' in apiResponse.user && apiResponse.user.phone
-                ? apiResponse.user.phone
-                : profilePhone,
-
-            // 'profile_image' 업데이트: 백엔드가 새로운 이미지 URL을 주면 사용, 아니면 현재 임시 이미지 사용
+            phone: (apiResponse.user && apiResponse.user.phone) || profilePhone,
             profile_image:
               apiResponse.profile_image_url ||
               (apiResponse.user && apiResponse.user.profile_image) ||
@@ -404,14 +423,15 @@ const Settings = () => {
           };
         });
 
-        // 초기 데이터 업데이트: 다음 수정 시 변경 여부 판단의 기준이 됩니다.
         setInitialProfileData({
           name: profileName,
           phone: profilePhone,
           profile_image: apiResponse.profile_image_url || profileImage,
         });
-        setSelectedFile(null); // 파일 업로드 후 선택된 파일 초기화
+        setSelectedFile(null);
       } else {
+        // apiResponse의 타입을 명시적으로 지정하여 속성 접근 오류 방지
+        const errorResponse: { message?: string } = apiResponse;
         let errorMessage = '회원 정보 수정 중 오류가 발생했습니다.';
         if (response.status === 401) {
           errorMessage = '인증 토큰이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.';
@@ -421,17 +441,18 @@ const Settings = () => {
         } else if (response.status === 400) {
           errorMessage = '유효하지 않은 요청 데이터입니다.';
         } else if (response.status === 409) {
-          errorMessage = apiResponse.message || '중복된 정보가 있습니다.';
+          errorMessage = errorResponse.message || '중복된 정보가 있습니다.';
         }
-        toast.error(apiResponse.message || errorMessage);
+        toast.error(errorResponse.message || errorMessage);
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      // error 타입 명시
       console.error('프로필 정보 수정 요청 중 오류 발생:', error);
       toast.error('네트워크 오류 또는 서버 응답 문제 발생.');
     }
   };
 
-  const isDisabled = !user; // user 객체가 없으면 모든 버튼 비활성화
+  const isDisabled = !user;
 
   return (
     <SettingsContainer>
@@ -476,12 +497,12 @@ const Settings = () => {
         </ProfileImageArea>
 
         <FormRow>
-          <Label htmlFor="name">이름:</Label> {/* "닉네임"에서 "이름"으로 변경된 레이블 */}
+          <Label htmlFor="name">이름:</Label>
           <Input
             type="text"
             id="name"
             value={profileName}
-            onChange={(e) => setProfileName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfileName(e.target.value)}
             disabled={isDisabled}
           />
         </FormRow>
@@ -495,7 +516,7 @@ const Settings = () => {
             type="tel"
             id="phone"
             value={profilePhone}
-            onChange={(e) => setProfilePhone(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfilePhone(e.target.value)}
             disabled={isDisabled}
           />
         </FormRow>
@@ -512,7 +533,9 @@ const Settings = () => {
             type="password"
             id="current-password"
             value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setCurrentPassword(e.target.value)
+            }
             disabled={isDisabled}
           />
         </FormRow>
@@ -522,7 +545,7 @@ const Settings = () => {
             type="password"
             id="new-password"
             value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
             disabled={isDisabled}
           />
         </FormRow>

@@ -1,161 +1,169 @@
-// import { useState, useEffect } from 'react';
-// import { Link, useLocation } from 'react-router-dom';
-// import styled from 'styled-components';
-// import { useUser } from '@/contexts/UserContext';
+import React from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { useUser } from '@/contexts/UserContext';
+import { toast } from 'react-toastify';
+import { useEffect } from 'react';
 
-// // 서브 컴포넌트 임포트 경로 수정 (./instructor/ 제거)
-// import MyLectures from './MyLectures'; // './instructor/MyLectures' -> './MyLectures'
-// import MyStudents from './MyStudents'; // './instructor/MyStudents' -> './MyStudents'
-// import SalesReport from './SalesReport'; // './instructor/SalesReport' -> './SalesReport'
-// import Inquiry from './Inquiry'; // './instructor/Inquiry' -> './Inquiry'
-// import Settings from './Settings'; // './instructor/Settings' -> './Settings'
+// --- Styled Components ---
+const MyPageContainer = styled.div`
+  display: flex;
+  min-height: calc(100vh - 80px); /* 헤더 높이 제외 */
+  background-color: ${({ theme }) => theme.colors.gray50};
+  padding: 30px 0;
+`;
 
-// const MyPageLayout = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   min-height: 100vh;
-//   background-color: ${({ theme }) => theme.colors.gray100};
-//   font-family: ${({ theme }) => theme.fontFamily};
+const Sidebar = styled.nav`
+  width: 250px;
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  margin-left: 50px;
+  padding: 30px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
 
-//   @media (min-width: 768px) {
-//     /* md breakpoint */
-//     flex-direction: row;
-//   }
-// `;
+const SidebarHeader = styled.div`
+  width: 100%;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.gray200};
+  text-align: center;
 
-// const Sidebar = styled.aside`
-//   width: 100%;
-//   background-color: ${({ theme }) => theme.colors.white};
-//   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-//   padding: 24px;
-//   border-radius: 8px;
-//   margin-bottom: 24px;
+  h3 {
+    ${({ theme }) => theme.fonts.h2};
+    font-size: 24px;
+    color: ${({ theme }) => theme.colors.black};
+    margin-bottom: 8px;
+  }
 
-//   @media (min-width: 768px) {
-//     width: 256px; /* md:w-64 */
-//     border-radius: 8px 0 0 8px; /* md:rounded-l-lg md:rounded-r-none */
-//     margin-bottom: 0;
-//   }
-// `;
+  p {
+    font-size: 15px;
+    color: ${({ theme }) => theme.colors.gray500};
+  }
+`;
 
-// const UserProfile = styled.div`
-//   display: flex;
-//   align-items: center;
-//   margin-bottom: 24px;
-// `;
+const MenuList = styled.ul`
+  list-style: none;
+  padding: 0;
+  width: 100%;
+`;
 
-// const Avatar = styled.img`
-//   width: 60px;
-//   height: 60px;
-//   border-radius: 50%;
-//   border: 2px solid ${({ theme }) => theme.colors.purple};
-//   margin-right: 16px;
-// `;
+const MenuItem = styled.li`
+  width: 100%;
+  margin-bottom: 8px;
 
-// const UserDetails = styled.div`
-//   h2 {
-//     font-size: 20px;
-//     font-weight: 600;
-//     color: ${({ theme }) => theme.colors.black};
-//   }
-//   p {
-//     font-size: 14px;
-//     color: ${({ theme }) => theme.colors.gray500};
-//   }
-// `;
+  a {
+    display: flex;
+    align-items: center;
+    padding: 15px 30px;
+    color: ${({ theme }) => theme.colors.gray500};
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: 500;
+    transition:
+      background-color 0.2s ease-in-out,
+      color 0.2s ease-in-out;
+    border-left: 5px solid transparent;
 
-// const NavList = styled.ul`
-//   list-style: none;
-//   padding: 0;
-//   margin: 0;
-// `;
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.gray100};
+      color: ${({ theme }) => theme.colors.purple};
+    }
 
-// const NavItem = styled.li`
-//   margin-bottom: 8px;
-// `;
+    &.active {
+      background-color: ${({ theme }) => theme.colors.gray500};
+      color: ${({ theme }) => theme.colors.purple};
+      font-weight: 700;
+      border-left-color: ${({ theme }) => theme.colors.purple};
+    }
+  }
+`;
 
-// const NavLink = styled(Link)<{ $active: boolean }>`
-//   display: flex;
-//   align-items: center;
-//   padding: 12px;
-//   border-radius: 6px;
-//   font-size: 18px;
-//   text-decoration: none;
-//   transition: all 0.2s ease-in-out;
+const MainContent = styled.div`
+  flex-grow: 1;
+  margin-left: 40px;
+  margin-right: 50px;
+`;
 
-//   color: ${({ theme, $active }) => ($active ? theme.colors.white : theme.colors.gray500)};
-//   background-color: ${({ theme, $active }) => ($active ? theme.colors.purple : 'transparent')};
-//   box-shadow: ${({ $active }) => ($active ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none')};
+const InstructorMyPage: React.FC = () => {
+  const { user } = useUser(); // UserContext에서 사용자 정보 가져오기
+  const navigate = useNavigate();
+  const location = useLocation();
 
-//   &:hover {
-//     background-color: ${({ theme, $active }) => ($active ? '#6a2cdb' : theme.colors.gray100)};
-//     color: ${({ theme, $active }) => ($active ? theme.colors.white : theme.colors.purple)};
-//   }
-// `;
+  // 강사 역할이 아니면 접근 제한
+  useEffect(() => {
+    if (user && user.role !== 'instructor') {
+      toast.error('강사만 접근할 수 있는 페이지입니다.');
+      navigate('/mypage/student/settings'); // 학생 마이페이지로 리다이렉트 (적절한 경로로 수정)
+    } else if (!user) {
+      toast.info('로그인이 필요합니다.');
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
-// const MainContent = styled.main`
-//   flex: 1;
-//   padding: 24px;
+  if (!user || user.role !== 'instructor') {
+    return null; // 리다이렉트 중에는 아무것도 렌더링하지 않음
+  }
 
-//   @media (min-width: 768px) {
-//     margin-left: 24px; /* md:ml-6 */
-//   }
-// `;
+  return (
+    <MyPageContainer>
+      <Sidebar>
+        <SidebarHeader>
+          <h3>{user.name} 강사님</h3> {/* 강사님으로 표시 */}
+          <p>{user.email}</p>
+        </SidebarHeader>
+        <MenuList>
+          <MenuItem>
+            <a
+              href="/mypage/instructor/settings"
+              className={
+                location.pathname.startsWith('/mypage/instructor/settings') ? 'active' : ''
+              }
+            >
+              설정
+            </a>
+          </MenuItem>
+          <MenuItem>
+            <a
+              href="/mypage/instructor/inquiry"
+              className={location.pathname.startsWith('/mypage/instructor/inquiry') ? 'active' : ''}
+            >
+              1:1 문의
+            </a>
+          </MenuItem>
+          {/* 추가될 강사 관련 메뉴들 (예: 내 강의 관리, 매출 통계 등) */}
+          <MenuItem>
+            <a
+              href="/mypage/instructor/my-lectures"
+              className={
+                location.pathname.startsWith('/mypage/instructor/my-lectures') ? 'active' : ''
+              }
+            >
+              내 강의 관리
+            </a>
+          </MenuItem>
+          <MenuItem>
+            <a
+              href="/mypage/instructor/revenue-statistics"
+              className={
+                location.pathname.startsWith('/mypage/instructor/revenue-statistics')
+                  ? 'active'
+                  : ''
+              }
+            >
+              매출 통계
+            </a>
+          </MenuItem>
+        </MenuList>
+      </Sidebar>
+      <MainContent>
+        <Outlet /> {/* 중첩된 라우트의 내용이 여기에 렌더링됩니다. */}
+      </MainContent>
+    </MyPageContainer>
+  );
+};
 
-// const InstructorMyPage = () => {
-//   const { user } = useUser();
-//   const location = useLocation();
-//   const [activeMenu, setActiveMenu] = useState('');
-
-//   useEffect(() => {
-//     const pathSegments = location.pathname.split('/');
-//     const currentPath = pathSegments[pathSegments.length - 1];
-//     setActiveMenu(currentPath || 'my-lectures');
-//   }, [location.pathname]);
-
-//   const menuItems = [
-//     { name: '내 강의 관리', path: 'my-lectures', component: <MyLectures /> },
-//     { name: '수강생 관리', path: 'my-students', component: <MyStudents /> },
-//     { name: '수익 관리', path: 'sales-report', component: <SalesReport /> },
-//     { name: '1:1 문의', path: 'inquiry', component: <InstructorInquiry /> },
-//     { name: '설정', path: 'settings', component: <InstructorSettings /> },
-//   ];
-
-//   const renderContent = () => {
-//     const foundItem = menuItems.find((item) => item.path === activeMenu);
-//     return foundItem ? foundItem.component : <MyLectures />;
-//   };
-
-//   return (
-//     <MyPageLayout>
-//       <Sidebar>
-//         <UserProfile>
-//           <Avatar
-//             src={user?.profile_image || 'https://placehold.co/60x60/7a36ff/FFFFFF?text=Instructor'}
-//             alt="Instructor Avatar"
-//           />
-//           <UserDetails>
-//             <h2>{user?.nickname || user?.name || '강사님'}</h2>
-//             <p>{user?.email || 'instructor@example.com'}</p>
-//           </UserDetails>
-//         </UserProfile>
-
-//         <nav>
-//           <NavList>
-//             {menuItems.map((item) => (
-//               <NavItem key={item.path}>
-//                 <NavLink to={`/mypage/instructor/${item.path}`} $active={activeMenu === item.path}>
-//                   {item.name}
-//                 </NavLink>
-//               </NavItem>
-//             ))}
-//           </NavList>
-//         </nav>
-//       </Sidebar>
-
-//       <MainContent>{renderContent()}</MainContent>
-//     </MyPageLayout>
-//   );
-// };
-
-// export default InstructorMyPage;
+export default InstructorMyPage;
