@@ -22,9 +22,8 @@ const BoardPage = () => {
 
   const postsPerPage = 10;
   const totalPages = Math.max(1, Math.ceil(posts.length / postsPerPage));
-  const pageGroupSize = 5;
-  const currentGroup = Math.floor((currentPage - 1) / pageGroupSize);
-  const pageGroupStart = currentGroup * pageGroupSize + 1;
+
+  const pageButtons = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   const getTimeAgo = (createdAt: string) => {
     const diff = Date.now() - new Date(createdAt).getTime();
@@ -59,19 +58,14 @@ const BoardPage = () => {
   };
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
   const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
   const paginatedPosts = posts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
-  const pageButtons = Array.from({ length: pageGroupSize }, (_, i) => pageGroupStart + i);
 
   return (
     <PageWrapper>
