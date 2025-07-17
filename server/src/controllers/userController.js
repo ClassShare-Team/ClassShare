@@ -312,3 +312,39 @@ exports.deleteMyAccount = async (req, res) => {
     });
   }
 };
+
+// 전체 수강자 조회
+exports.getMyAllStudents = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const page = parseInt(req.query.page, 10) || 1;
+    const size = parseInt(req.query.size, 10) || 10;
+
+    const result = await userService.getMyAllStudents(userId, page, size);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error('[전체 수강생 조회 오류]', e.stack || e);
+    return res.status(500).json({ message: e.message || '서버 오류' });
+  }
+};
+
+// 특정 강의 수강자 조회
+exports.getMyStudentsByLecture = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const lectureId = parseInt(req.query.lectureId, 10);
+    const page = parseInt(req.query.page, 10) || 1;
+    const size = parseInt(req.query.size, 10) || 10;
+
+    if (!lectureId) return res.status(400).json({ message: 'lectureId는 필수입니다.' });
+
+    const result = await userService.getMyStudentsByLecture(userId, lectureId, page, size);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error(
+      `[특정 강의 수강생 조회 오류] lectureId=${req.query.lectureId}, error=`,
+      e.stack || e
+    );
+    return res.status(e.status || 500).json({ message: e.message || '서버 오류' });
+  }
+};

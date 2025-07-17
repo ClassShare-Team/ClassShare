@@ -24,5 +24,7 @@ router.patch(
   userController.updateInstructorIntroduction
 ); // 소개글 작성
 router.delete('/me', authMiddleware, userController.deleteMyAccount); // 회원 탈퇴
+router.get('/me/students/all', authMiddleware, userController.getMyAllStudents); // 전체 수강자 수 및 목록 조회
+router.get('/me/students/by-lecture', authMiddleware, userController.getMyStudentsByLecture); // 특정 강의 수강자 수 및 목록 조회
 
 module.exports = router;

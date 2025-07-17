@@ -298,3 +298,81 @@ exports.deleteUser = async (userId) => {
     client.release();
   }
 };
+
+// 전체 수강자 수 및 목록 조회
+exports.getMyAllStudents = async (userId, page = 1, size = 10) => {
+  const offset = (page - 1) * size;
+
+  // 전체 수강생 수 조회
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM lecture_purchases lp
+    JOIN lectures l ON lp.lecture_id = l.id
+    WHERE l.instructor_id = $1
+  `;
+  const { rows: countRows } = await db.query(countQuery, [userId]);
+  const totalCount = parseInt(countRows[0].total, 10);
+
+  // 수강생 리스트 조회
+  const studentsQuery = `
+    SELECT
+      u.id AS "userId",
+      u.nickname,
+      u.profile_image AS "profileImage",
+      l.id AS "lectureId",
+      l.title AS "lectureTitle",
+      lp.purchased_at AS "purchasedAt"
+    FROM lecture_purchases lp
+    JOIN lectures l ON lp.lecture_id = l.id
+    JOIN users u ON lp.user_id = u.id
+    WHERE l.instructor_id = $1
+    ORDER BY lp.purchased_at DESC
+    LIMIT $2 OFFSET $3
+  `;
+  const { rows: students } = await db.query(studentsQuery, [userId, size, offset]);
+
+  return {
+    page,
+    size,
+    totalCount,
+    students,
+  };
+};
+
+// 특정 강의 수강생 수 및 목록 조회
+exports.getMyStudentsByLecture = async (userId, lectureId, page = 1, size = 10) => {
+  const offset = (page - 1) * size;
+
+  // 강의가 내 강의인지 검증
+  const { rowCount } = await db.query(
+    `SELECT 1 FROM lectures WHERE id = $1 AND instructor_id = $2`,
+    [lectureId, userId]
+  );
+  if (rowCount === 0) throw { status: 403, message: '해당 강의 접근 권한이 없습니다.' };
+
+  // 전체 수강생 수 조회
+  const countResult = await db.query(
+    `
+    SELECT COUNT(*) AS total
+    FROM lecture_purchases
+    WHERE lecture_id = $1
+  `,
+    [lectureId]
+  );
+  const totalCount = parseInt(countResult.rows[0].total, 10);
+
+  // 수강생 목록 조회
+  const { rows: students } = await db.query(
+    `
+    SELECT u.id AS "userId", u.nickname, u.profile_image AS "profileImage", lp.purchased_at AS "purchasedAt"
+    FROM lecture_purchases lp
+    JOIN users u ON lp.user_id = u.id
+    WHERE lp.lecture_id = $1
+    ORDER BY lp.purchased_at DESC
+    LIMIT $2 OFFSET $3
+  `,
+    [lectureId, size, offset]
+  );
+
+  return { page, size, totalCount, students };
+};
