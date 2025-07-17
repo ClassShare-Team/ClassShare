@@ -97,12 +97,10 @@ const LectureApplyPage = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await res.json();
-        setEnrolled(data.is_purchased || localStorage.getItem(`enrolled_${id}`) === 'true');
+        setEnrolled(data.is_purchased === true);
       } catch (err) {
         console.error('수강 여부 확인 실패:', err);
-        if (localStorage.getItem(`enrolled_${id}`) === 'true') {
-          setEnrolled(true);
-        }
+        setEnrolled(false);
       }
     };
 
@@ -123,7 +121,6 @@ const LectureApplyPage = () => {
       if (res.ok) {
         alert(data.message || '수강 신청 완료');
         setEnrolled(true);
-        localStorage.setItem(`enrolled_${lecture.id}`, 'true');
       } else {
         alert(data.message || '수강 신청 실패');
       }
@@ -132,17 +129,29 @@ const LectureApplyPage = () => {
     }
   };
 
+  const handleGoToVideos = () => {
+    if (!lecture?.id) return;
+    if (!enrolled) {
+      alert('수강 중인 사용자만 접근할 수 있습니다.');
+      return;
+    }
+    navigate(`/lecture/${lecture.id}/videos`);
+  };
+
   const handleSubmitReview = async () => {
     if (!reviewInput.trim() || !lecture || !user || !accessToken) return;
+
     const hasReviewed = lecture.reviews.some((r) => r.userId === user.id);
     if (hasReviewed) {
       alert('이미 리뷰를 작성하셨습니다.');
       return;
     }
+
     if (!enrolled) {
       alert('수강 신청한 사용자만 리뷰를 작성할 수 있습니다.');
       return;
     }
+
     try {
       const res = await fetch(`${API_URL}/reviews`, {
         method: 'POST',
@@ -189,7 +198,9 @@ const LectureApplyPage = () => {
     try {
       const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
       if (res.ok) {
         setLecture((prev) =>
@@ -250,7 +261,9 @@ const LectureApplyPage = () => {
     try {
       const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
       if (res.ok) {
         setLecture((prev) =>
@@ -262,10 +275,6 @@ const LectureApplyPage = () => {
     } catch {
       alert('삭제 중 오류 발생');
     }
-  };
-
-  const handleGoToVideos = () => {
-    if (lecture?.id) navigate(`/lecture/${lecture.id}/videos`);
   };
 
   if (loading) return <div>Loading...</div>;
