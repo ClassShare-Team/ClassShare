@@ -20,6 +20,12 @@ interface Lecture {
   qnas?: Qna[];
 }
 
+interface User {
+  id: number;
+  nickname: string;
+  token: string;
+}
+
 const MAX_REVIEW_LENGTH = 300;
 const MAX_QNA_LENGTH = 300;
 
@@ -28,13 +34,9 @@ const CreateLecturePage = () => {
   const navigate = useNavigate();
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [reviewInput, setReviewInput] = useState('');
-  const [showQnaModal, setShowQnaModal] = useState(false);
   const [qnaInput, setQnaInput] = useState('');
-  const [qnas, setQnas] = useState<Qna[]>([]);
   const [loading, setLoading] = useState(true);
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -79,11 +81,7 @@ const CreateLecturePage = () => {
         });
 
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!storedUser.token) {
-          setIsLoggedIn(false);
-          setUser(null);
-          return;
-        }
+        if (!storedUser.token) return;
 
         const meRes = await fetch(`${API_URL}/users/me`, {
           headers: {
@@ -92,7 +90,6 @@ const CreateLecturePage = () => {
         });
         if (meRes.ok) {
           const meData = await meRes.json();
-          setIsLoggedIn(true);
           setUser({ ...meData, token: storedUser.token });
 
           const purchasedRes = await fetch(`${API_URL}/lectures/${id}/purchased`, {
@@ -103,7 +100,6 @@ const CreateLecturePage = () => {
           const purchasedData = await purchasedRes.json();
           setEnrolled(purchasedData.is_purchased === true);
         } else {
-          setIsLoggedIn(false);
           setUser(null);
         }
       } catch (err) {
@@ -118,7 +114,7 @@ const CreateLecturePage = () => {
   }, [API_URL, id]);
 
   const handleEnroll = async () => {
-    if (!isLoggedIn || !lecture || !user) {
+    if (!user || !lecture) {
       alert('로그인이 필요합니다');
       return;
     }
@@ -158,9 +154,8 @@ const CreateLecturePage = () => {
         },
         body: JSON.stringify({
           lectureId: lecture.id,
-          userId: user.id,
-          rating: 5,
           content: reviewInput.trim(),
+          rating: 5,
         }),
       });
       const result = await res.json();
@@ -174,7 +169,6 @@ const CreateLecturePage = () => {
             : prev
         );
         setReviewInput('');
-        setShowReviewModal(false);
       } else {
         alert(result.message || '리뷰 등록 실패');
       }
@@ -195,14 +189,22 @@ const CreateLecturePage = () => {
         body: JSON.stringify({
           title: `${lecture.title}에 대한 질문`,
           content: qnaInput.trim(),
+          lectureId: lecture.id,
         }),
       });
+      const result = await res.json();
       if (res.ok) {
-        setQnas((prev) => [...prev, { nickname: user.nickname, content: qnaInput.trim() }]);
+        setLecture((prev) =>
+          prev
+            ? {
+                ...prev,
+                qnas: [...(prev.qnas || []), { nickname: user.nickname, content: qnaInput.trim() }],
+              }
+            : prev
+        );
         setQnaInput('');
-        setShowQnaModal(false);
       } else {
-        alert('질문 등록 실패');
+        alert(result.message || '질문 등록 실패');
       }
     } catch {
       alert('질문 등록 실패');
@@ -214,56 +216,6 @@ const CreateLecturePage = () => {
 
   return (
     <div className="lecture-wrapper">
-      {showReviewModal && (
-        <div className="modal-bg" onClick={() => setShowReviewModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="modal-submit-btn"
-              onClick={handleSubmitReview}
-              disabled={!reviewInput.trim()}
-            >
-              작성하기
-            </button>
-            <h3 className="modal-title">리뷰 작성</h3>
-            <textarea
-              className="modal-textarea"
-              placeholder="리뷰를 입력해 주세요 (최대 300자)"
-              value={reviewInput}
-              onChange={(e) => setReviewInput(e.target.value)}
-              maxLength={MAX_REVIEW_LENGTH}
-              autoFocus
-            />
-            <div className="modal-count">
-              {reviewInput.length}/{MAX_REVIEW_LENGTH}
-            </div>
-          </div>
-        </div>
-      )}
-      {showQnaModal && (
-        <div className="modal-bg" onClick={() => setShowQnaModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="modal-submit-btn"
-              onClick={handleSubmitQna}
-              disabled={!qnaInput.trim()}
-            >
-              작성하기
-            </button>
-            <h3 className="modal-title">Q&amp;A 작성</h3>
-            <textarea
-              className="modal-textarea"
-              placeholder="질문을 입력해 주세요 (최대 300자)"
-              value={qnaInput}
-              onChange={(e) => setQnaInput(e.target.value)}
-              maxLength={MAX_QNA_LENGTH}
-              autoFocus
-            />
-            <div className="modal-count">
-              {qnaInput.length}/{MAX_QNA_LENGTH}
-            </div>
-          </div>
-        </div>
-      )}
       <div className="header-bg">
         <div className="title-thumbnail-area">
           <div className="title-area">
@@ -280,57 +232,57 @@ const CreateLecturePage = () => {
             <h2>강의 소개</h2>
             <p className="description">{lecture.description}</p>
           </div>
-          <div className="review-box" style={{ position: 'relative' }}>
-            <strong>리뷰</strong>
-            {enrolled && (
-              <button
-                className="enroll-btn"
-                style={{ position: 'absolute', top: 16, right: 24 }}
-                onClick={() => setShowReviewModal(true)}
-              >
-                리뷰 작성하기
-              </button>
-            )}
-            <ul>
-              {lecture.reviews.length > 0 ? (
-                lecture.reviews.map((review, idx) => (
-                  <li key={idx} className="review-item">
-                    <span style={{ fontWeight: 600, color: '#6F42C1', marginRight: 8 }}>
-                      {review.nickname}
-                    </span>
-                    {review.content}
+
+          <div className="review-section">
+            <h2>수강생 리뷰</h2>
+            {lecture.reviews.length === 0 ? (
+              <p>아직 등록된 리뷰가 없습니다.</p>
+            ) : (
+              <ul>
+                {lecture.reviews.map((r, i) => (
+                  <li key={i}>
+                    <strong>{r.nickname}</strong>: {r.content}
                   </li>
-                ))
-              ) : (
-                <p style={{ color: '#666', marginLeft: '2px' }}>리뷰가 없습니다.</p>
-              )}
-            </ul>
+                ))}
+              </ul>
+            )}
+            {user && (
+              <div className="review-input">
+                <textarea
+                  value={reviewInput}
+                  maxLength={MAX_REVIEW_LENGTH}
+                  onChange={(e) => setReviewInput(e.target.value)}
+                  placeholder="리뷰를 작성해주세요."
+                />
+                <button onClick={handleSubmitReview}>리뷰 등록</button>
+              </div>
+            )}
           </div>
-          <div className="review-box" style={{ position: 'relative', marginTop: '30px' }}>
-            <strong>Q&amp;A</strong>
-            {enrolled && (
-              <button
-                className="enroll-btn"
-                style={{ position: 'absolute', top: 16, right: 24 }}
-                onClick={() => setShowQnaModal(true)}
-              >
-                Q&amp;A 작성하기
-              </button>
-            )}
-            <ul>
-              {qnas.length > 0 ? (
-                qnas.map((qna, idx) => (
-                  <li key={idx} className="review-item">
-                    <span style={{ fontWeight: 600, color: '#6F42C1', marginRight: 8 }}>
-                      {qna.nickname}
-                    </span>
-                    {qna.content}
+
+          <div className="qna-section">
+            <h2>Q&A</h2>
+            {lecture.qnas?.length === 0 ? (
+              <p>등록된 질문이 없습니다.</p>
+            ) : (
+              <ul>
+                {lecture.qnas?.map((q, i) => (
+                  <li key={i}>
+                    <strong>{q.nickname}</strong>: {q.content}
                   </li>
-                ))
-              ) : (
-                <p style={{ color: '#666', marginLeft: '2px' }}>Q&amp;A가 없습니다.</p>
-              )}
-            </ul>
+                ))}
+              </ul>
+            )}
+            {user && (
+              <div className="qna-input">
+                <textarea
+                  value={qnaInput}
+                  maxLength={MAX_QNA_LENGTH}
+                  onChange={(e) => setQnaInput(e.target.value)}
+                  placeholder="질문을 작성해주세요."
+                />
+                <button onClick={handleSubmitQna}>질문 등록</button>
+              </div>
+            )}
           </div>
         </div>
         <div className="right-content">
@@ -341,15 +293,15 @@ const CreateLecturePage = () => {
             <button
               className="enroll-btn"
               onClick={enrolled ? handleGoToVideos : handleEnroll}
-              disabled={!isLoggedIn}
+              disabled={!user}
               style={{
-                background: !isLoggedIn ? '#bbb' : undefined,
-                cursor: !isLoggedIn ? 'not-allowed' : undefined,
+                background: !user ? '#bbb' : undefined,
+                cursor: !user ? 'not-allowed' : undefined,
               }}
             >
               {enrolled ? '수강하기' : '신청하기'}
             </button>
-            {!isLoggedIn && (
+            {!user && (
               <div style={{ fontSize: 13, color: '#D32F2F', marginTop: 7 }}>
                 로그인 후 신청할 수 있습니다.
               </div>
