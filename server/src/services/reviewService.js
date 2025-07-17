@@ -101,3 +101,14 @@ exports.getReviewsByLecture = async (lectureId) => {
 
   return result.rows;
 };
+
+// 리뷰 조회 (작성자 확인용)
+exports.getReviewById = async (reviewId) => {
+  const { rows } = await db.query(`SELECT id, user_id FROM reviews WHERE id = $1`, [reviewId]);
+  return rows[0] || null;
+};
+
+// 리뷰 삭제
+exports.deleteReview = async (reviewId) => {
+  await db.query(`DELETE FROM reviews WHERE id = $1`, [reviewId]);
+};

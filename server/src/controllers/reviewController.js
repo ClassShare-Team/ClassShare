@@ -58,3 +58,19 @@ exports.getReviewsByLecture = async (req, res) => {
     res.status(500).json({ message: '서버 에러' });
   }
 };
+
+// 리뷰 삭제
+
+exports.deleteReview = async (req, res) => {
+  const { reviewId } = req.params;
+  const userId = req.user.id;
+
+  const review = await reviewService.getReviewById(reviewId);
+  if (!review) return res.status(404).json({ message: '리뷰 없음' });
+
+  if (review.user_id !== userId) return res.status(403).json({ message: '본인만 삭제 가능' });
+
+  await reviewService.deleteReview(reviewId);
+
+  res.status(200).json({ message: '리뷰 삭제 완료' });
+};
