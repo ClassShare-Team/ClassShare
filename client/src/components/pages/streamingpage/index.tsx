@@ -67,7 +67,7 @@ export const StreamingPage = () => {
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const barTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* ---------- Load Curriculum ---------- */
+  
   useEffect(() => {
     const fetchCurriculum = async () => {
       try {
@@ -100,95 +100,88 @@ export const StreamingPage = () => {
     fetchCurriculum();
   }, [lectureId, selectedVideoId, accessToken]);
 
-  /* ---------- Load Video ---------- */
+  
   useEffect(() => {
-    if (!videoId || !accessToken) return;
+  if (!videoId || !accessToken) return;
 
-    const fetchVideo = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}`, {
+  const fetchVideo = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      });
+
+      if (!res.data?.video_url) {
+        console.error("video_url 없음", res.data);
+        return;
+      }
+
+   
+      setVideoUrl(res.data.video_url);
+    } catch (err) {
+      console.error("영상 불러오기 실패", err);
+    }
+  };
+
+  const fetchProgress = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      });
+      setCurrent(res.data.current_seconds || 0);
+    } catch (err) {
+      console.error("진도 불러오기 실패", err);
+    }
+  };
+
+  fetchVideo();
+  fetchProgress();
+}, [videoId, accessToken]);
+
+ 
+useEffect(() => {
+  const saveProgress = async () => {
+    if (!videoId || !accessToken || duration === 0) return;
+    try {
+      const isCompleted = current >= duration - 3;
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`,
+        { currentSeconds: current, isCompleted },
+        {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
           withCredentials: true,
-        });
-        if (!res.data?.video_url) {
-          console.error("video_url 없음", res.data);
-          return;
         }
-        setVideoUrl(res.data.video_url);
-        videoRef.current?.load();
-        videoRef.current?.play().catch(e => console.error("Video play failed:", e));
-      } catch (err) {
-        console.error("영상 불러오기 실패", err);
-      }
-    };
+      );
 
-    const fetchProgress = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          withCredentials: true,
+      if (isCompleted) {
+        setCurriculum(prev => {
+          const updated = [...prev];
+          const idx = updated.findIndex(v => v.id === videoId);
+          if (idx !== -1) updated[idx].done = true;
+          return updated;
         });
-        setCurrent(res.data.current_seconds || 0);
-      } catch (err) {
-        console.error("진도 불러오기 실패", err);
       }
-    };
+    } catch (err) {
+      console.error("진도 저장 실패", err);
+    }
+  };
 
-    fetchVideo();
-    fetchProgress();
-  }, [videoId, accessToken]);
+  const interval = setInterval(saveProgress, 10000);
+  return () => {
+    clearInterval(interval);
+    saveProgress();
+  };
+}, [videoId, current, duration, accessToken]);
 
-  /* ---------- Save Progress ---------- */
-  useEffect(() => {
-    const saveProgress = async () => {
-      if (!videoId || !accessToken) return;
-      try {
-        const isCompleted = current >= duration - 3;
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`,
-          { currentSeconds: current, isCompleted },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-            withCredentials: true,
-          }
-        );
-
-        if (isCompleted) {
-          setCurriculum(prev => {
-            const updated = [...prev];
-            const idx = updated.findIndex(v => v.id === videoId);
-            if (idx !== -1) updated[idx].done = true;
-            return updated;
-          });
-
-          if (currentIdx + 1 < curriculum.length) {
-            setTimeout(() => {
-              setCurrentIdx(currentIdx + 1);
-              setVideoId(curriculum[currentIdx + 1].id);
-              setCurrent(0);
-              setPaused(true);
-            }, 2000);
-          }
-        }
-      } catch (err) {
-        console.error("진도 저장 실패", err);
-      }
-    };
-
-    const interval = setInterval(saveProgress, 10000);
-    return () => {
-      clearInterval(interval);
-      saveProgress();
-    };
-  }, [videoId, current, duration, currentIdx, curriculum, accessToken]);
-
-  /* ---------- Volume & Controls ---------- */
+  
   useEffect(() => {
     if (!videoRef.current) return;
     videoRef.current.volume = volume / 100;
@@ -216,7 +209,7 @@ export const StreamingPage = () => {
     setCurrent(0);
   };
 
-  /* ---------- Render ---------- */
+  
   return (
     <Wrapper ref={fullscreenRef}>
       <VideoSection>
