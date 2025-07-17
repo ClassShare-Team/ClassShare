@@ -44,13 +44,17 @@ const LectureApplyPage = () => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    const fetchLecture = async () => {
+    const fetchLectureDetail = async () => {
       if (!id) return;
       try {
         setLoading(true);
 
-        const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
-        const data = await lectureRes.json();
+        const detailRes = await fetch(`${API_URL}/lectures/${id}/detail`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const detail = await detailRes.json();
+
+        setEnrolled(detail.is_purchased === true);
 
         const reviewRes = await fetch(`${API_URL}/reviews/lectures/${id}`);
         const reviewData = await reviewRes.json();
@@ -58,18 +62,12 @@ const LectureApplyPage = () => {
         const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`);
         const qnaData = await qnaRes.json();
 
-        const detailRes = await fetch(`${API_URL}/lectures/${id}/detail`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        const detail = await detailRes.json();
-        setEnrolled(detail.is_purchased === true);
-
         setLecture({
-          id: Number(data.id),
-          title: data.title,
-          description: data.description,
-          thumbnail: data.thumbnail,
-          price: data.price,
+          id: Number(detail.id),
+          title: detail.title,
+          description: detail.description,
+          thumbnail: detail.thumbnail,
+          price: detail.price,
           reviews: reviewData.reviews.map((r: any) => ({
             id: r.review_id,
             nickname: r.student_nickname,
@@ -93,42 +91,8 @@ const LectureApplyPage = () => {
       }
     };
 
-    fetchLecture();
+    fetchLectureDetail();
   }, [API_URL, id, accessToken]);
-
-  const handleEnroll = async () => {
-    if (!accessToken || !lecture) return alert('로그인이 필요합니다');
-    try {
-      const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert(data.message || '수강 신청 완료');
-        setEnrolled(true);
-      } else {
-        alert(data.message || '수강 신청 실패');
-        if (data.message === '이미 구매한 강의입니다.') {
-          setEnrolled(true);
-        }
-      }
-    } catch {
-      alert('수강 신청 오류');
-    }
-  };
-
-  const handleGoToVideos = () => {
-    if (!lecture?.id) return;
-    if (!enrolled) {
-      alert('수강 중인 사용자만 접근할 수 있습니다.');
-      return;
-    }
-    navigate(`/lecture/${lecture.id}/videos`);
-  };
 
   const handleSubmitReview = async () => {
     if (!reviewInput.trim() || !lecture || !user || !accessToken) return;
@@ -348,7 +312,27 @@ const LectureApplyPage = () => {
             </div>
             <button
               className="enroll-btn"
-              onClick={enrolled ? handleGoToVideos : handleEnroll}
+              onClick={enrolled ? () => navigate(`/lecture/${lecture.id}/videos`) : async () => {
+                if (!accessToken) return alert('로그인이 필요합니다');
+                try {
+                  const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${accessToken}`,
+                    },
+                  });
+                  const data = await res.json();
+                  if (res.ok || data.message === '이미 구매한 강의입니다.') {
+                    alert(data.message || '수강 신청 완료');
+                    setEnrolled(true);
+                  } else {
+                    alert(data.message || '수강 신청 실패');
+                  }
+                } catch {
+                  alert('수강 신청 오류');
+                }
+              }}
               disabled={!user || !accessToken}
               style={{
                 background: !user || !accessToken ? '#bbb' : undefined,
