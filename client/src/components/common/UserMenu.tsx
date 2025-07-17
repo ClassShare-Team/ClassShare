@@ -55,10 +55,19 @@ const UserMenu = () => {
             <DetailLabel>역할</DetailLabel>
             <DetailValue>{user.role === 'student' ? '학생' : '강사'}</DetailValue>
           </UserDetailRow>
-
           <Divider />
+          <DropdownItem
+            onClick={() => {
+              if (user.role === 'instructor') {
+                navigate('/instructor/mypage');
+              } else {
+                navigate('/student/mypage');
+              }
+            }}
+          >
+            마이페이지
+          </DropdownItem>
 
-          <DropdownItem>마이페이지</DropdownItem>
           {user.role === 'instructor' && (
             <DropdownItem onClick={() => navigate('/instructor-info')}>강사 Info</DropdownItem>
           )}

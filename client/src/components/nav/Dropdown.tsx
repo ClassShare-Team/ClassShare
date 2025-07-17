@@ -57,23 +57,51 @@ const DropdownLabel = styled.div`
 const DropdownList = styled.ul`
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  margin-top: 10px;
+  min-width: 160px;
+  max-width: 240px;
+  width: max-content;
   padding: 8px 0;
-  width: 160px;
   background-color: ${({ theme }) => theme.colors.white};
   border: 1px solid ${({ theme }) => theme.colors.gray200};
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
   list-style: none;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    width: 0;
+    height: 0;
+    border-style: solid;
+  }
+
+  &::before {
+    left: 12px;
+    margin-left: -9px;
+    border-width: 9px;
+    border-color: transparent transparent ${({ theme }) => theme.colors.gray200} transparent;
+  }
+
+  &::after {
+    left: 12px;
+    margin-left: -8px;
+    border-width: 8px;
+    border-color: transparent transparent ${({ theme }) => theme.colors.white} transparent;
+    margin-bottom: -1px;
+  }
 `;
 
 const DropdownItem = styled.li`
   padding: 10px 16px;
   font-size: 14px;
   color: ${({ theme }) => theme.colors.gray500};
-  white-space: nowrap;
+  white-space: normal;
+  word-break: keep-all;
   &:hover {
     background-color: ${({ theme }) => theme.colors.gray200};
   }

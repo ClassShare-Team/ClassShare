@@ -34,7 +34,7 @@ interface Lecture {
 const MAX_REVIEW_LENGTH = 300;
 const MAX_QNA_LENGTH = 300;
 
-const CreateLecturePage = () => {
+const LectureApplyPage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
 
@@ -57,22 +57,45 @@ const CreateLecturePage = () => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    const syncUserData = () => {
-      const userData = localStorage.getItem('user');
-      const token = localStorage.getItem('accessToken');
-      if (userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          if (parsedUser?.id) setUser(parsedUser);
-        } catch {
-          console.error('유저 파싱 실패');
-        }
+    const currentToken = localStorage.getItem('accessToken');
+    const currentUserData = localStorage.getItem('user');
+
+    setAccessToken(currentToken);
+    if (currentUserData) {
+      try {
+        const parsedUser = JSON.parse(currentUserData);
+        if (parsedUser?.id) setUser(parsedUser);
+        else setUser(null);
+      } catch {
+        console.error('유저 파싱 실패');
+        setUser(null);
       }
-      setAccessToken(token);
+    } else {
+      setUser(null);
+    }
+
+    const handleStorageChange = () => {
+      const updatedToken = localStorage.getItem('accessToken');
+      const updatedUserData = localStorage.getItem('user');
+
+      setAccessToken(updatedToken);
+      if (updatedUserData) {
+        try {
+          const parsedUser = JSON.parse(updatedUserData);
+          if (parsedUser?.id) setUser(parsedUser);
+          else setUser(null);
+        } catch {
+          console.error('유저 파싱 실패 (storage event)');
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
     };
 
-    window.addEventListener('storage', syncUserData);
-    return () => window.removeEventListener('storage', syncUserData);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   useEffect(() => {
@@ -150,6 +173,7 @@ const CreateLecturePage = () => {
       const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
       });
@@ -409,4 +433,4 @@ const CreateLecturePage = () => {
   );
 };
 
-export default CreateLecturePage;
+export default LectureApplyPage;

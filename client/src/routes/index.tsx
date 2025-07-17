@@ -12,9 +12,17 @@ import BoardPage from '@/components/pages/board';
 import BoardCreatePage from '@/components/pages/boardCreate';
 import VideoListPage from '@/components/pages/VideoListPage';
 import BoardPostDetailPage from '@/components/pages/boardPostDetail';
-import LecturePage from '@/components/pages/lectureApply';
+import LectureApplyPage from '@/components/pages/lectureApply';
 import InstructorInfoPage from '@/components/pages/instructorInfo';
 import SearchPage from '@/components/pages/search';
+
+import StudentMyCourses from '@/components/pages/mypage/student/myCourses';
+import StudentMyReviews from '@/components/pages/mypage/student/myReviews';
+import StudentPaymentHistory from '@/components/pages/mypage/student/paymentHistory';
+import StudentSettings from '@/components/pages/mypage/student/settings';
+import StudentMyPage from '@/components/pages/mypage/student/myPage';
+import InstructorMyPage from '@/components/pages/mypage/instructor/myPage';
+import InstructorSettings from '@/components/pages/mypage/instructor/settings';
 
 export const AppRoutes = () => {
   return (
@@ -33,9 +41,17 @@ export const AppRoutes = () => {
         <Route path="lecture/:lectureId/videos" element={<VideoListPage />} />
         <Route path="boards/posts/:id" element={<BoardPostDetailPage />} />
         <Route path="streamingpage" element={<StreamingPage />} />
-        <Route path="lectures/:id/apply" element={<LecturePage />} />
+        <Route path="lectures/:id/apply" element={<LectureApplyPage />} />
         <Route path="instructor-info" element={<InstructorInfoPage />} />
         <Route path="search" element={<SearchPage />} />
+
+        <Route path="student/mycourse" element={<StudentMyCourses />} />
+        <Route path="student/myreview" element={<StudentMyReviews />} />
+        <Route path="student/paymenthistory" element={<StudentPaymentHistory />} />
+        <Route path="student/setting" element={<StudentSettings />} />
+        <Route path="student/mypage" element={<StudentMyPage />} />
+        <Route path="instructor/mypage" element={<InstructorMyPage />} />
+        <Route path="instructor/setting" element={<InstructorSettings />} />
       </Route>
     </Routes>
   );
