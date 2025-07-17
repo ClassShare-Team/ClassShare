@@ -90,27 +90,25 @@ const LectureApplyPage = () => {
   }, [API_URL, id]);
 
   useEffect(() => {
-    const fetchPurchaseStatus = async () => {
-      if (!accessToken || !id) return;
-      try {
-        const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        const data = await res.json();
-        setEnrolled(data.is_purchased === true);
-      } catch (err) {
-        console.error('수강 여부 확인 실패:', err);
+  if (!accessToken || !id) return;
+  const fetchPurchaseStatus = async () => {
+    try {
+      const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await res.json();
+      
+      setEnrolled(Boolean(data.is_purchased));
+    } catch (err) {
+      console.error('수강 여부 확인 실패:', err);
+      
+      if (lecture && localStorage.getItem(`enrolled_${lecture.id}`) === 'true') {
+        setEnrolled(true);
       }
-    };
-
-    fetchPurchaseStatus();
-  }, [accessToken, id]);
-
-  useEffect(() => {
-    if (lecture && localStorage.getItem(`enrolled_${lecture.id}`) === 'true') {
-      setEnrolled(true);
     }
-  }, [lecture]);
+  };
+  fetchPurchaseStatus();
+}, [accessToken, id, lecture]);
 
   const handleEnroll = async () => {
     if (!accessToken || !lecture) return alert('로그인이 필요합니다');
