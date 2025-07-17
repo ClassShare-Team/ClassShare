@@ -15,6 +15,15 @@ import BoardPostDetailPage from '@/components/pages/boardPostDetail';
 import LecturePage from '@/components/pages/lectureApply';
 import InstructorInfoPage from '@/components/pages/instructorInfo';
 
+import StudentMyCourses from '@/components/pages/mypage/student/MyCourses';
+import StudentMyReviews from '@/components/pages/mypage/student/MyReviews';
+import StudentPaymentHistory from '@/components/pages/mypage/student/PaymentHistory';
+import StudentSettings from '@/components/pages/mypage/student/Settings';
+import StudentMyPage from '@/components/pages/mypage/student/mypage';
+
+import InstructorMyPage from '@/components/pages/mypage/instructor/mypage';
+import InstructorSettings from '@/components/pages/mypage/instructor/settings';
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -34,6 +43,15 @@ export const AppRoutes = () => {
         <Route path="streamingpage" element={<StreamingPage />} />
         <Route path="lectures/:id/apply" element={<LecturePage />} />
         <Route path="instructor-info" element={<InstructorInfoPage />} />
+
+        <Route path="student/mycourse" element={<StudentMyCourses />} />
+        <Route path="student/myreview" element={<StudentMyReviews />} />
+        <Route path="student/paymenthistory" element={<StudentPaymentHistory />} />
+        <Route path="student/setting" element={<StudentSettings />} />
+        <Route path="student/mypage" element={<StudentMyPage />} />
+
+        <Route path="instructor/mypage" element={<InstructorMyPage />} />
+        <Route path="instructor/setting" element={<InstructorSettings />} />
       </Route>
     </Routes>
   );
