@@ -20,6 +20,7 @@ exports.create = async (req, res) => {
     const statusMap = {
       LECTURE_NOT_FOUND: 404,
       USER_NOT_FOUND: 404,
+      NOT_PURCHASED: 403,
       RATING_INVALID: 422,
       CONTENT_TOO_LONG: 422,
       DUPLICATE_REVIEW: 409,

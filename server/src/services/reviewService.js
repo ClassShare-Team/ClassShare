@@ -16,6 +16,13 @@ exports.createReview = async ({ lectureId, userId, rating, content }) => {
   const { rowCount: userExists } = await db.query('SELECT 1 FROM users WHERE id = $1', [userId]);
   if (!userExists) throw new Error('USER_NOT_FOUND');
 
+  // 수강 여부 확인
+  const { rowCount: hasPurchased } = await db.query(
+    'SELECT 1 FROM lecture_purchases WHERE user_id = $1 AND lecture_id = $2',
+    [userId, lectureId]
+  );
+  if (!hasPurchased) throw new Error('NOT_PURCHASED');
+
   // 평점 검증 (1~5)
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     throw new Error('RATING_INVALID');
