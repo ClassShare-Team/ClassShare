@@ -22,12 +22,20 @@ const StudentMyCoursesPage = () => {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
         });
-        if (!res.ok) throw new Error('수강 강의를 불러오지 못했습니다.');
-        const data = await res.json();
 
-        //data 콘솔 로그
+        if (!res.ok) throw new Error('수강 강의를 불러오지 못했습니다.');
+
+        const data = await res.json();
         console.log('응답 데이터:', data);
-        setCourses(data);
+
+        // ✅ 배열로 추출
+        if (Array.isArray(data)) {
+          setCourses(data);
+        } else if (Array.isArray(data.data)) {
+          setCourses(data.data);
+        } else {
+          throw new Error('서버 응답 형식이 잘못되었습니다.');
+        }
       } catch (err) {
         if (err instanceof Error) setError(err.message);
         else setError('알 수 없는 오류');
