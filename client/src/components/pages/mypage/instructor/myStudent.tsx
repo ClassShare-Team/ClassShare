@@ -64,7 +64,15 @@ const InstructorMyStudentPage = () => {
         }
       );
 
-      if (!res.ok) throw new Error('강의 정보를 불러오지 못했습니다.');
+      if (!res.ok) {
+        if (res.status === 404) {
+          const errorBody = await res.json();
+          if (errorBody.message === '강사 프로필 없음') {
+            throw new Error('강사 등록 정보가 없습니다. 관리자에게 문의하세요.');
+          }
+        }
+        throw new Error('강의 정보를 불러오지 못했습니다.');
+      }
 
       const data = await res.json();
       const parsed = Array.isArray(data) ? data : (data.lectures ?? []);
