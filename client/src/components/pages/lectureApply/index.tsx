@@ -49,17 +49,26 @@ const CreateLecturePage = () => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        if (parsedUser?.id) setUser(parsedUser);
-      } catch (e) {
-        console.error('유저 파싱 실패');
+    const handleLoginSync = () => {
+      const userData = localStorage.getItem('user');
+      const token = localStorage.getItem('accessToken');
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser?.id) setUser(parsedUser);
+        } catch (e) {
+          console.error('유저 파싱 실패');
+        }
       }
-    }
-    setAccessToken(token);
+      setAccessToken(token);
+    };
+
+    window.addEventListener('storage', handleLoginSync);
+    handleLoginSync();
+
+    return () => {
+      window.removeEventListener('storage', handleLoginSync);
+    };
   }, []);
 
   useEffect(() => {
