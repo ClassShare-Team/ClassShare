@@ -22,29 +22,32 @@ const InstructorMyStudentPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const getAuthInfo = () => {
+    const token = localStorage.getItem('accessToken');
+    const instructorId = localStorage.getItem('userId');
+    if (!token || !instructorId) throw new Error('로그인이 필요합니다.');
+    return { token, instructorId };
+  };
+
   const fetchStudents = async (lectureId: number | 'all') => {
     setLoading(true);
     setError(null);
-
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) throw new Error('로그인이 필요합니다.');
-
+      const { token } = getAuthInfo();
       const base = `${import.meta.env.VITE_API_URL}/users/me/students`;
       const url = lectureId === 'all' ? `${base}/all` : `${base}/by-lecture?lectureId=${lectureId}`;
 
       const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) throw new Error('수강생 정보를 불러오지 못했습니다.');
+
       const data = await res.json();
-      setStudents(data.students || []);
+      const parsed = Array.isArray(data.students) ? data.students : data;
+      setStudents(parsed);
     } catch (err) {
-      if (err instanceof Error) setError(err.message);
-      else setError('알 수 없는 오류 발생');
+      setError(err instanceof Error ? err.message : '알 수 없는 오류 발생');
     } finally {
       setLoading(false);
     }
@@ -52,39 +55,22 @@ const InstructorMyStudentPage = () => {
 
   const fetchLectures = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const instructorId = localStorage.getItem('userId');
-      if (!token || !instructorId) throw new Error('로그인이 필요합니다.');
-
+      const { token, instructorId } = getAuthInfo();
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/instructor/${instructorId}/lectures`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       if (!res.ok) throw new Error('강의 정보를 불러오지 못했습니다.');
 
-      const text = await res.text();
-      console.log('📘 강의 응답 원문:', text);
-
-      const json = JSON.parse(text);
-
-      // 형태가 배열이면 그대로, 객체 안에 lectures 배열이 있으면 그걸로 설정
-      const lectures = Array.isArray(json)
-        ? json
-        : Array.isArray(json.lectures)
-          ? json.lectures
-          : [];
-
-      console.log('✅ 최종 파싱된 강의 목록:', lectures);
-      setLectureList(lectures);
+      const data = await res.json();
+      const parsed = Array.isArray(data) ? data : (data.lectures ?? []);
+      setLectureList(parsed);
     } catch (err) {
-      console.error('❌ fetchLectures 오류:', err);
-      if (err instanceof Error) setError(err.message);
-      else setError('알 수 없는 오류 발생');
+      console.error('fetchLectures 오류:', err);
+      setError(err instanceof Error ? err.message : '알 수 없는 오류 발생');
     }
   };
 
@@ -98,8 +84,8 @@ const InstructorMyStudentPage = () => {
     fetchStudents(lectureId);
   };
 
-  if (loading) return <div>로딩 중...</div>;
-  if (error) return <div>오류: {error}</div>;
+  if (loading) return <Message> 불러오는 중</Message>;
+  if (error) return <Message> 오류: {error}</Message>;
 
   return (
     <Container>
@@ -134,10 +120,14 @@ const InstructorMyStudentPage = () => {
 
 export default InstructorMyStudentPage;
 
-// ---------- Styled Components ----------
-
 const Container = styled.div`
   padding: 40px;
+`;
+
+const Message = styled.div`
+  padding: 60px;
+  font-size: 18px;
+  text-align: center;
 `;
 
 const ButtonGroup = styled.div`
