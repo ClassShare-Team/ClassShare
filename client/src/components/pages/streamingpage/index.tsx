@@ -13,110 +13,104 @@ import useUserInfo from '@/components/hooks/useUserInfo';
 const Wrapper = styled.div`
   display: flex;
   height: 100vh;
-  background: #121212;
 `;
+
 const VideoSection = styled.div`
-  flex: 1 1 0;
-  background: #000;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-`;
-const VideoArea = styled.div`
   flex: 1;
+  position: relative;
   background: #000;
+`;
+
+const VideoArea = styled.div`
+  width: 100%;
+  height: 100%;
   position: relative;
 `;
+
 const ControlsBar = styled.div<{ visible: boolean }>`
-  width: 100%;
-  background: #161616;
   position: absolute;
-  left: 0;
   bottom: 0;
-  opacity: ${({ visible }) => (visible ? 1 : 0)};
-  pointer-events: ${({ visible }) => (visible ? "auto" : "none")};
-  transition: opacity 0.2s;
-  z-index: 20;
+  left: 0;
+  right: 0;
+  display: ${({ visible }) => (visible ? "flex" : "none")};
+  flex-direction: column;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.4);
 `;
+
 const ProgressBarWrap = styled.div`
   width: 100%;
-  height: 8px;
-  background: #222;
+  height: 6px;
+  background: #444;
   cursor: pointer;
-  position: relative;
 `;
+
 const ProgressBarFill = styled.div<{ percent: number }>`
-  height: 100%;
-  background: #19c37d;
   width: ${({ percent }) => percent}%;
-  position: absolute;
-  left: 0;
-  top: 0;
+  height: 100%;
+  background: #fff;
 `;
+
 const VideoControlBar = styled.div`
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 8px 24px 0 24px;
+  align-items: center;
+  color: white;
+  padding: 5px 10px;
 `;
+
 const ControlLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #fff;
 `;
+
 const ControlRight = styled.div`
   display: flex;
   align-items: center;
-  gap: 18px;
-  color: #bdbdbd;
-  font-size: 21px;
 `;
+
 const RightSidebar = styled.div`
-  width: 340px;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  border-left: 1px solid #eee;
+  width: 300px;
+  background: #f7f7f7;
+  padding: 20px;
   overflow-y: auto;
 `;
-const SidebarTitle = styled.div`
-  font-weight: 700;
-  font-size: 20px;
-  padding: 20px 24px 16px 24px;
+
+const SidebarTitle = styled.h3`
+  margin-bottom: 10px;
 `;
-const CurriculumSection = styled.div`
-  padding: 0 24px;
-  flex: 1 1 0;
-`;
+
+const CurriculumSection = styled.div``;
+
 const CurriculumList = styled.ul`
   list-style: none;
-  margin: 0;
   padding: 0;
+  margin: 0;
 `;
-const CurriculumItem = styled.li<{ active?: boolean; done?: boolean }>`
-  display: flex;
-  align-items: center;
-  padding: 10px 0;
-  background: ${({ active }) => (active ? "#e9faf1" : "#fff")};
-  border-radius: 10px;
-  margin-bottom: 3px;
-  font-weight: ${({ active }) => (active ? 700 : 400)};
+
+const CurriculumItem = styled.li<{ active: boolean; done: boolean }>`
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: ${({ active }) => (active ? "#ddd" : "#eee")};
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: ${({ done }) => (done ? 0.6 : 1)};
 `;
+
 const ItemLeft = styled.div`
-  flex: 1;
   display: flex;
   align-items: center;
+  gap: 8px;
 `;
-const ItemStatus = styled.div`
-  margin-right: 10px;
-  color: #19c37d;
-  font-size: 20px;
-`;
+
+const ItemStatus = styled.div``;
+
 const ItemTitle = styled.div`
-  font-size: 16px;
+  font-weight: bold;
 `;
 
 export const StreamingPage = () => {
@@ -170,10 +164,10 @@ export const StreamingPage = () => {
     const fetchVideo = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}`, {
-          withCredentials: true,
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
+          withCredentials: true,
         });
         if (!res.data?.video_url) {
           console.error("video_url 없음", res.data);
@@ -192,10 +186,10 @@ export const StreamingPage = () => {
     const fetchProgress = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/videos/${videoId}/progress`, {
-          withCredentials: true,
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
+          withCredentials: true,
         });
         setCurrent(res.data.current_seconds || 0);
       } catch (err) {
@@ -219,10 +213,10 @@ export const StreamingPage = () => {
             isCompleted,
           },
           {
-            withCredentials: true,
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
+            withCredentials: true,
           }
         );
 
@@ -296,7 +290,7 @@ export const StreamingPage = () => {
               ref={videoRef}
               src={videoUrl}
               controls={false}
-               crossOrigin="anonymous"
+              crossOrigin="anonymous"
               onClick={handlePlayToggle}
               onLoadedMetadata={e => {
                 setDuration((e.target as HTMLVideoElement).duration);
