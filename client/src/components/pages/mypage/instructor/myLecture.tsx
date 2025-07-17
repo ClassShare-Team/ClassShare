@@ -6,7 +6,7 @@ interface Lecture {
   id: number;
   title: string;
   description: string;
-  price: number;
+  price: string;
   thumbnail: string;
 }
 
@@ -28,8 +28,17 @@ const InstructorMyLecturePage = () => {
         });
 
         if (!res.ok) throw new Error('내 강의 목록을 불러오지 못했습니다.');
+
         const data = await res.json();
-        setLectures(data);
+        console.log('강사 강의 응답:', data);
+
+        if (Array.isArray(data)) {
+          setLectures(data);
+        } else if (Array.isArray(data.lectures)) {
+          setLectures(data.lectures);
+        } else {
+          throw new Error('서버 응답 형식이 잘못되었습니다.');
+        }
       } catch (err) {
         if (err instanceof Error) setError(err.message);
         else setError('알 수 없는 오류 발생');
@@ -53,7 +62,7 @@ const InstructorMyLecturePage = () => {
             <img src={lecture.thumbnail} alt={lecture.title} />
             <h3>{lecture.title}</h3>
             <p>{lecture.description}</p>
-            <span>{lecture.price.toLocaleString()}원</span>
+            <span>{Number(lecture.price).toLocaleString()}원</span>
           </LectureCard>
         ))}
       </LectureGrid>
