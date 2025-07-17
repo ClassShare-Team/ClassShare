@@ -2,7 +2,6 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 
 const StudentSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
@@ -12,8 +11,7 @@ const StudentSettingsPage = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(userInfo?.profile_image || '');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);=
 
   const formatPhone = (raw: string) => {
     return raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
