@@ -298,7 +298,6 @@ exports.updateInstructorIntroduction = async (req, res) => {
   res.json({ introduction: updated });
 };
 
-// 회원 탈퇴
 exports.deleteMyAccount = async (req, res) => {
   const userId = req.user.id;
 
@@ -306,6 +305,10 @@ exports.deleteMyAccount = async (req, res) => {
     const result = await userService.deleteUser(userId);
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json({ message: '회원 탈퇴 실패', error: error.message });
+    console.error('[회원 탈퇴 실패]', error);
+    return res.status(500).json({
+      message: '회원 탈퇴 실패',
+      error: error.message || String(error),
+    });
   }
 };
