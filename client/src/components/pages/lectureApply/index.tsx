@@ -38,13 +38,21 @@ const CreateLecturePage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem('accessToken'));
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [lecture, setLecture] = useState<Lecture | null>(null);
   const [enrolled, setEnrolled] = useState(false);
   const [reviewInput, setReviewInput] = useState('');
   const [qnaInput, setQnaInput] = useState('');
   const [loading, setLoading] = useState(true);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -56,14 +64,12 @@ const CreateLecturePage = () => {
         try {
           const parsedUser = JSON.parse(userData);
           if (parsedUser?.id) setUser(parsedUser);
-        } catch (e) {
+        } catch {
           console.error('유저 파싱 실패');
         }
       }
       setAccessToken(token);
     };
-
-    syncUserData();
 
     window.addEventListener('storage', syncUserData);
     return () => window.removeEventListener('storage', syncUserData);
@@ -132,6 +138,12 @@ const CreateLecturePage = () => {
     fetchPurchaseStatus();
   }, [accessToken, id]);
 
+  useEffect(() => {
+    if (lecture && localStorage.getItem(`enrolled_${lecture.id}`) === 'true') {
+      setEnrolled(true);
+    }
+  }, [lecture]);
+
   const handleEnroll = async () => {
     if (!accessToken || !lecture) return alert('로그인이 필요합니다');
     try {
@@ -145,16 +157,13 @@ const CreateLecturePage = () => {
       if (res.ok) {
         alert(data.message || '수강 신청 완료');
         setEnrolled(true);
+        localStorage.setItem(`enrolled_${lecture.id}`, 'true');
       } else {
         alert(data.message || '수강 신청 실패');
       }
     } catch {
       alert('수강 신청 오류');
     }
-  };
-
-  const handleGoToVideos = () => {
-    if (lecture?.id) navigate(`/lecture/${lecture.id}/videos`);
   };
 
   const handleSubmitReview = async () => {
@@ -181,7 +190,12 @@ const CreateLecturePage = () => {
                 ...prev,
                 reviews: [
                   ...prev.reviews,
-                  { id: result.id, nickname: user.nickname, content: reviewInput.trim(), userId: user.id },
+                  {
+                    id: result.id,
+                    nickname: user.nickname,
+                    content: reviewInput.trim(),
+                    userId: user.id,
+                  },
                 ],
               }
             : prev
@@ -239,7 +253,12 @@ const CreateLecturePage = () => {
                 ...prev,
                 qnas: [
                   ...(prev.qnas || []),
-                  { id: result.postId, nickname: user?.nickname || '익명', content: qnaInput.trim(), userId: user?.id },
+                  {
+                    id: result.postId,
+                    nickname: user?.nickname || '익명',
+                    content: qnaInput.trim(),
+                    userId: user?.id,
+                  },
                 ],
               }
             : prev
@@ -274,6 +293,10 @@ const CreateLecturePage = () => {
     }
   };
 
+  const handleGoToVideos = () => {
+    if (lecture?.id) navigate(`/lecture/${lecture.id}/videos`);
+  };
+
   if (loading) return <div>Loading...</div>;
   if (!lecture) return <div>강의 정보를 불러오지 못했습니다.</div>;
 
@@ -291,6 +314,7 @@ const CreateLecturePage = () => {
           </div>
         </div>
       </div>
+
       <div className="content-area">
         <div className="left-content">
           <div className="description-box">
@@ -305,7 +329,7 @@ const CreateLecturePage = () => {
             ) : (
               <ul>
                 {lecture.reviews.map((r, i) => (
-                  <li key={i} style={{ textAlign: 'left' }}>
+                  <li key={i}>
                     <span><strong>{r.nickname}</strong> {r.content}</span>
                     {user?.id === r.userId && (
                       <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
@@ -334,7 +358,7 @@ const CreateLecturePage = () => {
             ) : (
               <ul>
                 {lecture.qnas?.map((q, i) => (
-                  <li key={i} style={{ textAlign: 'left' }}>
+                  <li key={i}>
                     <span><strong>{q.nickname}</strong> {q.content}</span>
                     {user?.id === q.userId && (
                       <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
@@ -373,11 +397,11 @@ const CreateLecturePage = () => {
             >
               {enrolled ? '수강하기' : '신청하기'}
             </button>
-            {(!user || !accessToken) && (
+            {!user || !accessToken ? (
               <div style={{ fontSize: 13, color: '#D32F2F', marginTop: 7 }}>
                 로그인 후 신청할 수 있습니다.
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
