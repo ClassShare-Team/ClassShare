@@ -4,4 +4,4 @@ docker/.env
 # Client
 Client/.env
 # Server
-server/.env
+server/.env.development

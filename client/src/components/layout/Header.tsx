@@ -11,9 +11,8 @@ export const Header = () => {
   const { user } = useUser();
 
   const handleLogoClick = () => {
-
-    localStorage.setItem("selectedCategory", "전체");
-    window.location.href = "/main"; 
+    localStorage.setItem('selectedCategory', '전체');
+    window.location.href = '/main';
   };
 
   return (
