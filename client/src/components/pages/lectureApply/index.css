@@ -87,6 +87,7 @@
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 12px;
+  text-align: left;
 }
 
 .review-section ul,
@@ -143,6 +144,7 @@
   font-size: 14px;
   resize: vertical;
   min-height: 80px;
+  width: 100%;
 }
 
 .review-input button,
