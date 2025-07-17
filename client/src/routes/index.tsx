@@ -14,7 +14,7 @@ import VideoListPage from '@/components/pages/VideoListPage';
 import BoardPostDetailPage from '@/components/pages/boardPostDetail';
 import LecturePage from '@/components/pages/lectureApply';
 import InstructorInfoPage from '@/components/pages/instructorInfo';
-import SearchPage from '@/components/pages/search/search';
+import SearchPage from '@/components/pages/search';
 
 export const AppRoutes = () => {
   return (
