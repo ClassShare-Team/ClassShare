@@ -139,23 +139,27 @@ exports.getLectureById = async (id) => {
   return result.rows[0];
 };
 
-// 단건 강의 커리큘럼 조회
-exports.getCurriculumByLectureId = async (lectureId) => {
+exports.getCurriculumByLectureId = async (userId, lectureId) => {
   const result = await db.query(
     `
     SELECT
-      title,
-      duration_sec
-    FROM videos
-    WHERE lecture_id = $1
-    ORDER BY order_index ASC
-  `,
-    [lectureId]
+      v.id,
+      v.title,
+      v.duration_sec,
+      COALESCE(p.is_completed, FALSE) AS is_completed
+    FROM videos v
+    LEFT JOIN progress p ON v.id = p.video_id AND p.user_id = $1
+    WHERE v.lecture_id = $2
+    ORDER BY v.order_index ASC
+    `,
+    [userId, lectureId]
   );
 
   return result.rows.map((video) => ({
+    id: video.id,
     title: video.title,
     duration: formatDuration(video.duration_sec),
+    is_completed: video.is_completed,
   }));
 };
 

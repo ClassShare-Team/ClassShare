@@ -107,13 +107,14 @@ exports.getLectureById = async (req, res, next) => {
 
 // 특정 강의 커리큘럼 조회
 exports.getCurriculumByLectureId = async (req, res) => {
+  const userId = req.user.id;
   const lectureId = parseInt(req.params.id, 10);
   if (isNaN(lectureId)) {
     return res.status(400).json({ message: '유효한 강의 ID가 아닙니다.' });
   }
 
   try {
-    const curriculum = await lectureService.getCurriculumByLectureId(lectureId);
+    const curriculum = await lectureService.getCurriculumByLectureId(userId, lectureId);
     return res.status(200).json(curriculum);
   } catch (err) {
     console.error(`[GET /lectures/${lectureId}/curriculum] error:`, err);
