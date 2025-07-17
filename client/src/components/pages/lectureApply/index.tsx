@@ -49,6 +49,8 @@ const CreateLecturePage = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   if (!API_URL) throw new Error('VITE_API_URL 환경변수가 설정되어 있지 않습니다!');
 
+  const token = localStorage.getItem('accessToken');
+
   useEffect(() => {
     const fetchLecture = async () => {
       if (!id) return;
@@ -92,11 +94,11 @@ const CreateLecturePage = () => {
 
   useEffect(() => {
     const fetchPurchaseStatus = async () => {
-      if (!user || !lecture) return;
+      if (!token || !lecture) return;
       try {
         const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchased`, {
           headers: {
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         const data = await res.json();
@@ -107,15 +109,15 @@ const CreateLecturePage = () => {
     };
 
     fetchPurchaseStatus();
-  }, [user, lecture]);
+  }, [token, lecture]);
 
   const handleEnroll = async () => {
-    if (!user || !lecture) return alert('로그인이 필요합니다');
+    if (!token || !lecture) return alert('로그인이 필요합니다');
     try {
       const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       const data = await res.json();
@@ -131,13 +133,13 @@ const CreateLecturePage = () => {
   };
 
   const handleSubmitReview = async () => {
-    if (!reviewInput.trim() || !lecture || !user) return;
+    if (!reviewInput.trim() || !lecture || !user || !token) return;
     try {
       const res = await fetch(`${API_URL}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           lectureId: lecture.id,
@@ -169,13 +171,13 @@ const CreateLecturePage = () => {
   };
 
   const handleSubmitQna = async () => {
-    if (!qnaInput.trim() || !lecture || !user) return;
+    if (!qnaInput.trim() || !lecture || !user || !token) return;
     try {
       const res = await fetch(`${API_URL}/qna`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           lecture_id: lecture.id,
