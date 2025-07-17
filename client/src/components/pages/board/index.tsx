@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-type SortType = 'recent' | 'accuracy' | 'comments' | 'likes';
+type SortType = 'recent' | 'accuracy' | 'comments';
 
 interface Post {
   id: number;
@@ -10,7 +10,6 @@ interface Post {
   content: string;
   author: string;
   created_at: string;
-  likes: number;
   comments: number;
 }
 
@@ -91,7 +90,7 @@ const BoardPage = () => {
               <FilterSection>
                 <CenterGroup>
                   <FilterButtons>
-                    {(['recent', 'accuracy', 'comments', 'likes'] as SortType[]).map((type) => (
+                    {(['recent', 'accuracy', 'comments'] as SortType[]).map((type) => (
                       <FilterCheck key={type}>
                         <input
                           type="radio"
@@ -106,7 +105,7 @@ const BoardPage = () => {
                               ? '정확도순'
                               : type === 'comments'
                                 ? '댓글 많은순'
-                                : '좋아요순'}
+                                : ''}
                         </span>
                       </FilterCheck>
                     ))}
@@ -115,7 +114,7 @@ const BoardPage = () => {
                     style={{ marginLeft: '20px' }}
                     onClick={() => navigate('/boards/create')}
                   >
-                    글쓰기
+                    작성하기
                   </TopButton>
                 </CenterGroup>
               </FilterSection>
@@ -132,7 +131,6 @@ const BoardPage = () => {
                           {post.author} · {getTimeAgo(post.created_at)}
                         </span>
                         <InfoRight>
-                          <span>좋아요 {post.likes}</span>
                           <span>댓글 {post.comments}</span>
                         </InfoRight>
                       </PostInfo>
