@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useUser } from '@/contexts/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Lecture {
   id: number;
@@ -15,6 +16,7 @@ const InstructorMyLecturePage = () => {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -58,7 +60,7 @@ const InstructorMyLecturePage = () => {
       <h2>내 강의 목록</h2>
       <LectureGrid>
         {lectures.map((lecture) => (
-          <LectureCard key={lecture.id}>
+          <LectureCard key={lecture.id} onClick={() => navigate(`/lecture/${lecture.id}`)}>
             <img src={lecture.thumbnail} alt={lecture.title} />
             <h3>{lecture.title}</h3>
             <p>{lecture.description}</p>
@@ -89,6 +91,8 @@ const LectureCard = styled.div`
   border-radius: 12px;
   background: ${({ theme }) => theme.colors.white};
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+
   img {
     width: 100%;
     height: 140px;
@@ -96,15 +100,18 @@ const LectureCard = styled.div`
     border-radius: 8px;
     margin-bottom: 10px;
   }
+
   h3 {
     font-size: 16px;
     margin-bottom: 6px;
   }
+
   p {
     font-size: 14px;
     color: ${({ theme }) => theme.colors.gray500};
     margin-bottom: 6px;
   }
+
   span {
     font-weight: bold;
   }

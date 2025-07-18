@@ -32,6 +32,7 @@ const MainPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [searchKeyword, setSearchKeyword] = useState("");
   const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [visibleArrows, setVisibleArrows] = useState<Record<string, { left: boolean; right: boolean }>>({});
 
   useEffect(() => {
     const storedKeyword = localStorage.getItem("searchKeyword") || "";
@@ -67,6 +68,32 @@ const MainPage: React.FC = () => {
 
     setFilteredLectures(result);
   }, [lectures, selectedCategory, searchKeyword]);
+
+  useEffect(() => {
+    categories.forEach((category) => {
+      const container = scrollRefs.current[category];
+      if (container) {
+        const onScroll = () => checkArrows(category);
+        container.addEventListener("scroll", onScroll);
+        checkArrows(category); // 초기 체크
+        return () => container.removeEventListener("scroll", onScroll);
+      }
+    });
+  }, [filteredLectures]);
+
+  const checkArrows = (category: string) => {
+    const container = scrollRefs.current[category];
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setVisibleArrows((prev) => ({
+      ...prev,
+      [category]: {
+        left: scrollLeft > 0,
+        right: scrollLeft + clientWidth < scrollWidth - 1,
+      },
+    }));
+  };
 
   const groupedLectures = categories.reduce((acc, category) => {
     acc[category] = filteredLectures.filter((lecture) => lecture.category === category);
@@ -128,9 +155,11 @@ const MainPage: React.FC = () => {
                 </div>
                 {groupedLectures[category]?.length ? (
                   <div className="carousel-wrapper">
-                    <button className="scroll-btn left" onClick={() => scroll(category, "left")}>
-                      ←
-                    </button>
+                    {visibleArrows[category]?.left && (
+                      <button className="scroll-btn left" onClick={() => scroll(category, "left")}>
+                        ←
+                      </button>
+                    )}
                     <div
                       className="card-carousel"
                       ref={(el) => {
@@ -139,9 +168,11 @@ const MainPage: React.FC = () => {
                     >
                       {groupedLectures[category].slice(0, 8).map(renderLectureCard)}
                     </div>
-                    <button className="scroll-btn right" onClick={() => scroll(category, "right")}>
-                      →
-                    </button>
+                    {visibleArrows[category]?.right && (
+                      <button className="scroll-btn right" onClick={() => scroll(category, "right")}>
+                        →
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="empty-card">아직 등록된 클래스가 없습니다.</div>
@@ -168,3 +199,4 @@ const MainPage: React.FC = () => {
 };
 
 export default MainPage;
+
