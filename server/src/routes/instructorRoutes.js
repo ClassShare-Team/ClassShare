@@ -15,5 +15,6 @@ router.get(
   '/:instructorId/reviews-with-comments/paginated',
   instructorController.getReviewsPaginated
 ); // 리뷰 목록 조회 페이지네이션용
+router.get('/:instructorId/simple-info', instructorController.getInstructorSimpleInfo); //강사 프로필이랑 닉네임용
 
 module.exports = router;

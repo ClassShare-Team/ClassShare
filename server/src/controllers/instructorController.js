@@ -97,3 +97,11 @@ exports.getReviewsPaginated = async (req, res) => {
     res.status(500).json({ message: '서버 에러' });
   }
 };
+
+// 강사 프로필이랑 닉네임
+exports.getInstructorSimpleInfo = async (req, res) => {
+  const { instructorId } = req.params;
+  const data = await instructorService.getInstructorSimpleInfo(instructorId);
+  if (!data) return res.status(404).json({ message: '강사 없음' });
+  res.json(data);
+};

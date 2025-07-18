@@ -141,3 +141,18 @@ exports.getTotalReviewCount = async (instructorId) => {
   );
   return parseInt(result.rows[0].total, 10);
 };
+
+// 강사 프로필이랑 닉네임 불러오기
+exports.getInstructorSimpleInfo = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT id, nickname, profile_image
+    FROM users
+    WHERE id = $1 AND role = 'instructor'
+    `,
+    [instructorId]
+  );
+
+  if (result.rows.length === 0) return null;
+  return result.rows[0];
+};
