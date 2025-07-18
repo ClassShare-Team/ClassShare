@@ -90,6 +90,7 @@ const LectureGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
+  min-height: 300px;
 `;
 
 const LectureCard = styled.div`
