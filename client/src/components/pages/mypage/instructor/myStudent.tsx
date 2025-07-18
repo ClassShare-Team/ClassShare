@@ -97,40 +97,45 @@ const InstructorMyStudentPage = () => {
     fetchStudents(lectureId);
   };
 
-  if (loading) return <Message> 불러오는 중</Message>;
-  if (error) return <Message> 오류: {error}</Message>;
-
   return (
     <Container>
       <Card>
-        <ButtonGroup>
-          <FilterButton
-            active={selectedLectureId === 'all'}
-            onClick={() => handleFilterClick('all')}
-          >
-            전체
-          </FilterButton>
-          {lectureList.map((lecture) => (
-            <FilterButton
-              key={lecture.id}
-              active={selectedLectureId === lecture.id}
-              onClick={() => handleFilterClick(lecture.id)}
-            >
-              {lecture.title}
-            </FilterButton>
-          ))}
-        </ButtonGroup>
+        {loading ? (
+          <Message>불러오는 중</Message>
+        ) : error ? (
+          <Message>오류: {error}</Message>
+        ) : (
+          <>
+            <ButtonGroup>
+              <FilterButton
+                active={selectedLectureId === 'all'}
+                onClick={() => handleFilterClick('all')}
+              >
+                전체
+              </FilterButton>
+              {lectureList.map((lecture) => (
+                <FilterButton
+                  key={lecture.id}
+                  active={selectedLectureId === lecture.id}
+                  onClick={() => handleFilterClick(lecture.id)}
+                >
+                  {lecture.title}
+                </FilterButton>
+              ))}
+            </ButtonGroup>
 
-        <h3>수강생: {students.length}명</h3>
+            <h3>수강생: {students.length}명</h3>
 
-        <List>
-          {students.map((s) => (
-            <StudentCard key={s.userId}>
-              <UserLogo src={s.profileImage || DefaultProfileImage} alt="profile" />
-              <NickName>{s.nickname}</NickName>
-            </StudentCard>
-          ))}
-        </List>
+            <List>
+              {students.map((s) => (
+                <StudentCard key={s.userId}>
+                  <UserLogo src={s.profileImage || DefaultProfileImage} alt="profile" />
+                  <NickName>{s.nickname}</NickName>
+                </StudentCard>
+              ))}
+            </List>
+          </>
+        )}
       </Card>
     </Container>
   );
