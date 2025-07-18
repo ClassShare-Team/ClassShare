@@ -2,9 +2,12 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 import { toast } from 'react-toastify';
+import { useUser } from '@/contexts/UserContext';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
+  const { setUser } = useUser();
+
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [phone, setPhone] = useState(userInfo?.phone || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -41,6 +44,15 @@ const InstructorSettingsPage = () => {
       });
 
       if (!res.ok) throw new Error('프로필 수정 실패');
+
+      const userRes = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      const userData = await userRes.json();
+      setUser(userData.user);
+
       toast.success('프로필이 수정되었습니다.');
     } catch (err) {
       if (err instanceof Error) toast.error(err.message);
