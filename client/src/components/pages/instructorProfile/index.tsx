@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
@@ -6,7 +5,11 @@ import './index.css';
 
 const Index: React.FC = () => {
   const { instructorId } = useParams();
-  const [profile, setProfile] = useState<any>(null);
+
+  const [simpleInfo, setSimpleInfo] = useState<any>(null);
+  const [studentCount, setStudentCount] = useState<number>(0);
+  const [reviewCount, setReviewCount] = useState<number>(0);
+
   const [lectures, setLectures] = useState([]);
   const [lecturePage, setLecturePage] = useState(1);
   const [hasNextLecture, setHasNextLecture] = useState(true);
@@ -17,9 +20,19 @@ const Index: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_API_URL}/instructors/${instructorId}/profile`)
-      .then((res) => setProfile(res.data))
-      .catch((err) => console.error('강사 프로필 조회 실패', err));
+      .get(`${import.meta.env.VITE_API_URL}/instructors/${instructorId}/simple-info`)
+      .then((res) => setSimpleInfo(res.data))
+      .catch((err) => console.error('강사 간단 정보 조회 실패', err));
+
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/instructors/${instructorId}/student-count`)
+      .then((res) => setStudentCount(res.data.total_student_count))
+      .catch((err) => console.error('수강생 수 조회 실패', err));
+
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/instructors/${instructorId}/review-count`)
+      .then((res) => setReviewCount(res.data.total_review_count))
+      .catch((err) => console.error('리뷰 수 조회 실패', err));
   }, [instructorId]);
 
   useEffect(() => {
@@ -44,21 +57,20 @@ const Index: React.FC = () => {
       });
   }, [instructorId, reviewPage]);
 
-  if (!profile) return <div>Loading...</div>;
+  if (!simpleInfo) return <div>Loading...</div>;
 
   return (
     <div className="main-wrapper">
       {/* 프로필 */}
       <div className="instructor-profile-box">
         <div className="profile-left">
-          <img src={profile.profileImage} className="instructor-profile" />
+          <img src={simpleInfo.profile_image} className="instructor-profile" />
         </div>
         <div className="profile-right">
-          <div className="nickname">{profile.nickname}</div>
-          <div className="introduction">{profile.introduction}</div>
+          <div className="nickname">{simpleInfo.nickname}</div>
           <div className="stats">
-            <div className="stat-item">수강생 수 {profile.studentCount}</div>
-            <div className="stat-item">수강평 수 {profile.reviewCount}</div>
+            <div className="stat-item">수강생 수 {studentCount}</div>
+            <div className="stat-item">수강평 수 {reviewCount}</div>
           </div>
         </div>
       </div>
