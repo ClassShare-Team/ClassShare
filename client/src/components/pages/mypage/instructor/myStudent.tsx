@@ -24,8 +24,11 @@ const InstructorMyStudentPage = () => {
 
   const getAuthInfo = () => {
     const token = localStorage.getItem('accessToken');
-    const instructorId = localStorage.getItem('userId');
-    if (!token || !instructorId) throw new Error('로그인이 필요합니다.');
+    if (!token) throw new Error('로그인이 필요합니다.');
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const instructorId = payload.id;
+
     return { token, instructorId };
   };
 
