@@ -160,6 +160,14 @@
   margin-top: auto;
 }
 
+.review-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 500px;
+  margin-bottom: 32px;
+}
+
 /* 강의 섹션 헤더 */
 .lecture-header {
   display: flex;

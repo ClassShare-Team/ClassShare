@@ -76,12 +76,12 @@ const Index: React.FC = () => {
         </div>
         <div className="profile-right">
           <div className="nickname">{simpleInfo.nickname}</div>
-          <div className="introduction">
-            {introduction ? introduction : '아직 소개글이 없습니다.'}
-          </div>
           <div className="stats">
             <div className="stat-item">수강생 수&nbsp;{studentCount}</div>
             <div className="stat-item">수강평 수&nbsp;{reviewCount}</div>
+          </div>
+          <div className="introduction">
+            {introduction ? introduction : '아직 소개글이 없습니다.'}
           </div>
         </div>
       </div>
