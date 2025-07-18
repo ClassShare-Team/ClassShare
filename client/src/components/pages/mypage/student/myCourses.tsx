@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 interface Course {
   id: number;
@@ -13,6 +14,7 @@ const StudentMyCoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -48,7 +50,7 @@ const StudentMyCoursesPage = () => {
         <Description>신청한 강의 목록입니다.</Description>
         <CourseGrid>
           {courses.map((course) => (
-            <CourseCard key={course.id}>
+            <CourseCard key={course.id} onClick={() => navigate(`/lecture/${course.id}/videos`)}>
               <img src={course.thumbnail} alt={course.title} />
               <h3>{course.title}</h3>
               <p>{course.instructorNickname}</p>
