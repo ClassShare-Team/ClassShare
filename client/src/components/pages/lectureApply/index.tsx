@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import './index.css';
 import useUserInfo from '@/components/hooks/useUserInfo';
@@ -34,6 +34,7 @@ const MAX_QNA_LENGTH = 300;
 const LectureApplyPage = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, accessToken } = useUserInfo();
 
   const [lecture, setLecture] = useState<Lecture | null>(null);
@@ -114,7 +115,7 @@ const LectureApplyPage = () => {
     };
 
     fetchPurchaseStatus();
-  }, [accessToken, user, id, API_URL]);
+  }, [accessToken, user, id, API_URL, location.key]); // ✅ location.key 추가
 
   const handleEnroll = async () => {
     if (!accessToken || !lecture) {
@@ -300,10 +301,10 @@ const LectureApplyPage = () => {
         <div className="title-thumbnail-area">
           <div className="title-area">
             <h1>{lecture.title}</h1>
-              {lecture.instructor_nickname && (
-                <p style={{ marginTop: '8px', fontSize: '16px', color: '#555' }}>
-                   강사: <strong>{lecture.instructor_nickname}</strong>
-               </p>
+            {lecture.instructor_nickname && (
+              <p style={{ marginTop: '8px', fontSize: '16px', color: '#555' }}>
+                강사: <strong>{lecture.instructor_nickname}</strong>
+              </p>
             )}
           </div>
           <div className="thumbnail-area">
@@ -327,7 +328,9 @@ const LectureApplyPage = () => {
               <ul>
                 {lecture.reviews.map((r, i) => (
                   <li key={i}>
-                    <span><strong>{r.nickname}</strong> {r.content}</span>
+                    <span>
+                      <strong>{r.nickname}</strong> {r.content}
+                    </span>
                     {user?.id === r.userId && (
                       <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
                     )}
@@ -356,7 +359,9 @@ const LectureApplyPage = () => {
               <ul>
                 {lecture.qnas?.map((q, i) => (
                   <li key={i}>
-                    <span><strong>{q.nickname}</strong> {q.content}</span>
+                    <span>
+                      <strong>{q.nickname}</strong> {q.content}
+                    </span>
                     {user?.id === q.userId && (
                       <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
                     )}
@@ -389,14 +394,17 @@ const LectureApplyPage = () => {
                 onClick={enrolled ? handleGoToVideos : handleEnroll}
                 disabled={!user || !accessToken}
                 style={{
-                  background: (!user || !accessToken) ? '#bbb' : undefined,
-                  cursor: (!user || !accessToken) ? 'not-allowed' : undefined,
+                  background: !user || !accessToken ? '#bbb' : undefined,
+                  cursor: !user || !accessToken ? 'not-allowed' : undefined,
                 }}
               >
                 {enrolled ? '수강하기' : '신청하기'}
               </button>
             ) : (
-              <div className="enroll-btn" style={{ background: '#f0f0f0', color: '#555', cursor: 'default' }}>
+              <div
+                className="enroll-btn"
+                style={{ background: '#f0f0f0', color: '#555', cursor: 'default' }}
+              >
                 확인 중...
               </div>
             )}
