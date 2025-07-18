@@ -68,7 +68,7 @@
 
 /* 강사 박스 */
 .instructor-profile-box {
-  width: 800px;
+  width: 600px;
   display: flex;
   align-items: center;
   background: #fff;
@@ -121,4 +121,61 @@
 
 .stat-item {
   font-weight: 600;
+}
+
+.review-item {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  gap: 8px;
+}
+.review-nickname {
+  font-weight: 600;
+  font-size: 14px;
+}
+.review-content {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+.review-date {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: auto;
+}
+
+.pagination {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  background: #fff; /* 배경 색 없으면 투명함 주의 */
+  padding: 12px 0;
+  z-index: 10;
+}
+
+.page-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  color: #5c3df3;
+  background: #f4f4f4;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-button.disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+.page-button:hover:not(.disabled) {
+  background: #eae7fe;
 }

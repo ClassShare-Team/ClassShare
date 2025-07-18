@@ -27,6 +27,7 @@ import InstructorMyPage from '@/components/pages/mypage/instructor/myPage';
 import InstructorMyStudent from '@/components/pages/mypage/instructor/myStudent';
 import InstructorSalesReport from '@/components/pages/mypage/instructor/salesReport';
 import InstructorSettings from '@/components/pages/mypage/instructor/settings';
+import InstructorInfo from '@/components/pages/instructorInfo/index';
 
 export const AppRoutes = () => {
   return (
@@ -60,6 +61,7 @@ export const AppRoutes = () => {
         <Route path="instructor/mystudent" element={<InstructorMyStudent />} />
         <Route path="instructor/salesreport" element={<InstructorSalesReport />} />
         <Route path="instructor/setting" element={<InstructorSettings />} />
+        <Route path="instructor/:instructorId/info" element={<InstructorInfo />} />
       </Route>
     </Routes>
   );
