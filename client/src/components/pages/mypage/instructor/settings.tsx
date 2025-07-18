@@ -158,7 +158,7 @@ const Card = styled.div`
   box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
   padding: 2.5rem;
   width: 100%;
-  max-width: 720px;
+  min-width: 720px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;

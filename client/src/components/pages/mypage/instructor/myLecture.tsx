@@ -63,17 +63,19 @@ const InstructorMyLecturePage = () => {
 
   return (
     <Container>
-      <h2>내 강의 목록</h2>
-      <LectureGrid>
-        {lectures.map((lecture) => (
-          <LectureCard key={lecture.id} onClick={() => navigate(`/lectures/${lecture.id}/apply`)}>
-            <img src={lecture.thumbnail} alt={lecture.title} />
-            <h3>{lecture.title}</h3>
-            <p>{lecture.description}</p>
-            <span>{Number(lecture.price).toLocaleString()}원</span>
-          </LectureCard>
-        ))}
-      </LectureGrid>
+      <Card>
+        <h2>내 강의 목록</h2>
+        <LectureGrid>
+          {lectures.map((lecture) => (
+            <LectureCard key={lecture.id} onClick={() => navigate(`/lectures/${lecture.id}/apply`)}>
+              <img src={lecture.thumbnail} alt={lecture.title} />
+              <h3>{lecture.title}</h3>
+              <p>{lecture.description}</p>
+              <span>{Number(lecture.price).toLocaleString()}원</span>
+            </LectureCard>
+          ))}
+        </LectureGrid>
+      </Card>
     </Container>
   );
 };
@@ -84,6 +86,17 @@ const Container = styled.div`
   padding: 40px;
   background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   min-height: calc(100vh - 80px);
+`;
+
+const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
+  padding: 2rem;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: 500px;
 `;
 
 const LectureGrid = styled.div`
