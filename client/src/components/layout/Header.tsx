@@ -43,6 +43,9 @@ const HeaderWrapper = styled.header`
   width: 100%;
   background-color: ${({ theme }) => theme.colors.white};
   border-bottom: 1px solid ${({ theme }) => theme.colors.gray200};
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 `;
 
 const TopRow = styled.div`

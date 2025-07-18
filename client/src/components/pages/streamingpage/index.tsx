@@ -226,7 +226,9 @@ export const StreamingPage = () => {
           setCurriculum(prev => {
             const updated = [...prev];
             const idx = updated.findIndex(v => v.id === videoId);
-            if (idx !== -1) updated[idx].done = true;
+            if (idx !== -1 && !updated[idx].done) {
+                updated[idx].done = true;
+            }
             return updated;
           });
         }
@@ -256,6 +258,12 @@ export const StreamingPage = () => {
   };
 
   const handleCurriculumClick = (idx: number) => {
+    const currentVideo = curriculum[currentIdx];
+    if (currentVideo && !currentVideo.done && currentIdx !== idx) {
+      alert("현재 강의를 모두 시청해야 다음 강의로 이동할 수 있습니다.");
+      return;
+    }
+
     setCurrentIdx(idx);
     setVideoId(curriculum[idx].id);
     setPaused(true);
