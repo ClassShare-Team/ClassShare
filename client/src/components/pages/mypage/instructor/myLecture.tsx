@@ -66,7 +66,7 @@ const InstructorMyLecturePage = () => {
       <h2>내 강의 목록</h2>
       <LectureGrid>
         {lectures.map((lecture) => (
-          <LectureCard key={lecture.id} onClick={() => navigate(`/lecture/${lecture.id}apply`)}>
+          <LectureCard key={lecture.id} onClick={() => navigate(`/lecture/${lecture.id}/apply`)}>
             <img src={lecture.thumbnail} alt={lecture.title} />
             <h3>{lecture.title}</h3>
             <p>{lecture.description}</p>
