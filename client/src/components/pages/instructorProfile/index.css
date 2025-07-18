@@ -71,14 +71,23 @@
   width: 600px;
   display: flex;
   align-items: center;
+  justify-content: center;
   background: #fff;
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 32px;
-  justify-content: center;
+  margin: 32px auto; /* 가운데 정렬 + 여백 */
   height: 40vh;
-  margin: 0;
+}
+
+/* 반응형 추가 추천 */
+@media (max-width: 768px) {
+  .instructor-profile-box {
+    width: 90%;
+    flex-direction: column;
+    height: auto;
+    padding: 16px;
+  }
 }
 
 .profile-left {
@@ -178,4 +187,10 @@
 }
 .page-button:hover:not(.disabled) {
   background: #eae7fe;
+}
+
+.main-wrapper {
+  flex: 1;
+  width: 100%;
+  padding-bottom: 80px;
 }
