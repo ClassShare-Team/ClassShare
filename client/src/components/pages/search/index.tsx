@@ -81,7 +81,7 @@ const SearchPage: React.FC = () => {
   const renderInstructorCard = (inst: Instructor) => (
     <div
       className="instructor-card"
-      onClick={() => navigate(`/instructors/${inst.id}`)}
+      onClick={() => navigate(`/instructor/${inst.id}/info`)}
       style={{ cursor: 'pointer' }}
     >
       <div className="instructor-profile-wrapper">
