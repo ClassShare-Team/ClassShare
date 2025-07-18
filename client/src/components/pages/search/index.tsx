@@ -71,8 +71,12 @@ const SearchPage: React.FC = () => {
   const displayedLectures =
     selectedCat === '전체' ? lectures : lectures.filter((l) => l.category === selectedCat);
 
-  const fmtPrice = (p: number | string) =>
-    isNaN(Number(p)) ? String(p) : Number(p).toLocaleString() + '원';
+  const fmtPrice = (p: number | string) => {
+    const num = Math.floor(Number(p)); // 소수점 제거
+    if (isNaN(num)) return String(p);
+    if (num === 0) return '무료';
+    return num.toLocaleString() + '원';
+  };
 
   const handlePageChange = (newPage: number) => {
     navigate(`/search?q=${encodeURIComponent(q)}&page=${newPage}`);
@@ -141,7 +145,7 @@ const SearchPage: React.FC = () => {
 
         {displayedLectures.length ? (
           <>
-            <div className="lecture-grid">{displayedLectures.map(renderLectureCard)}</div>
+            <div className="search-lecture-grid">{displayedLectures.map(renderLectureCard)}</div>
 
             <Page>
               <PageButton disabled={page === 1} onClick={() => handlePageChange(page - 1)}>

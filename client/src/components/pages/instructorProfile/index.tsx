@@ -113,7 +113,7 @@ const Index: React.FC = () => {
       <div className="lecture-grid">
         {lectures.map((lec: any) => (
           <div
-            className="card"
+            className="lec-card"
             key={lec.id}
             onClick={() => navigate(`/lectures/${lec.id}/apply`)}
             style={{ cursor: 'pointer' }}
