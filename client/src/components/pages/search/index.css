@@ -97,7 +97,7 @@
 }
 
 /* 프로필 이미지 영역 (배경 + 정중앙 정렬) */
-.instructor-profile-wrapper {
+.search-instructor-profile-wrapper {
   width: 100%;
   height: 120px;
   background: #fff;
@@ -108,7 +108,7 @@
 }
 
 /* 프로필 원형 이미지 */
-.instructor-profile {
+.search-instructor-profile {
   width: 90px;
   height: 90px;
   border-radius: 50%;
