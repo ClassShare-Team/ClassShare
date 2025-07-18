@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import UserProfileLogo from '@/assets/UserProfileLogo.png';
+import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import './index.css';
 
@@ -18,6 +20,7 @@ const Index: React.FC = () => {
   const [reviewPage, setReviewPage] = useState(1);
   const [hasNextReview, setHasNextReview] = useState(true);
   const [introduction, setIntroduction] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -72,7 +75,7 @@ const Index: React.FC = () => {
       {/* ────────── 프로필 ────────── */}
       <div className="instructor-profile-box">
         <div className="profile-left">
-          <img src={simpleInfo.profile_image} className="instructor-profile" />
+          <img src={simpleInfo.profile_image || UserProfileLogo} className="instructor-profile" />
         </div>
         <div className="profile-right">
           <div className="nickname">{simpleInfo.nickname}</div>
@@ -109,13 +112,20 @@ const Index: React.FC = () => {
 
       <div className="lecture-grid">
         {lectures.map((lec: any) => (
-          <div className="card" key={lec.id}>
+          <div
+            className="card"
+            key={lec.id}
+            onClick={() => navigate(`/lectures/${lec.id}/apply`)}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="thumbnail-wrapper">
               <img className="thumbnail" src={lec.thumbnail} alt={lec.title} />
             </div>
             <div className="card-content">
               <div className="title">{lec.title}</div>
-              <div className="price">{lec.price === 0.00 ? '무료' : `${lec.price}원`}</div>
+              <div className="price">
+                {parseInt(lec.price) === 0 ? '무료' : `${parseInt(lec.price).toLocaleString()}원`}
+              </div>
             </div>
           </div>
         ))}
