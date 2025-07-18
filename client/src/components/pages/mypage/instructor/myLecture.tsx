@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useUser } from '@/contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 
 interface Lecture {
@@ -12,20 +11,27 @@ interface Lecture {
 }
 
 const InstructorMyLecturePage = () => {
-  const { user } = useUser();
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) return;
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setError('로그인이 필요합니다.');
+      setLoading(false);
+      return;
+    }
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userId = payload.id;
 
     const fetchLectures = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/instructors/${user.id}/lectures`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/instructors/${userId}/lectures`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -50,7 +56,7 @@ const InstructorMyLecturePage = () => {
     };
 
     fetchLectures();
-  }, [user]);
+  }, []);
 
   if (loading) return <div>로딩 중</div>;
   if (error) return <div>오류: {error}</div>;
