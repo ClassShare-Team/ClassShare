@@ -25,7 +25,7 @@ import InstructorLecture from '@/components/pages/mypage/instructor/myLecture';
 import InstructorMyPage from '@/components/pages/mypage/instructor/myPage';
 import InstructorMyStudent from '@/components/pages/mypage/instructor/myStudent';
 import InstructorSettings from '@/components/pages/mypage/instructor/settings';
-import InstructorInfo from '@/components/pages/instructorInfo/index';
+import InstructorProfile from '@/components/pages/instructorProfile';
 
 export const AppRoutes = () => {
   return (
@@ -57,7 +57,7 @@ export const AppRoutes = () => {
         <Route path="instructor/mypage" element={<InstructorMyPage />} />
         <Route path="instructor/mystudent" element={<InstructorMyStudent />} />
         <Route path="instructor/setting" element={<InstructorSettings />} />
-        <Route path="instructor/:instructorId/info" element={<InstructorInfo />} />
+        <Route path="instructor/:instructorId/profile" element={<InstructorProfile />} />
       </Route>
     </Routes>
   );
