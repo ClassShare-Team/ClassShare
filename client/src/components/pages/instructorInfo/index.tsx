@@ -133,18 +133,21 @@ const InstructorInfoPage = () => {
             강의 <LectureCount>전체 {info.lectures.length}</LectureCount>
           </SectionTitle>
           <LectureSectionContent>
-            <LectureList>
-              {info.lectures.map((lecture) => (
-                <LectureCard key={lecture.id}>
-                  <img src={lecture.thumbnail || ''} alt="thumbnail" />
-                  <p>{lecture.title}</p>
-                </LectureCard>
-              ))}
-              {editMode && (
-                <LectureCard isAdd>
-                  <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
-                </LectureCard>
-              )}
+           <LectureList>
+                {info.lectures.map((lecture) => (
+                  <LectureCard
+                    key={lecture.id}
+                    onClick={() => navigate(`/lecture/${lecture.id}`)}
+                  >
+                    <img src={lecture.thumbnail || ''} alt="thumbnail" />
+                    <p>{lecture.title}</p>
+                  </LectureCard>
+                ))}
+                  {editMode && (
+                   <LectureCard isAdd>
+                      <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
+                    </LectureCard>
+                )}
             </LectureList>
           </LectureSectionContent>
         </Section>

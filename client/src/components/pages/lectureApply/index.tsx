@@ -25,6 +25,7 @@ interface Lecture {
   price: string;
   reviews: Review[];
   qnas?: Qna[];
+  instructor_nickname?: string;
 }
 
 const MAX_REVIEW_LENGTH = 300;
@@ -64,6 +65,7 @@ const LectureApplyPage = () => {
           description: data.description,
           thumbnail: data.thumbnail,
           price: data.price,
+          instructor_nickname: data.instructor_nickname,
           reviews: reviewData.reviews.map((r: any) => ({
             id: r.review_id,
             nickname: r.student_nickname,
@@ -298,6 +300,11 @@ const LectureApplyPage = () => {
         <div className="title-thumbnail-area">
           <div className="title-area">
             <h1>{lecture.title}</h1>
+              {lecture.instructor_nickname && (
+                <p style={{ marginTop: '8px', fontSize: '16px', color: '#555' }}>
+                   강사: <strong>{lecture.instructor_nickname}</strong>
+               </p>
+            )}
           </div>
           <div className="thumbnail-area">
             <img src={lecture.thumbnail} alt="썸네일" className="thumbnail" />
