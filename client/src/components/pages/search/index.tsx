@@ -84,9 +84,9 @@ const SearchPage: React.FC = () => {
       onClick={() => navigate(`/instructor/${inst.id}/profile`)}
       style={{ cursor: 'pointer' }}
     >
-      <div className="instructor-profile-wrapper">
+      <div className="search-instructor-profile-wrapper">
         <img
-          className="instructor-profile"
+          className="search-instructor-profile"
           src={inst.profile_image || UserProfileLogo}
           alt={inst.nickname}
         />

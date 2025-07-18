@@ -17,6 +17,7 @@ const Index: React.FC = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewPage, setReviewPage] = useState(1);
   const [hasNextReview, setHasNextReview] = useState(true);
+  const [introduction, setIntroduction] = useState<string | null>(null);
 
   useEffect(() => {
     axios
@@ -57,6 +58,13 @@ const Index: React.FC = () => {
       });
   }, [instructorId, reviewPage]);
 
+  useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/instructors/${instructorId}/instructor-introduction`)
+      .then(({ data }) => setIntroduction(data?.introduction ?? null))
+      .catch(() => setIntroduction(null));
+  }, [instructorId]);
+
   if (!simpleInfo) return <div>Loading...</div>;
 
   return (
@@ -68,6 +76,9 @@ const Index: React.FC = () => {
         </div>
         <div className="profile-right">
           <div className="nickname">{simpleInfo.nickname}</div>
+          <div className="introduction">
+            {introduction ? introduction : '아직 소개글이 없습니다.'}
+          </div>
           <div className="stats">
             <div className="stat-item">수강생 수&nbsp;{studentCount}</div>
             <div className="stat-item">수강평 수&nbsp;{reviewCount}</div>
