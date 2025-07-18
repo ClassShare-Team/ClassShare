@@ -152,6 +152,7 @@ const Card = styled.div`
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
+  min-height: 500px;
 `;
 
 const Message = styled.div`
