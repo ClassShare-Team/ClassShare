@@ -1,30 +1,34 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 interface Course {
   id: number;
   title: string;
   thumbnail: string;
-  instructor: string;
-  enrolledAt: string;
+  instructorNickname: string;
+  purchasedAt: string;
 }
 
 const StudentMyCoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/courses`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/my-lectures`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
         });
+
         if (!res.ok) throw new Error('수강 강의를 불러오지 못했습니다.');
+
         const data = await res.json();
-        setCourses(data);
+        setCourses(data.lectures);
       } catch (err) {
         if (err instanceof Error) setError(err.message);
         else setError('알 수 없는 오류');
@@ -36,47 +40,51 @@ const StudentMyCoursesPage = () => {
     fetchCourses();
   }, []);
 
-  if (loading) return <div>로딩 중...</div>;
-  if (error) return <div>오류: {error}</div>;
+  if (loading) return <Message>로딩 중...</Message>;
+  if (error) return <Message>오류: {error}</Message>;
 
   return (
-    <MyCoursesContainer>
-      <Title>내 수강 강의</Title>
-      <Description>신청한 강의 목록입니다.</Description>
-      <CourseList>
-        {courses.map((course) => (
-          <CourseItem key={course.id}>
-            <CourseInfo>
-              <CourseThumbnail src={course.thumbnail} alt={course.title} />
-              <div>
-                <div>
-                  <strong>{course.title}</strong>
-                </div>
-                <div>{course.instructor}</div>
-              </div>
-            </CourseInfo>
-            <div>{course.enrolledAt}</div>
-          </CourseItem>
-        ))}
-      </CourseList>
-    </MyCoursesContainer>
+    <Container>
+      <Card>
+        <Title>내 수강 강의</Title>
+        <Description>신청한 강의 목록입니다.</Description>
+        <CourseGrid>
+          {courses.map((course) => (
+            <CourseCard key={course.id} onClick={() => navigate(`/lecture/${course.id}/videos`)}>
+              <img src={course.thumbnail} alt={course.title} />
+              <h3>{course.title}</h3>
+              <p>{course.instructorNickname}</p>
+              <span>{new Date(course.purchasedAt).toLocaleDateString()}</span>
+            </CourseCard>
+          ))}
+        </CourseGrid>
+      </Card>
+    </Container>
   );
 };
 
 export default StudentMyCoursesPage;
 
-const MyCoursesContainer = styled.div`
-  padding: 24px;
-  background-color: ${({ theme }) => theme.colors.white};
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+const Container = styled.div`
+  padding: 40px;
+  background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
+  min-height: calc(100vh - 80px);
 `;
 
-const Title = styled.h3`
-  ${({ theme }) => theme.fonts.h1};
-  font-size: 24px;
-  margin-bottom: 16px;
-  color: ${({ theme }) => theme.colors.black};
+const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
+  padding: 2rem;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: 500px;
+`;
+
+const Title = styled.h2`
+  font-size: 22px;
+  margin-bottom: 8px;
 `;
 
 const Description = styled.p`
@@ -84,31 +92,46 @@ const Description = styled.p`
   margin-bottom: 24px;
 `;
 
-const CourseList = styled.div`
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+const CourseGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
 `;
 
-const CourseItem = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+const CourseCard = styled.div`
   padding: 16px;
-  border: 1px solid ${({ theme }) => theme.colors.gray100};
-  border-radius: 8px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.colors.white};
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.gray500};
+    margin-bottom: 6px;
+  }
+
+  span {
+    font-size: 13px;
+    color: ${({ theme }) => theme.colors.gray400};
+  }
 `;
 
-const CourseInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-const CourseThumbnail = styled.img`
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
+const Message = styled.div`
+  padding: 60px;
+  font-size: 18px;
+  text-align: center;
 `;

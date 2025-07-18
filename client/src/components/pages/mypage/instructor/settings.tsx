@@ -2,22 +2,40 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 import { toast } from 'react-toastify';
+import { useUser } from '@/contexts/UserContext';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
+  const { setUser } = useUser();
+
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [phone, setPhone] = useState(userInfo?.phone || '');
-  const [password, setPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState(userInfo?.profile_image || '');
   const [loading, setLoading] = useState(false);
+
+  const formatPhone = (raw: string) =>
+    raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfileImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
 
   const handleProfileSave = async () => {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append('nickname', nickname);
-      formData.append('phone', phone);
+      if (nickname.trim()) formData.append('nickname', nickname.trim());
+      if (phone.trim()) formData.append('phone', phone.trim());
+      if (profileImage) formData.append('profile_image', profileImage);
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -26,38 +44,47 @@ const InstructorSettingsPage = () => {
       });
 
       if (!res.ok) throw new Error('프로필 수정 실패');
+
+      const userRes = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      const userData = await userRes.json();
+      setUser(userData.user);
+
       toast.success('프로필이 수정되었습니다.');
     } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error('알 수 없는 오류가 발생했습니다.');
-      }
+      if (err instanceof Error) toast.error(err.message);
+      else toast.error('알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
   const handlePasswordChange = async () => {
-    if (!password.trim()) return toast.warning('새 비밀번호를 입력해주세요.');
+    if (!currentPassword.trim() || !newPassword.trim()) {
+      return toast.warning('현재 비밀번호와 새 비밀번호를 모두 입력해주세요.');
+    }
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/password`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me/password`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
       });
       if (!res.ok) throw new Error('비밀번호 변경 실패');
       toast.success('비밀번호가 변경되었습니다.');
-      setPassword('');
+      setCurrentPassword('');
+      setNewPassword('');
     } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error('알 수 없는 오류가 발생했습니다.');
-      }
+      if (err instanceof Error) toast.error(err.message);
+      else toast.error('알 수 없는 오류가 발생했습니다.');
     }
   };
 
@@ -65,26 +92,52 @@ const InstructorSettingsPage = () => {
 
   return (
     <Container>
-      <h2>설정</h2>
+      <Card>
+        <h2>설정</h2>
 
-      <Label>닉네임</Label>
-      <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
+        <Label>프로필 이미지</Label>
+        {previewUrl && <PreviewImage src={previewUrl} alt="미리보기" />}
 
-      <Label>전화번호</Label>
-      <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <FileUploadWrapper>
+          <HiddenFileInput
+            type="file"
+            accept="image/*"
+            id="instructor-profile-upload"
+            onChange={handleProfileImageChange}
+          />
+          <UploadButton as="label" htmlFor="instructor-profile-upload">
+            이미지 선택
+          </UploadButton>
+        </FileUploadWrapper>
 
-      <SaveButton onClick={handleProfileSave} disabled={loading}>
-        {loading ? '저장 중...' : '프로필 저장'}
-      </SaveButton>
+        <Label>닉네임</Label>
+        <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
 
-      <Label>비밀번호 변경</Label>
-      <Input
-        type="password"
-        value={password}
-        placeholder="새 비밀번호"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
+        <Label>전화번호</Label>
+        <Input value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} />
+
+        <SaveButton onClick={handleProfileSave} disabled={loading}>
+          {loading ? '저장 중...' : '프로필 저장'}
+        </SaveButton>
+
+        <Label>현재 비밀번호</Label>
+        <Input
+          type="password"
+          value={currentPassword}
+          placeholder="현재 비밀번호"
+          onChange={(e) => setCurrentPassword(e.target.value)}
+        />
+
+        <Label>새 비밀번호</Label>
+        <Input
+          type="password"
+          value={newPassword}
+          placeholder="새 비밀번호"
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
+
+        <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
+      </Card>
     </Container>
   );
 };
@@ -93,8 +146,22 @@ export default InstructorSettingsPage;
 
 const Container = styled.div`
   padding: 40px;
-  max-width: 600px;
+  max-width: 1000px;
   margin: 0 auto;
+  background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
+  min-height: calc(100vh - 80px);
+`;
+
+const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
+  padding: 2.5rem;
+  width: 100%;
+  min-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Label = styled.label`
@@ -114,9 +181,41 @@ const Input = styled.input`
 const SaveButton = styled.button`
   margin-top: 20px;
   padding: 10px 16px;
+  font-size: 14px;
   background-color: ${({ theme }) => theme.colors.purple};
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+`;
+
+const PreviewImage = styled.img`
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: 8px;
+  margin-bottom: 12px;
+`;
+
+const FileUploadWrapper = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const UploadButton = styled.button`
+  width: 100%;
+  padding: 10px 16px;
+  background-color: ${({ theme }) => theme.colors.purple};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: center;
 `;

@@ -57,6 +57,7 @@ export const OAuthFinalizePage = () => {
       if (res.ok) {
         const result = await res.json();
         localStorage.setItem('accessToken', result.accessToken);
+        localStorage.setItem('userId', String(result.user.id));
         setUser(result.user);
         toast.success('회원가입이 완료되었습니다');
         navigate('/main');
