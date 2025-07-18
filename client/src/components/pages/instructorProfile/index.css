@@ -132,40 +132,73 @@
   font-weight: 600;
 }
 
-/* 수강평 카드 */
-.review-item {
-  display: flex;
-  flex-direction: column;
+/* 전체 흰색 박스 */
+.review-wrapper {
   background: #fff;
   border-radius: 12px;
-  padding: 16px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-  gap: 8px;
+  padding: 24px;
+  min-height: 550px; /* ✅ 5개 분량 공간 유지 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-bottom: 32px;
 }
 
-.review-nickname {
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.review-content {
-  font-size: 14px;
-  color: #444;
-  line-height: 1.4;
-}
-
-.review-date {
-  font-size: 12px;
-  color: #aaa;
-  margin-top: auto;
-}
-
+/* 내부 리뷰 정렬 */
 .review-grid {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 500px;
-  margin-bottom: 32px;
+  flex: 1;
+}
+
+/* 개별 리뷰 (연보라 박스) */
+.review-item {
+  display: flex;
+  flex-direction: column;
+  background: #f6f2ff; /* ✅ 연보라색 */
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: none; /* ✅ 내부 박스는 그림자 제거 */
+  gap: 8px;
+}
+
+/* ✅ 첫 줄: 닉네임 + 강의 제목 + 날짜 */
+.review-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+/* 수강생 닉네임 */
+.review-nickname {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* 강의 제목 */
+.review-lecture-title {
+  color: #888;
+  margin-left: 8px; /* ✅ 두 칸 느낌 */
+  flex-shrink: 0;
+}
+
+/* 날짜는 오른쪽 끝 */
+.review-date {
+  font-size: 12px;
+  color: #aaa;
+  margin-left: auto;
+}
+
+/* ✅ 리뷰 내용: 한 줄 띄우고 들여쓰기 */
+.review-content {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+  margin-top: 8px;
+  padding-left: 16px;
 }
 
 /* 강의 섹션 헤더 */
