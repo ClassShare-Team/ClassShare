@@ -135,7 +135,7 @@ const SearchPage: React.FC = () => {
           {categories.map((c) => (
             <button
               key={c}
-              className={`category-btn ${selectedCat === c ? 'active' : ''}`}
+              className={`search-category-btn ${selectedCat === c ? 'active' : ''}`}
               onClick={() => setSelectedCat(c)}
             >
               {c}

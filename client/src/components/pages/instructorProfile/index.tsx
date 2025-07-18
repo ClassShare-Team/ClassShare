@@ -110,7 +110,7 @@ const Index: React.FC = () => {
         </div>
       </div>
 
-      <div className="lecture-grid">
+      <div className="profile-lecture-grid">
         {lectures.map((lec: any) => (
           <div
             className="lec-card"
