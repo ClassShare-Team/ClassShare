@@ -2,7 +2,7 @@
 
 /* 강의 카드 한 장 */
 .card {
-  width: 240px;
+  width: 220px;
   border-radius: 12px;
   background-color: #fff;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
@@ -64,6 +64,14 @@
   color: #5c3df3;
   font-size: 14px;
   margin-top: auto;
+}
+
+.lecture-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* 카드 사이 간격 */
+  margin-bottom: 32px;
+  justify-content: flex-start;
 }
 
 /* 강사 박스 */
