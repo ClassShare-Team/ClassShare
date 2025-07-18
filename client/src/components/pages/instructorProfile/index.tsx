@@ -115,7 +115,7 @@ const Index: React.FC = () => {
             </div>
             <div className="card-content">
               <div className="title">{lec.title}</div>
-              <div className="price">{lec.price === 0 ? '무료' : `${lec.price}원`}</div>
+              <div className="price">{lec.price === 0.00 ? '무료' : `${lec.price}원`}</div>
             </div>
           </div>
         ))}
@@ -123,8 +123,6 @@ const Index: React.FC = () => {
 
       {/* ────────── 수강평 ────────── */}
       <div className="lecture-header">
-        {' '}
-        {/* 🔄 재사용 */}
         <h3>수강평</h3>
         <div className="lecture-pagination">
           <button
@@ -142,14 +140,19 @@ const Index: React.FC = () => {
         </div>
       </div>
 
-      <div className="review-grid">
-        {reviews.map((r: any) => (
-          <div key={r.id} className="review-item">
-            <div className="review-nickname">{r.student_nickname}</div>
-            <div className="review-content">{r.content}</div>
-            <div className="review-date">{r.created_at.slice(0, 10)}</div>
-          </div>
-        ))}
+      <div className="review-wrapper">
+        <div className="review-grid">
+          {reviews.map((r: any) => (
+            <div key={r.id} className="review-item">
+              <div className="review-top">
+                <span className="review-nickname">{r.student_nickname}</span>
+                <span className="review-lecture-title">  {r.lecture_title}</span>
+                <span className="review-date">{r.created_at.slice(0, 10)}</span>
+              </div>
+              <div className="review-content">{r.content}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
