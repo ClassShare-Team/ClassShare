@@ -87,3 +87,31 @@ exports.getLecturesByInstructor = async (instructorId) => {
 
   return result.rows;
 };
+
+// 특정 강사 전체 강의 목록 조회 (페이지네이션용)
+exports.getLecturesByInstructorPaginated = async (instructorId, limit, offset) => {
+  const result = await db.query(
+    `
+    SELECT id, title, description, price, category, thumbnail, created_at
+    FROM lectures
+    WHERE instructor_id = $1
+    ORDER BY created_at DESC
+    LIMIT $2 OFFSET $3
+    `,
+    [instructorId, limit, offset]
+  );
+  return result.rows;
+};
+
+// 특정 강사 전체 강의 목록 조회 (페이지네이션용 /토탈)
+exports.getTotalLectureCountByInstructor = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT COUNT(*) AS total
+    FROM lectures
+    WHERE instructor_id = $1
+    `,
+    [instructorId]
+  );
+  return parseInt(result.rows[0].total, 10);
+};

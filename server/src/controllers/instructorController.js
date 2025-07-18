@@ -56,3 +56,26 @@ exports.getLectures = async (req, res) => {
     return res.status(500).json({ message: 'Failed to fetch lectures.' });
   }
 };
+
+// 특정 강사 전체 강의 목록 조회 페이지네이션용
+exports.getLecturesByInstructorPaginated = async (req, res) => {
+  const { instructorId } = req.params;
+  const page = parseInt(req.query.page || '1');
+  const size = parseInt(req.query.size || '5');
+  const offset = (page - 1) * size;
+
+  try {
+    const lectures = await instructorService.getLecturesByInstructorPaginated(
+      instructorId,
+      size,
+      offset
+    );
+    const total = await instructorService.getTotalLectureCountByInstructor(instructorId);
+    const hasNextPage = offset + lectures.length < total;
+
+    res.json({ lectures, total, hasNextPage });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: '서버 에러' });
+  }
+};
