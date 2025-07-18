@@ -101,7 +101,7 @@ const SearchPage: React.FC = () => {
 
   const renderLectureCard = (lecture: Lecture) => (
     <div
-      className="card"
+      className="search-card"
       key={lecture.id}
       onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
       style={{ cursor: 'pointer' }}
