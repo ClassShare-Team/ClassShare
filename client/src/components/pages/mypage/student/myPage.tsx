@@ -44,8 +44,8 @@ const StudentMyPage = () => {
         </ProfileSection>
 
         <NavMenu>
-          <MenuItem onClick={() => navigate('/student/mycourse')}>내 수강 강의</MenuItem>
-          <MenuItem onClick={() => navigate('/student/myreview')}>내 리뷰</MenuItem>
+          <MenuItem onClick={() => navigate('/student/mycourse')}>현재 수강 중인 강의</MenuItem>
+          <MenuItem onClick={() => navigate('/student/myreview')}>내가 작성한 리뷰</MenuItem>
           <MenuItem onClick={() => navigate('/student/setting')}>설정</MenuItem>
           <DangerMenuItem onClick={handleDeleteAccount}>회원 탈퇴</DangerMenuItem>
         </NavMenu>
@@ -66,6 +66,7 @@ const MyPageLayout = styled.div`
 `;
 
 const Card = styled.div`
+  margin-top: 40px;
   background-color: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);

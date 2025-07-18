@@ -36,43 +36,51 @@ const StudentMyReviewsPage = () => {
     fetchReviews();
   }, []);
 
-  if (loading) return <div>로딩 중...</div>;
-  if (error) return <div>오류: {error}</div>;
+  if (loading) return <Message>로딩 중...</Message>;
+  if (error) return <Message>오류: {error}</Message>;
 
   return (
-    <MyReviewsContainer>
-      <Title>내 리뷰</Title>
-      <Description>작성한 강의 리뷰 목록입니다.</Description>
-      <ReviewList>
-        {reviews.map((review) => (
-          <ReviewItem key={review.id}>
-            <ReviewHeader>
-              <h4>{review.lectureTitle}</h4>
-            </ReviewHeader>
-            <p>{review.content}</p>
-            <Date>{review.createdAt}</Date>
-          </ReviewItem>
-        ))}
-      </ReviewList>
-    </MyReviewsContainer>
+    <Container>
+      <Card>
+        <Title>내 리뷰</Title>
+        <Description>작성한 강의 리뷰 목록입니다.</Description>
+        <ReviewList>
+          {reviews.map((review) => (
+            <ReviewItem key={review.id}>
+              <ReviewHeader>
+                <h4>{review.lectureTitle}</h4>
+              </ReviewHeader>
+              <p>{review.content}</p>
+            </ReviewItem>
+          ))}
+        </ReviewList>
+      </Card>
+    </Container>
   );
 };
 
 export default StudentMyReviewsPage;
 
-const MyReviewsContainer = styled.div`
-  padding: 24px;
+const Container = styled.div`
+  padding: 40px;
   background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   min-height: calc(100vh - 80px);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
-const Title = styled.h3`
-  ${({ theme }) => theme.fonts.h1};
-  font-size: 24px;
-  margin-bottom: 16px;
-  color: ${({ theme }) => theme.colors.black};
+const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);
+  padding: 2rem;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: 600px;
+`;
+
+const Title = styled.h2`
+  font-size: 22px;
+  margin-bottom: 8px;
 `;
 
 const Description = styled.p`
@@ -81,7 +89,6 @@ const Description = styled.p`
 `;
 
 const ReviewList = styled.div`
-  margin-top: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -106,8 +113,8 @@ const ReviewHeader = styled.div`
   }
 `;
 
-const Date = styled.p`
-  margin-top: 8px;
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.gray400};
+const Message = styled.div`
+  padding: 60px;
+  font-size: 18px;
+  text-align: center;
 `;

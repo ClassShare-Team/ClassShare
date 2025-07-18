@@ -70,6 +70,7 @@ const MyPageLayout = styled.div`
 `;
 
 const Card = styled.div`
+  margin-top: 40px;
   background-color: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px rgba(49, 72, 187, 0.09);

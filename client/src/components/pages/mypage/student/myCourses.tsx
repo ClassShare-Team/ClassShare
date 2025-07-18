@@ -103,6 +103,7 @@ const CourseCard = styled.div`
   border-radius: 12px;
   background: ${({ theme }) => theme.colors.white};
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
 
   img {
     width: 100%;
