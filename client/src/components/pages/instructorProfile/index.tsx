@@ -40,9 +40,9 @@ const Index: React.FC = () => {
       .get(
         `${import.meta.env.VITE_API_URL}/instructors/${instructorId}/lectures/paginated?page=${lecturePage}&size=5`
       )
-      .then((res) => {
-        setLectures(res.data.lectures);
-        setHasNextLecture(res.data.hasNextPage);
+      .then(({ data }) => {
+        setLectures(data.lectures);
+        setHasNextLecture(data.hasNextPage);
       });
   }, [instructorId, lecturePage]);
 
@@ -51,9 +51,9 @@ const Index: React.FC = () => {
       .get(
         `${import.meta.env.VITE_API_URL}/instructors/${instructorId}/reviews-with-comments/paginated?page=${reviewPage}&size=5`
       )
-      .then((res) => {
-        setReviews(res.data.reviews);
-        setHasNextReview(res.data.hasNextPage);
+      .then(({ data }) => {
+        setReviews(data.reviews);
+        setHasNextReview(data.hasNextPage);
       });
   }, [instructorId, reviewPage]);
 
@@ -61,7 +61,7 @@ const Index: React.FC = () => {
 
   return (
     <div className="main-wrapper">
-      {/* 프로필 */}
+      {/* ────────── 프로필 ────────── */}
       <div className="instructor-profile-box">
         <div className="profile-left">
           <img src={simpleInfo.profile_image} className="instructor-profile" />
@@ -69,14 +69,33 @@ const Index: React.FC = () => {
         <div className="profile-right">
           <div className="nickname">{simpleInfo.nickname}</div>
           <div className="stats">
-            <div className="stat-item">수강생 수 {studentCount}</div>
-            <div className="stat-item">수강평 수 {reviewCount}</div>
+            <div className="stat-item">수강생 수&nbsp;{studentCount}</div>
+            <div className="stat-item">수강평 수&nbsp;{reviewCount}</div>
           </div>
         </div>
       </div>
 
-      {/* 강의 */}
-      <h3>전체 강의</h3>
+      {/* ────────── 전체 강의 ────────── */}
+      <div className="lecture-header">
+        {' '}
+        {/* 🔄 제목 + 화살표 한 줄 */}
+        <h3>전체 강의</h3>
+        <div className="lecture-pagination">
+          <button
+            disabled={lecturePage === 1}
+            onClick={() => setLecturePage((p) => Math.max(1, p - 1))}
+          >
+            &#60;
+          </button>
+          <button
+            disabled={!hasNextLecture}
+            onClick={() => hasNextLecture && setLecturePage((p) => p + 1)}
+          >
+            &#62;
+          </button>
+        </div>
+      </div>
+
       <div className="lecture-grid">
         {lectures.map((lec: any) => (
           <div className="card" key={lec.id}>
@@ -90,45 +109,36 @@ const Index: React.FC = () => {
           </div>
         ))}
       </div>
-      <div className="pagination">
-        <button
-          className={`page-button ${lecturePage === 1 ? 'disabled' : ''}`}
-          onClick={() => setLecturePage((prev) => Math.max(1, prev - 1))}
-        >
-          {'<'}
-        </button>
-        <button
-          className={`page-button ${!hasNextLecture ? 'disabled' : ''}`}
-          onClick={() => hasNextLecture && setLecturePage((prev) => prev + 1)}
-        >
-          {'>'}
-        </button>
+
+      {/* ────────── 수강평 ────────── */}
+      <div className="lecture-header">
+        {' '}
+        {/* 🔄 재사용 */}
+        <h3>수강평</h3>
+        <div className="lecture-pagination">
+          <button
+            disabled={reviewPage === 1}
+            onClick={() => setReviewPage((p) => Math.max(1, p - 1))}
+          >
+            &#60;
+          </button>
+          <button
+            disabled={!hasNextReview}
+            onClick={() => hasNextReview && setReviewPage((p) => p + 1)}
+          >
+            &#62;
+          </button>
+        </div>
       </div>
 
-      {/* 수강평 */}
-      <h3>수강평</h3>
       <div className="review-grid">
-        {reviews.map((review: any) => (
-          <div key={review.id} className="review-item">
-            <div className="review-nickname">{review.student_nickname}</div>
-            <div className="review-content">{review.content}</div>
-            <div className="review-date">{review.created_at.slice(0, 10)}</div>
+        {reviews.map((r: any) => (
+          <div key={r.id} className="review-item">
+            <div className="review-nickname">{r.student_nickname}</div>
+            <div className="review-content">{r.content}</div>
+            <div className="review-date">{r.created_at.slice(0, 10)}</div>
           </div>
         ))}
-      </div>
-      <div className="pagination">
-        <button
-          className={`page-button ${reviewPage === 1 ? 'disabled' : ''}`}
-          onClick={() => setReviewPage((prev) => Math.max(1, prev - 1))}
-        >
-          {'<'}
-        </button>
-        <button
-          className={`page-button ${!hasNextReview ? 'disabled' : ''}`}
-          onClick={() => hasNextReview && setReviewPage((prev) => prev + 1)}
-        >
-          {'>'}
-        </button>
       </div>
     </div>
   );
