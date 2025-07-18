@@ -192,5 +192,8 @@
 .main-wrapper {
   flex: 1;
   width: 100%;
-  padding-bottom: 80px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+  box-sizing: border-box;
 }
