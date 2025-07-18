@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import DefaultProfileImage from '@/assets/UserProfileLogo.png';
 
 interface Student {
   userId: number;
@@ -125,7 +126,7 @@ const InstructorMyStudentPage = () => {
         <List>
           {students.map((s) => (
             <StudentCard key={s.userId}>
-              <Avatar src={s.profileImage || '/default-avatar.png'} alt="profile" />
+              <UserLogo src={s.profileImage || DefaultProfileImage} alt="profile" />
               <NickName>{s.nickname}</NickName>
             </StudentCard>
           ))}
@@ -189,7 +190,7 @@ const StudentCard = styled.div`
   border-radius: 8px;
 `;
 
-const Avatar = styled.img`
+const UserLogo = styled.img`
   width: 36px;
   height: 36px;
   background-color: #ddd;
