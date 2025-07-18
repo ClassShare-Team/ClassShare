@@ -80,7 +80,7 @@
   height: 40vh;
 }
 
-/* 반응형 추가 추천 */
+/* 반응형 */
 @media (max-width: 768px) {
   .instructor-profile-box {
     width: 90%;
@@ -132,6 +132,7 @@
   font-weight: 600;
 }
 
+/* 수강평 카드 */
 .review-item {
   display: flex;
   flex-direction: column;
@@ -141,54 +142,50 @@
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
   gap: 8px;
 }
+
 .review-nickname {
   font-weight: 600;
   font-size: 14px;
 }
+
 .review-content {
   font-size: 14px;
   color: #444;
   line-height: 1.4;
 }
+
 .review-date {
   font-size: 12px;
   color: #aaa;
   margin-top: auto;
 }
 
-.pagination {
-  position: sticky;
-  bottom: 0;
+/* 강의 섹션 헤더 */
+.lecture-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  background: #fff; /* 배경 색 없으면 투명함 주의 */
-  padding: 12px 0;
-  z-index: 10;
+  margin-top: 64px;
+  margin-bottom: 24px;
 }
 
-.page-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+/* 강의 섹션 페이지네이션 버튼(화살표만) */
+.lecture-pagination button {
   border: none;
-  font-size: 18px;
+  background: none;
+  font-size: 24px;
   font-weight: bold;
   color: #5c3df3;
-  background: #f4f4f4;
   cursor: pointer;
-  transition: all 0.2s;
+  padding: 0 4px;
 }
 
-.page-button.disabled {
+.lecture-pagination button:disabled {
   color: #ccc;
   cursor: not-allowed;
 }
-.page-button:hover:not(.disabled) {
-  background: #eae7fe;
-}
 
+/* ---------- 메인 래퍼 ---------- */
 .main-wrapper {
   flex: 1;
   width: 100%;
