@@ -221,4 +221,5 @@ const UploadButton = styled.button`
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
+  text-align: center;
 `;
