@@ -137,7 +137,7 @@ const InstructorInfoPage = () => {
                 {info.lectures.map((lecture) => (
                   <LectureCard
                     key={lecture.id}
-                    onClick={() => navigate(`/lecture/${lecture.id}/apply`)}
+                    onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
                   >
                     <img src={lecture.thumbnail || ''} alt="thumbnail" />
                     <p>{lecture.title}</p>
