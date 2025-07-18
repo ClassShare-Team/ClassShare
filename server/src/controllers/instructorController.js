@@ -79,3 +79,21 @@ exports.getLecturesByInstructorPaginated = async (req, res) => {
     res.status(500).json({ message: '서버 에러' });
   }
 };
+
+// 특정 강사 전체 리뷰 목록 조회 페이지네이션용
+exports.getReviewsPaginated = async (req, res) => {
+  const { instructorId } = req.params;
+  const page = parseInt(req.query.page) || 1;
+  const size = parseInt(req.query.size) || 5;
+  const offset = (page - 1) * size;
+
+  try {
+    const reviews = await instructorService.getReviewsPaginated(instructorId, size, offset);
+    const total = await instructorService.getTotalReviewCount(instructorId);
+    const hasNextPage = offset + reviews.length < total;
+    res.json({ reviews, total, hasNextPage });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: '서버 에러' });
+  }
+};

@@ -115,3 +115,29 @@ exports.getTotalLectureCountByInstructor = async (instructorId) => {
   );
   return parseInt(result.rows[0].total, 10);
 };
+
+// 특정 강사 전체 리뷰 목록 조회 (페이지네이션용)
+exports.getReviewsPaginated = async (instructorId, limit, offset) => {
+  const result = await db.query(
+    `SELECT r.*, u.nickname AS student_nickname, l.title AS lecture_title
+     FROM reviews r
+     JOIN lectures l ON r.lecture_id = l.id
+     JOIN users u ON r.user_id = u.id
+     WHERE l.instructor_id = $1
+     ORDER BY r.created_at DESC
+     LIMIT $2 OFFSET $3`,
+    [instructorId, limit, offset]
+  );
+  return result.rows;
+};
+
+// 특정 강사 전체 리뷰 목록 조회 (페이지네이션용/토탈)
+exports.getTotalReviewCount = async (instructorId) => {
+  const result = await db.query(
+    `SELECT COUNT(r.id) AS total FROM reviews r
+     JOIN lectures l ON r.lecture_id = l.id
+     WHERE l.instructor_id = $1`,
+    [instructorId]
+  );
+  return parseInt(result.rows[0].total, 10);
+};

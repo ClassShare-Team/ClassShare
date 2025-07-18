@@ -11,5 +11,9 @@ router.get(
   '/:instructorId/lectures/paginated',
   instructorController.getLecturesByInstructorPaginated
 ); // 강의 목록 조회 페이지네이션용
+router.get(
+  '/:instructorId/reviews-with-comments/paginated',
+  instructorController.getReviewsPaginated
+); // 리뷰 목록 조회 페이지네이션용
 
 module.exports = router;
