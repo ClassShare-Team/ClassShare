@@ -305,7 +305,7 @@ const LectureApplyPage = () => {
       <div className="header-bg">
         <div className="title-thumbnail-area">
           <div className="title-area">
-            <h1>{lecture.title}</h1>
+            <h1 style={{ marginBottom: '12px' }}>{lecture.title}</h1>
             {lecture.instructor_nickname && lecture.instructor_id && (
               <p
                 style={{
