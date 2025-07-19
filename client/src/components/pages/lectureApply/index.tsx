@@ -63,6 +63,8 @@ const LectureApplyPage = () => {
         const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`);
         const qnaData = await qnaRes.json();
 
+        console.log('lecture detail:', data);
+
         setLecture({
           id: Number(data.id),
           title: data.title,
