@@ -310,12 +310,12 @@ const LectureApplyPage = () => {
               <p
                 style={{
                   marginTop: '8px',
+                  marginBottom: '28px',
                   fontSize: '16px',
                   color: '#555',
                   display: 'flex',
                   alignItems: 'center',
                   cursor: 'pointer',
-                  marginBottom: '16px',
                 }}
                 onClick={() => navigate(`/instructor/${lecture.instructor_id}/profile`)}
               >
