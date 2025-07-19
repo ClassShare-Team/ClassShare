@@ -315,6 +315,7 @@ const LectureApplyPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   cursor: 'pointer',
+                  marginBottom: '16px',
                 }}
                 onClick={() => navigate(`/instructor/${lecture.instructor_id}/profile`)}
               >
@@ -322,8 +323,8 @@ const LectureApplyPage = () => {
                   src={lecture.instructor_profile || DefaultProfileImage}
                   alt="강사 이미지"
                   style={{
-                    width: '12px',
-                    height: '12px',
+                    width: '24px',
+                    height: '24px',
                     borderRadius: '50%',
                     marginRight: '6px',
                     objectFit: 'cover',
