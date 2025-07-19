@@ -71,7 +71,7 @@ const LectureApplyPage = () => {
           price: data.price,
           instructor_nickname: data.instructor_nickname,
           instructor_id: data.instructor_id,
-          instructor_profile: data.instructor_profile,
+          instructor_profile: undefined,
           reviews: reviewData.reviews.map((r: any) => ({
             id: r.review_id,
             nickname: r.student_nickname,
@@ -99,6 +99,18 @@ const LectureApplyPage = () => {
   }, [API_URL, id]);
 
   useEffect(() => {
+    const fetchInstructorProfile = async () => {
+      if (!lecture?.instructor_id) return;
+      try {
+        const res = await fetch(`${API_URL}/users/${lecture.instructor_id}`);
+        const data = await res.json();
+        if (data.profile_image) {
+          setLecture((prev) => (prev ? { ...prev, instructor_profile: data.profile_image } : prev));
+        }
+      } catch (err) {
+        console.error('강사 프로필 이미지 조회 실패', err);
+      }
+    };
     const fetchPurchaseStatus = async () => {
       if (!accessToken || !id || !user) {
         setPurchaseChecked(true);
@@ -119,6 +131,7 @@ const LectureApplyPage = () => {
       }
     };
 
+    fetchInstructorProfile();
     fetchPurchaseStatus();
   }, [accessToken, user, id, API_URL, location.key]);
 
