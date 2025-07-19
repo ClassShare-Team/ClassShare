@@ -178,6 +178,7 @@ const FilterButton = styled.button<{ active: boolean }>`
   background-color: ${({ active, theme }) => (active ? theme.colors.purple : '#fff')};
   color: ${({ active }) => (active ? '#fff' : '#000')};
   border-radius: 20px;
+  white-space: nowrap;
   cursor: pointer;
 `;
 
