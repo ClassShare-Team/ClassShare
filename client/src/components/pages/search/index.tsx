@@ -5,7 +5,6 @@ import UserProfileLogo from '@/assets/UserProfileLogo.png';
 import styled from 'styled-components';
 import './index.css';
 
-/* ---------- 타입 ---------- */
 interface Lecture {
   id: number;
   title: string;
@@ -21,7 +20,6 @@ interface Instructor {
   lectures: Lecture[];
 }
 
-/* ---------- 상수 ---------- */
 const categories = ['전체', '교육', '개발', '음악', '요리', '운동', '글쓰기', '예술'];
 
 const SearchPage: React.FC = () => {
@@ -36,7 +34,6 @@ const SearchPage: React.FC = () => {
   const page = Number(params.get('page') || '1');
   const q = params.get('q')?.trim() || '';
 
-  /* 검색 API 호출 */
   useEffect(() => {
     if (!q) return;
 
@@ -44,11 +41,9 @@ const SearchPage: React.FC = () => {
       try {
         const url = `${import.meta.env.VITE_API_URL}/search?q=${encodeURIComponent(q)}&page=${page}`;
         const { data } = await axios.get(url);
-
         const apiLectures = data.lectures || [];
         const instructorLectures = data.matched_instructor?.lectures || [];
 
-        // ✅ 중복 제거
         const combinedLectures = [...apiLectures, ...instructorLectures]
           .map((lecture) => ({
             ...lecture,
@@ -67,12 +62,11 @@ const SearchPage: React.FC = () => {
     fetch();
   }, [q, page]);
 
-  /* 카테고리 필터링 (강의에만 적용) */
   const displayedLectures =
     selectedCat === '전체' ? lectures : lectures.filter((l) => l.category === selectedCat);
 
   const fmtPrice = (p: number | string) => {
-    const num = Math.floor(Number(p)); // 소수점 제거
+    const num = Math.floor(Number(p));
     if (isNaN(num)) return String(p);
     if (num === 0) return '무료';
     return num.toLocaleString() + '원';

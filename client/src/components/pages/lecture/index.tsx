@@ -218,7 +218,6 @@ const CreateLecturePage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleAddVideo = () => setVideos([...videos, { title: '', file: null }]);
-  //분기처리
   const handleVideoChange = (idx: number, field: 'title' | 'file', value: string | File | null) => {
     setVideos(videos.map((v, i) => (i === idx ? { ...v, [field]: value } : v)));
   };
@@ -280,8 +279,7 @@ const CreateLecturePage: React.FC = () => {
         throw new Error(err?.message || response.statusText);
       }
       alert('강의가 등록되었습니다!');
-
-      //catch 블록에서 any 사용하면 noImplicitAny: true 설정에 걸려서 에러 발생해서 unknown으로 대체했습니다.
+      navigate(-1);
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert('등록 실패: ' + error.message);

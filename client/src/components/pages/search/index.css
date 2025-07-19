@@ -1,6 +1,3 @@
-/* ---------- 검색 페이지 레이아웃 ---------- */
-
-/* 검색 페이지 전체 박스 */
 .search-wrapper {
   width: 100%;
   min-height: 100vh;
@@ -9,7 +6,6 @@
   box-sizing: border-box;
 }
 
-/* 섹션 제목 (크리에이터, 강의 등) */
 .search-title {
   font-size: 24px;
   font-weight: 700;
@@ -17,7 +13,6 @@
   color: #333;
 }
 
-/* 크리에이터(강사) 카드 영역 */
 .creator-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -25,7 +20,6 @@
   margin-bottom: 48px;
 }
 
-/* 카테고리 필터 버튼 영역 */
 .search-category-filter {
   display: flex;
   flex-wrap: wrap;
@@ -33,7 +27,6 @@
   margin-bottom: 32px;
 }
 
-/* 개별 카테고리 버튼 */
 .search-category-btn {
   padding: 8px 16px;
   border-radius: 20px;
@@ -46,13 +39,11 @@
   transition: all 0.2s ease;
 }
 
-/* 선택된 카테고리 강조 */
 .search-category-btn.active {
   background: #5c3df3;
   color: #fff;
 }
 
-/* 강의 카드 그리드 */
 .search-lecture-grid {
   display: flex;
   flex-wrap: wrap;
@@ -61,7 +52,6 @@
   margin-bottom: 230px;
 }
 
-/* 검색 결과 없을 때 안내 */
 .empty-search {
   width: 100%;
   min-height: 100vh;
@@ -78,7 +68,6 @@
   box-sizing: border-box;
 }
 
-/* ---------- 강사 카드 전용 ---------- */
 .instructor-card {
   width: 180px;
   height: 240px;
@@ -98,7 +87,6 @@
   transform: translateY(-4px);
 }
 
-/* 프로필 이미지 영역 (배경 + 정중앙 정렬) */
 .search-instructor-profile-wrapper {
   width: 100%;
   height: 120px;
@@ -109,7 +97,6 @@
   margin-bottom: 10px;
 }
 
-/* 프로필 원형 이미지 */
 .search-instructor-profile {
   width: 110px;
   height: 110px;
@@ -117,7 +104,6 @@
   object-fit: cover;
 }
 
-/* 프로필 아래 닉네임 */
 .instructor-content {
   padding: 12px;
   text-align: center;
@@ -130,9 +116,6 @@
   margin-top: 8px;
 }
 
-/* ---------- 강의 카드 (메인페이지 스타일 그대로) ---------- */
-
-/* 강의 카드 한 장 */
 .search-card {
   width: 230px;
   border-radius: 12px;
@@ -149,7 +132,6 @@
   transform: translateY(-4px);
 }
 
-/* 썸네일 영역 */
 .thumbnail-wrapper {
   width: 100%;
   height: 160px;
@@ -159,7 +141,6 @@
   justify-content: center;
 }
 
-/* 썸네일 이미지 */
 .thumbnail {
   width: 100%;
   height: 100%;
@@ -168,7 +149,6 @@
   border-top-right-radius: 12px;
 }
 
-/* 카드 내부 콘텐츠 */
 .card-content {
   padding: 12px;
   display: flex;
@@ -176,7 +156,6 @@
   gap: 4px;
 }
 
-/* 강의 제목 */
 .card-content .title {
   font-weight: 600;
   font-size: 15px;
@@ -190,7 +169,6 @@
   margin-top: 2px;
 }
 
-/* 강의 가격 */
 .card-content .price {
   font-weight: 700;
   color: #5c3df3;

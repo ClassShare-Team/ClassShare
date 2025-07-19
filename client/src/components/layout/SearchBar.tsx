@@ -8,14 +8,12 @@ export const SearchBar: React.FC = () => {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState('');
 
-  // 공백이 아닌 검색어가 있을 때만 /search 페이지로 이동
   const handleSearch = () => {
     const trimmed = keyword.trim();
     if (trimmed.length === 0) return;
     navigate(`/search?q=${encodeURIComponent(trimmed)}`);
   };
 
-  // 엔터 키로도 검색이 실행되도록 처리
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch();

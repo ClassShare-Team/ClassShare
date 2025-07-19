@@ -15,18 +15,14 @@ export const OAuthFinalizePage = () => {
   const { setUser } = useUser();
 
   useEffect(() => {
-    // 기존 유저
     const token = params.get('token');
-    // 신규 유저
     const temp = params.get('tempToken');
 
     if (token) {
-      // 기존 유저 : accessToken 저장 후 이동
       localStorage.setItem('accessToken', token);
       toast.success('로그인 성공!');
       navigate('/main');
     } else if (temp) {
-      // 신규 유저 : 폼 입력 받음
       setTempToken(temp);
     } else {
       toast.error('유효하지 않은 접근입니다.');

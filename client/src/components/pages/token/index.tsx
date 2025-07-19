@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import styled from "styled-components";
+import React, { useState } from 'react';
+import styled from 'styled-components';
 
-// ---- Styled Components ----
 const PageWrapper = styled.div`
   min-height: 100vh;
   display: flex;
@@ -20,7 +19,7 @@ const Main = styled.main`
 const TokenBox = styled.div`
   background: #fff;
   border-radius: 24px;
-  box-shadow: 0 2px 16px 0 rgba(98, 120, 223, 0.10);
+  box-shadow: 0 2px 16px 0 rgba(98, 120, 223, 0.1);
   width: 480px;
   padding: 40px 36px 32px 36px;
   display: flex;
@@ -127,11 +126,9 @@ const cookiePackages = [
   { count: 2000, price: 100000 },
 ];
 
-// ---- Main Component ----
 export const TokenPage: React.FC = () => {
   const [balance, setBalance] = useState<number>(33);
 
-  // 실제 결제는 없고, 클릭 시 쿠키 증가만 시뮬레이션
   const handleBuy = (count: number) => {
     setBalance((prev) => prev + count);
     alert(`쿠키 ${count}개가 충전되었습니다!`);
@@ -143,18 +140,20 @@ export const TokenPage: React.FC = () => {
         <TokenBox>
           <Title>쿠키 구매</Title>
           <CookieBalance>
-            <CookieIcon role="img" aria-label="cookie">🥠</CookieIcon>
+            <CookieIcon role="img" aria-label="cookie">
+              🥠
+            </CookieIcon>
             현재 보유한 쿠키&nbsp;
-            <span style={{ fontWeight: 700, color: "#06bf4a" }}>{balance}개</span>
+            <span style={{ fontWeight: 700, color: '#06bf4a' }}>{balance}개</span>
           </CookieBalance>
-          <Banner>
-            원하는 쿠키 패키지를 선택하세요.
-          </Banner>
+          <Banner>원하는 쿠키 패키지를 선택하세요.</Banner>
           <TokenList>
             {cookiePackages.map((item) => (
               <TokenItem key={item.count}>
                 <TokenDesc>
-                  <CookieIcon role="img" aria-label="cookie">🥠</CookieIcon>
+                  <CookieIcon role="img" aria-label="cookie">
+                    🥠
+                  </CookieIcon>
                   쿠키 {item.count}개
                 </TokenDesc>
                 <TokenBtn onClick={() => handleBuy(item.count)}>
@@ -163,9 +162,7 @@ export const TokenPage: React.FC = () => {
               </TokenItem>
             ))}
           </TokenList>
-          <EventBanner>
-            원하는 만큼 쿠키를 선택해 강의를 즐겨보세요!
-          </EventBanner>
+          <EventBanner>원하는 만큼 쿠키를 선택해 강의를 즐겨보세요!</EventBanner>
         </TokenBox>
       </Main>
     </PageWrapper>
