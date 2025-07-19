@@ -130,10 +130,13 @@ exports.getAllLectures = async () => {
 // 강의 단건 조회
 exports.getLectureById = async (id) => {
   const result = await db.query(
-    `SELECT l.*, u.nickname AS instructor_nickname
-         FROM lectures l
-         JOIN users u ON l.instructor_id = u.id
-         WHERE l.id = $1`,
+    `SELECT
+    l.*,
+    u.nickname        AS instructor_nickname,
+    u.profile_image   AS instructor_profile_image
+    FROM lectures       AS l
+    JOIN users          AS u ON l.instructor_id = u.id
+    WHERE l.id = $1`,
     [id]
   );
   return result.rows[0];
