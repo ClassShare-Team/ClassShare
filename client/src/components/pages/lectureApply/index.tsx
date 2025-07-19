@@ -71,7 +71,7 @@ const LectureApplyPage = () => {
           price: data.price,
           instructor_nickname: data.instructor_nickname,
           instructor_id: data.instructor_id,
-          instructor_profile: undefined,
+          instructor_profile: data.instructor_profile_image || undefined,
           reviews: reviewData.reviews.map((r: any) => ({
             id: r.review_id,
             nickname: r.student_nickname,
