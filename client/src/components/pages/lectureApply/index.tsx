@@ -63,8 +63,6 @@ const LectureApplyPage = () => {
         const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`);
         const qnaData = await qnaRes.json();
 
-        console.log('lecture detail:', data);
-
         setLecture({
           id: Number(data.id),
           title: data.title,
@@ -137,7 +135,7 @@ const LectureApplyPage = () => {
 
     fetchInstructorProfile();
     fetchPurchaseStatus();
-  }, [accessToken, user, id, API_URL, location.key]);
+  }, [lecture, accessToken, user, id, API_URL, location.key]);
 
   const handleEnroll = async () => {
     if (!accessToken || !lecture) {
