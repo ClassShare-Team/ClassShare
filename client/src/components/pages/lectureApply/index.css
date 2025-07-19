@@ -1,5 +1,5 @@
 .page-container {
-  background: linear-gradient(to bottom, #FEF7FF, #F0F9FF);
+  background: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   min-height: 100vh;
 }
 
@@ -67,6 +67,10 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
+.description-box h2 {
+  margin-bottom: 12px;
+}
+
 .description {
   font-size: 16px;
   color: #333;
@@ -116,14 +120,14 @@
 .review-section li strong,
 .qna-section li strong {
   margin-right: 8px;
-  color: #6F42C1;
+  color: #6f42c1;
 }
 
 .review-section button,
 .qna-section button {
   background: none;
   border: none;
-  color: #D32F2F;
+  color: #d32f2f;
   font-size: 13px;
   cursor: pointer;
 }
