@@ -105,7 +105,9 @@ const LectureApplyPage = () => {
         const res = await fetch(`${API_URL}/users/${lecture.instructor_id}`);
         const data = await res.json();
         if (data.profile_image) {
-          setLecture((prev) => (prev ? { ...prev, instructor_profile: data.profile_image } : prev));
+          setLecture((prev) =>
+            prev ? { ...prev, instructor_profile: data.profile_image || undefined } : prev
+          );
         }
       } catch (err) {
         console.error('강사 프로필 이미지 조회 실패', err);
