@@ -2,6 +2,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import './index.css';
 import useUserInfo from '@/components/hooks/useUserInfo';
+import DefaultProfileImage from '@/assets/UserProfileLogo.png';
 
 interface Review {
   id?: number;
@@ -26,6 +27,8 @@ interface Lecture {
   reviews: Review[];
   qnas?: Qna[];
   instructor_nickname?: string;
+  instructor_id?: number;
+  instructor_profile?: string;
 }
 
 const MAX_REVIEW_LENGTH = 300;
@@ -67,6 +70,8 @@ const LectureApplyPage = () => {
           thumbnail: data.thumbnail,
           price: data.price,
           instructor_nickname: data.instructor_nickname,
+          instructor_id: data.instructor_id,
+          instructor_profile: data.instructor_profile,
           reviews: reviewData.reviews.map((r: any) => ({
             id: r.review_id,
             nickname: r.student_nickname,
@@ -115,7 +120,7 @@ const LectureApplyPage = () => {
     };
 
     fetchPurchaseStatus();
-  }, [accessToken, user, id, API_URL, location.key]); // ✅ location.key 추가
+  }, [accessToken, user, id, API_URL, location.key]);
 
   const handleEnroll = async () => {
     if (!accessToken || !lecture) {
@@ -301,9 +306,30 @@ const LectureApplyPage = () => {
         <div className="title-thumbnail-area">
           <div className="title-area">
             <h1>{lecture.title}</h1>
-            {lecture.instructor_nickname && (
-              <p style={{ marginTop: '8px', fontSize: '16px', color: '#555' }}>
-                강사: <strong>{lecture.instructor_nickname}</strong>
+            {lecture.instructor_nickname && lecture.instructor_id && (
+              <p
+                style={{
+                  marginTop: '8px',
+                  fontSize: '16px',
+                  color: '#555',
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                }}
+                onClick={() => navigate(`/instructor/${lecture.instructor_id}/profile`)}
+              >
+                <img
+                  src={lecture.instructor_profile || DefaultProfileImage}
+                  alt="강사 이미지"
+                  style={{
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    marginRight: '6px',
+                    objectFit: 'cover',
+                  }}
+                />
+                <strong>{lecture.instructor_nickname}</strong>
               </p>
             )}
           </div>
