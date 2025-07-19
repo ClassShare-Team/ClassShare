@@ -170,6 +170,7 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 `;
 
 const FilterButton = styled.button<{ active: boolean }>`
