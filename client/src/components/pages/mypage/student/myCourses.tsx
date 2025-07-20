@@ -29,6 +29,7 @@ const StudentMyCoursesPage = () => {
 
         const data = await res.json();
         setCourses(data.lectures);
+        setCourses(data.lectures ?? []);
       } catch (err) {
         if (err instanceof Error) setError(err.message);
         else setError('알 수 없는 오류');
