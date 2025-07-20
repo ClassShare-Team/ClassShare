@@ -7,6 +7,9 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
+  //테스트
+  console.log('userInfo:', userInfo);
+
   const { setUser } = useUser();
 
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
