@@ -1,7 +1,7 @@
 .video-list-container {
   min-height: 100vh;
-  padding: 40px 24px;
-  background-color: #f8f9fa; 
+  padding: 40px 60px;
+  background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   font-family: 'Pretendard', sans-serif;
   box-sizing: border-box;
 }
