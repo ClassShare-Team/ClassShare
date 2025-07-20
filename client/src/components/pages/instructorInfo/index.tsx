@@ -81,7 +81,7 @@ const InstructorInfoPage = () => {
         setEditMode(false);
       } else {
         alert(
-          '소개 수정에 실패했습니다. 소개글이 비어 있거나 문제가 발생했습니다. 다시 시도해주세요.'
+          '소개 수정에 실패했습니다.\n소개글이 비어 있거나 문제가 발생했습니다.\n다시 시도해주세요.'
         );
       }
     } catch (err) {
