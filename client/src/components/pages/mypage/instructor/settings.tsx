@@ -22,7 +22,7 @@ const InstructorSettingsPage = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const isOAuthUser = typeof userInfo?.oauth_id === 'string';
+  const isOAuthUser = !!userInfo?.oauth_id;
 
   const formatPhone = (raw: string) =>
     raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
