@@ -145,9 +145,13 @@ exports.handleGoogleOAuth = async (code) => {
   // 기존 유저면 → 로그인 처리
   if (result.rowCount > 0) {
     const user = result.rows[0];
-    const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
-    });
+    const accessToken = jwt.sign(
+      { id: user.id, role: user.role, oauth_id: user.oauth_id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+      }
+    );
     return {
       accessToken,
       user: {
@@ -228,7 +232,7 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
     await client.query('COMMIT');
     await redis.del(`temp-oauth:${key}`);
 
-    const accessToken = jwt.sign({ id: user.id, role }, process.env.JWT_SECRET, {
+    const accessToken = jwt.sign({ id: user.id, role, oauth_id: oauthId }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     });
     return {
@@ -256,7 +260,7 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
 exports.login = async (email, password) => {
   const { rows } = await db.query(
     `
-    SELECT id, email, password, name, nickname, role, profile_image, public_id
+    SELECT id, email, password, name, nickname, role, profile_image, public_id, oauth_id
     FROM users
     WHERE email = $1 AND oauth_provider IS NULL
   `,
@@ -270,9 +274,13 @@ exports.login = async (email, password) => {
   if (!isMatch) {
     throw { status: 401, message: '이메일 또는 비밀번호가 올바르지 않습니다.' };
   }
-  const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
-  });
+  const accessToken = jwt.sign(
+    { id: user.id, role: user.role, oauth_id: user.oauth_id },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: '7d',
+    }
+  );
   return {
     accessToken,
     user: {
