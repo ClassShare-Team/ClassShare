@@ -7,6 +7,7 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
+
   const { setUser } = useUser();
 
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
@@ -18,6 +19,12 @@ const InstructorSettingsPage = () => {
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  //테스트
+  console.log('userInfo:', userInfo);
+  console.log('oauth_id:', userInfo?.oauth_id);
+
+  const isOAuthUser = !!userInfo?.oauth_id;
 
   const formatPhone = (raw: string) =>
     raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
@@ -81,7 +88,10 @@ const InstructorSettingsPage = () => {
           new_password: newPassword,
         }),
       });
-      if (!res.ok) throw new Error('비밀번호 변경 실패');
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || '비밀번호 변경 실패');
+
       toast.success('비밀번호가 변경되었습니다.');
       setCurrentPassword('');
       setNewPassword('');
@@ -130,8 +140,13 @@ const InstructorSettingsPage = () => {
             value={currentPassword}
             placeholder="현재 비밀번호"
             onChange={(e) => setCurrentPassword(e.target.value)}
+            disabled={isOAuthUser}
           />
-          <ToggleButton type="button" onClick={() => setShowCurrentPassword((prev) => !prev)}>
+          <ToggleButton
+            type="button"
+            onClick={() => setShowCurrentPassword((prev) => !prev)}
+            disabled={isOAuthUser}
+          >
             {showCurrentPassword ? <FiEyeOff /> : <FiEye />}
           </ToggleButton>
         </PasswordInputWrapper>
@@ -143,13 +158,20 @@ const InstructorSettingsPage = () => {
             value={newPassword}
             placeholder="새 비밀번호"
             onChange={(e) => setNewPassword(e.target.value)}
+            disabled={isOAuthUser}
           />
-          <ToggleButton type="button" onClick={() => setShowNewPassword((prev) => !prev)}>
+          <ToggleButton
+            type="button"
+            onClick={() => setShowNewPassword((prev) => !prev)}
+            disabled={isOAuthUser}
+          >
             {showNewPassword ? <FiEyeOff /> : <FiEye />}
           </ToggleButton>
         </PasswordInputWrapper>
 
-        <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
+        <SaveButton onClick={handlePasswordChange} disabled={isOAuthUser}>
+          비밀번호 변경
+        </SaveButton>
       </Card>
     </Container>
   );
@@ -245,6 +267,12 @@ const PasswordInput = styled.input`
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 10px;
   margin-top: 8px;
+
+  &:disabled {
+    background-color: #f0f0f0;
+    color: ${({ theme }) => theme.colors.gray400};
+    cursor: not-allowed;
+  }
 `;
 
 const ToggleButton = styled.button`
@@ -260,5 +288,9 @@ const ToggleButton = styled.button`
   border: none;
   cursor: pointer;
   font-size: 20px;
-  color: ${({ theme }) => theme.colors.gray400};
+  color: ${({ theme }) => theme.colors.gray300};
+
+  &:disabled {
+    color: ${({ theme }) => theme.colors.gray400};
+  }
 `;
