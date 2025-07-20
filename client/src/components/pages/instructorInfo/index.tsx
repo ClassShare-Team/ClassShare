@@ -73,16 +73,16 @@ const InstructorInfoPage = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          introduction: introductionText.trim() === '' ? null : introductionText,
-        }),
+        body: JSON.stringify({ introduction: introductionText }),
       });
 
       if (res.ok) {
         await fetchInfo();
         setEditMode(false);
       } else {
-        alert('소개 수정 실패했습니다. 다시 수정해주세요.');
+        alert(
+          '소개 수정에 실패했습니다. 소개글이 비어 있거나 문제가 발생했습니다. 다시 시도해주세요.'
+        );
       }
     } catch (err) {
       console.error(err);
