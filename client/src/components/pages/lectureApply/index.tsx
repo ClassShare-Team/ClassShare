@@ -114,11 +114,6 @@ const LectureApplyPage = () => {
       }
     };
     const fetchPurchaseStatus = async () => {
-      if (!accessToken || !id || !user) {
-        setPurchaseChecked(true);
-        setEnrolled(false);
-        return;
-      }
       try {
         const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -134,7 +129,9 @@ const LectureApplyPage = () => {
     };
 
     fetchInstructorProfile();
-    fetchPurchaseStatus();
+    if (id && user && accessToken) {
+      fetchPurchaseStatus();
+    }
   }, [lecture, accessToken, user, id, API_URL, location.key]);
 
   const handleEnroll = async () => {
