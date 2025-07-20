@@ -239,7 +239,8 @@ const PasswordInputWrapper = styled.div`
 
 const PasswordInput = styled.input`
   width: 100%;
-  padding: 10px;
+  height: 44px;
+  padding: 0 40px 0 12px;
   padding-right: 40px;
   margin-top: 8px;
   border: 1px solid ${({ theme }) => theme.colors.gray300};
@@ -251,15 +252,12 @@ const ToggleButton = styled.button`
   align-items: center;
   justify-content: center;
   position: absolute;
+  top: 0;
   right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 24px;
+  height: 100%;
+  width: 36px;
   background: none;
   border: none;
-  padding: 0;
-  margin: 0;
   cursor: pointer;
   font-size: 20px;
   color: ${({ theme }) => theme.colors.gray400};
