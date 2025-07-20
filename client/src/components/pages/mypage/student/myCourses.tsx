@@ -48,16 +48,20 @@ const StudentMyCoursesPage = () => {
       <Card>
         <Title>내 수강 강의</Title>
         <Description>신청한 강의 목록입니다.</Description>
-        <CourseGrid>
-          {courses.map((course) => (
-            <CourseCard key={course.id} onClick={() => navigate(`/lecture/${course.id}/videos`)}>
-              <img src={course.thumbnail} alt={course.title} />
-              <h3>{course.title}</h3>
-              <p>{course.instructorNickname}</p>
-              <span>{new Date(course.purchasedAt).toLocaleDateString()}</span>
-            </CourseCard>
-          ))}
-        </CourseGrid>
+        {courses.length === 0 ? (
+          <EmptyMessage>아직 수강 중인 강의가 없습니다.</EmptyMessage>
+        ) : (
+          <CourseGrid>
+            {courses.map((course) => (
+              <CourseCard key={course.id} onClick={() => navigate(`/lecture/${course.id}/videos`)}>
+                <img src={course.thumbnail} alt={course.title} />
+                <h3>{course.title}</h3>
+                <p>{course.instructorNickname}</p>
+                <span>{new Date(course.purchasedAt).toLocaleDateString()}</span>
+              </CourseCard>
+            ))}
+          </CourseGrid>
+        )}
       </Card>
     </Container>
   );
@@ -90,6 +94,13 @@ const Title = styled.h2`
 const Description = styled.p`
   color: ${({ theme }) => theme.colors.gray500};
   margin-bottom: 24px;
+`;
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.gray500};
+  padding: 60px 0;
+  font-size: 18px;
 `;
 
 const CourseGrid = styled.div`
