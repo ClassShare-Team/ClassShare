@@ -99,24 +99,6 @@ const LectureApplyPage = () => {
   }, [API_URL, id]);
 
   useEffect(() => {
-    const fetchInstructorProfile = async () => {
-      if (!lecture?.instructor_id) return;
-      try {
-        const res = await fetch(`${API_URL}/users/${lecture.instructor_id}`);
-        const data = await res.json();
-        if (data.profile_image) {
-          setLecture((prev) =>
-            prev ? { ...prev, instructor_profile: data.profile_image || undefined } : prev
-          );
-        }
-      } catch (err) {
-        console.error('강사 프로필 이미지 조회 실패', err);
-      }
-    };
-
-    fetchInstructorProfile();
-  }, [lecture, API_URL]);
-  useEffect(() => {
     const fetchPurchaseStatus = async () => {
       if (!id || !user || !accessToken) return;
       try {
@@ -124,7 +106,7 @@ const LectureApplyPage = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await res.json();
-        setEnrolled(data.is_purchased === true);
+        setEnrolled(data.ispurchased === true);
       } catch (err) {
         console.error('수강 여부 확인 실패:', err);
         setEnrolled(false);
