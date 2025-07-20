@@ -8,6 +8,10 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
 
+  //테스트
+  console.log('userInfo:', userInfo);
+  console.log('isOAuthUser로 변환될 값 (oauth_id):', userInfo?.oauth_id);
+
   const { setUser } = useUser();
 
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
