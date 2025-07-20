@@ -9,7 +9,7 @@ interface UserInfo {
   phone?: string;
   profile_image?: string;
   point_balance?: number;
-  oauth_id?: string | null;
+  oauth_id: string | null;
 }
 
 const useMyPageInfo = () => {
