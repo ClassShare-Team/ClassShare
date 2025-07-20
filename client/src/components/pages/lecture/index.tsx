@@ -21,49 +21,6 @@ const Container = styled.div`
   padding: 2.5rem 1.5rem;
   display: flex;
 `;
-const Sidebar = styled.aside`
-  width: 20%;
-  min-width: 160px;
-  padding-right: 2.5rem;
-`;
-const SidebarTitle = styled.div`
-  margin-bottom: 2rem;
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #111827;
-`;
-const StepList = styled.ol`
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
-`;
-const StepItem = styled.li`
-  display: flex;
-  align-items: center;
-`;
-const StepCircle = styled.div<{ active?: boolean }>`
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  background: ${({ active }) => (active ? '#6366f1' : '#fff')};
-  color: ${({ active }) => (active ? '#fff' : '#9ca3af')};
-  border: ${({ active }) => (active ? 'none' : '2px solid #d1d5db')};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-`;
-const StepLine = styled.div`
-  width: 1px;
-  flex: 1;
-  background: #e5e7eb;
-  margin-top: 0.25rem;
-`;
-const StepText = styled.span<{ active?: boolean }>`
-  font-size: 1rem;
-  color: ${({ active }) => (active ? '#111827' : '#9ca3af')};
-  font-weight: ${({ active }) => (active ? '600' : '400')};
-`;
 const FormCard = styled.section`
   flex: 1;
   background: ${({ theme }) => theme.colors.white};
@@ -293,29 +250,6 @@ const CreateLecturePage: React.FC = () => {
     <PageWrapper>
       <MainContent>
         <Container>
-          <Sidebar>
-            <SidebarTitle>강의 제작</SidebarTitle>
-            <StepList>
-              {['강의 제목', '강의 설명', '강의 영상', '가격', '카테고리', '강의 썸네일'].map(
-                (step, idx) => (
-                  <StepItem key={step}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        marginRight: '1rem',
-                      }}
-                    >
-                      <StepCircle active={idx === 0}>{idx + 1}</StepCircle>
-                      {idx !== 5 && <StepLine />}
-                    </div>
-                    <StepText active={idx === 0}>{step}</StepText>
-                  </StepItem>
-                )
-              )}
-            </StepList>
-          </Sidebar>
           <FormCard>
             <FormTitleRow>
               <FormTitle>내 강의 만들기</FormTitle>
