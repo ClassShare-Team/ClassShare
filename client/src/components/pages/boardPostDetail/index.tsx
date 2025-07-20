@@ -123,7 +123,9 @@ const BoardPostDetailPage = () => {
         <Content>
           <Title>{post.title}</Title>
           <InfoText>
-            <span>{new Date(post.created_at).toLocaleString()} 작성</span>
+            <span>
+              {new Date(post.created_at).toLocaleTimeString('ko-KR', { hour12: false })} 작성
+            </span>
             <span>{post.author}</span>
           </InfoText>
           <Divider />
@@ -151,7 +153,9 @@ const BoardPostDetailPage = () => {
                 <CommentItem key={c.id}>
                   <CommentHeader>
                     <span>{c.author}</span>
-                    <span>{new Date(c.created_at).toLocaleString()}</span>
+                    <span>
+                      {new Date(c.created_at).toLocaleTimeString('ko-KR', { hour12: false })}
+                    </span>
                   </CommentHeader>
                   <p>{c.content}</p>
                   {user?.nickname === c.author && (
