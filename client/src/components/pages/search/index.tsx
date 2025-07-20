@@ -27,7 +27,7 @@ const SearchPage: React.FC = () => {
   const [params] = useSearchParams();
 
   const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [matchedInst, setMatchedInst] = useState<Instructor[]>([]);
+  const [matchedInstructors, setmatchedInstructors] = useState<Instructor[]>([]);
   const [selectedCat, setSelectedCat] = useState('전체');
   const [totalPages, setTotalPages] = useState(1);
 
@@ -54,7 +54,7 @@ const SearchPage: React.FC = () => {
           .filter((lec, index, self) => index === self.findIndex((l) => l.id === lec.id));
 
         setLectures(combinedLectures);
-        setMatchedInst(data.matched_instructor || null);
+        setmatchedInstructors(data.matched_instructors || []);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
         console.error('검색 실패:', err);
@@ -116,16 +116,19 @@ const SearchPage: React.FC = () => {
   return (
     <Wrapper>
       <ContentWrapper>
-        {matchedInst.length > 0 && (
+        {matchedInstructors.length > 0 && (
           <>
             <h2 className="search-title">👩‍🎓크리에이터</h2>
             <div className="creator-grid">
-              {matchedInst.map((inst) => renderInstructorCard(inst))}
+              {matchedInstructors.map((inst) => renderInstructorCard(inst))}
             </div>
           </>
         )}
 
-        <h2 className="search-title" style={{ marginTop: matchedInst ? '64px' : '0px' }}>
+        <h2
+          className="search-title"
+          style={{ marginTop: matchedInstructors.length > 0 ? '64px' : '0px' }}
+        >
           📖강의
         </h2>
 
