@@ -72,7 +72,6 @@ const Index: React.FC = () => {
 
   return (
     <div className="main-wrapper">
-      {/* ────────── 프로필 ────────── */}
       <div className="instructor-profile-box">
         <div className="profile-left">
           <img src={simpleInfo.profile_image || UserProfileLogo} className="instructor-profile" />
@@ -89,10 +88,8 @@ const Index: React.FC = () => {
         </div>
       </div>
 
-      {/* ────────── 전체 강의 ────────── */}
       <div className="lecture-header">
         {' '}
-        {/* 🔄 제목 + 화살표 한 줄 */}
         <h3>전체 강의</h3>
         <div className="lecture-pagination">
           <button
@@ -131,7 +128,6 @@ const Index: React.FC = () => {
         ))}
       </div>
 
-      {/* ────────── 수강평 ────────── */}
       <div className="lecture-header">
         <h3>수강평</h3>
         <div className="lecture-pagination">
@@ -156,7 +152,7 @@ const Index: React.FC = () => {
             <div key={r.id} className="review-item">
               <div className="review-top">
                 <span className="review-nickname">{r.student_nickname}</span>
-                <span className="review-lecture-title">  {r.lecture_title}</span>
+                <span className="review-lecture-title">{r.lecture_title}</span>
                 <span className="review-date">{r.created_at.slice(0, 10)}</span>
               </div>
               <div className="review-content">{r.content}</div>

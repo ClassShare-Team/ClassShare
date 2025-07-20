@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import UserProfileLogo from '@/assets/UserProfileLogo.png';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
-// context, recoil 중 context 사용
 
 const UserMenu = () => {
   const [open, setOpen] = useState(false);

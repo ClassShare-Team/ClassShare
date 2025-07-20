@@ -80,7 +80,9 @@ const InstructorInfoPage = () => {
         await fetchInfo();
         setEditMode(false);
       } else {
-        alert('소개 수정 실패했습니다. 다시 수정해주세요.');
+        alert(
+          '소개 수정에 실패했습니다.\n소개글이 비어 있거나 문제가 발생했습니다.\n다시 시도해주세요.'
+        );
       }
     } catch (err) {
       console.error(err);
@@ -133,21 +135,21 @@ const InstructorInfoPage = () => {
             강의 <LectureCount>전체 {info.lectures.length}</LectureCount>
           </SectionTitle>
           <LectureSectionContent>
-           <LectureList>
-                {info.lectures.map((lecture) => (
-                  <LectureCard
-                    key={lecture.id}
-                    onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
-                  >
-                    <img src={lecture.thumbnail || ''} alt="thumbnail" />
-                    <p>{lecture.title}</p>
-                  </LectureCard>
-                ))}
-                  {editMode && (
-                   <LectureCard isAdd>
-                      <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
-                    </LectureCard>
-                )}
+            <LectureList>
+              {info.lectures.map((lecture) => (
+                <LectureCard
+                  key={lecture.id}
+                  onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
+                >
+                  <img src={lecture.thumbnail || ''} alt="thumbnail" />
+                  <p>{lecture.title}</p>
+                </LectureCard>
+              ))}
+              {editMode && (
+                <LectureCard isAdd>
+                  <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
+                </LectureCard>
+              )}
             </LectureList>
           </LectureSectionContent>
         </Section>
