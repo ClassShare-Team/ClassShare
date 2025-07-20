@@ -204,7 +204,7 @@ const Main = styled.main`
 const Content = styled.div`
   position: relative;
   max-width: 800px;
-  min-height: 1200px;
+  min-height: 900px;
   margin: 0 auto;
   background: ${({ theme }) => theme.colors.white};
   padding: 2rem;
