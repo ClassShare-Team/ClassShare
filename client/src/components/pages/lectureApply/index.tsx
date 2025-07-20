@@ -113,7 +113,12 @@ const LectureApplyPage = () => {
         console.error('강사 프로필 이미지 조회 실패', err);
       }
     };
+
+    fetchInstructorProfile();
+  }, [lecture, API_URL]);
+  useEffect(() => {
     const fetchPurchaseStatus = async () => {
+      if (!id || !user || !accessToken) return;
       try {
         const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -128,11 +133,8 @@ const LectureApplyPage = () => {
       }
     };
 
-    fetchInstructorProfile();
-    if (id && user && accessToken) {
-      fetchPurchaseStatus();
-    }
-  }, [lecture, accessToken, user, id, API_URL, location.key]);
+    fetchPurchaseStatus();
+  }, [id, user?.id, accessToken, API_URL, location.key]);
 
   const handleEnroll = async () => {
     if (!accessToken || !lecture) {
