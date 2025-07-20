@@ -19,7 +19,7 @@ const StudentSettingsPage = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const isOAuthUser = userInfo?.oauth_id !== null;
+  const isOAuthUser = !!userInfo?.oauth_id;
 
   const formatPhone = (raw: string) =>
     raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
@@ -49,7 +49,6 @@ const StudentSettingsPage = () => {
       });
 
       if (!res.ok) throw new Error('프로필 수정 실패');
-
       const userRes = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
