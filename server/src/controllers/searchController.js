@@ -23,7 +23,7 @@ exports.searchLectures = async (req, res) => {
   const pageNumber = parseInt(page);
 
   try {
-    const { lectures, total, matched_instructor } =
+    const { lectures, total, matched_instructors } =
       await searchService.searchLecturesWithPagination(q.trim(), pageNumber, size);
 
     const totalPages = Math.ceil(total / size);
@@ -33,7 +33,7 @@ exports.searchLectures = async (req, res) => {
       totalPages,
       total,
       lectures,
-      matched_instructor,
+      matched_instructors,
     });
   } catch (err) {
     console.error('검색 오류:', err);
