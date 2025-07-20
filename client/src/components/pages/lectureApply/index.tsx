@@ -106,7 +106,7 @@ const LectureApplyPage = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await res.json();
-        setEnrolled(data.ispurchased === true);
+        setEnrolled(data.isPurchased === true);
       } catch (err) {
         console.error('수강 여부 확인 실패:', err);
         setEnrolled(false);
