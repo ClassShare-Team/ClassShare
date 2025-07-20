@@ -124,7 +124,15 @@ const BoardPostDetailPage = () => {
           <Title>{post.title}</Title>
           <InfoText>
             <span>
-              {new Date(post.created_at).toLocaleTimeString('ko-KR', { hour12: false })} 작성
+              {new Date(post.created_at).toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              })}{' '}
+              작성
             </span>
             <span>{post.author}</span>
           </InfoText>
@@ -154,7 +162,14 @@ const BoardPostDetailPage = () => {
                   <CommentHeader>
                     <span>{c.author}</span>
                     <span>
-                      {new Date(c.created_at).toLocaleTimeString('ko-KR', { hour12: false })}
+                      {new Date(c.created_at).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      })}
                     </span>
                   </CommentHeader>
                   <p>{c.content}</p>
