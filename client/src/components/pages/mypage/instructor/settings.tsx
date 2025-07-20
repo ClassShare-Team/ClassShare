@@ -7,8 +7,6 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
-  //테스트
-  console.log('userInfo:', userInfo);
 
   const { setUser } = useUser();
 
@@ -21,6 +19,10 @@ const InstructorSettingsPage = () => {
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+
+  //테스트
+  console.log('userInfo:', userInfo);
+  console.log('oauth_id:', userInfo?.oauth_id);
 
   const isOAuthUser = !!userInfo?.oauth_id;
 
