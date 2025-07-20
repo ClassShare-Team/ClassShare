@@ -73,7 +73,9 @@ const InstructorInfoPage = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ introduction: introductionText }),
+        body: JSON.stringify({
+          introduction: introductionText.trim() === '' ? null : introductionText,
+        }),
       });
 
       if (res.ok) {
@@ -133,21 +135,21 @@ const InstructorInfoPage = () => {
             강의 <LectureCount>전체 {info.lectures.length}</LectureCount>
           </SectionTitle>
           <LectureSectionContent>
-           <LectureList>
-                {info.lectures.map((lecture) => (
-                  <LectureCard
-                    key={lecture.id}
-                    onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
-                  >
-                    <img src={lecture.thumbnail || ''} alt="thumbnail" />
-                    <p>{lecture.title}</p>
-                  </LectureCard>
-                ))}
-                  {editMode && (
-                   <LectureCard isAdd>
-                      <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
-                    </LectureCard>
-                )}
+            <LectureList>
+              {info.lectures.map((lecture) => (
+                <LectureCard
+                  key={lecture.id}
+                  onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
+                >
+                  <img src={lecture.thumbnail || ''} alt="thumbnail" />
+                  <p>{lecture.title}</p>
+                </LectureCard>
+              ))}
+              {editMode && (
+                <LectureCard isAdd>
+                  <button onClick={() => navigate('/lecturepage')}>강의 추가</button>
+                </LectureCard>
+              )}
             </LectureList>
           </LectureSectionContent>
         </Section>
