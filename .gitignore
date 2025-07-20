@@ -1,7 +1,7 @@
 # 공통
 node_modules/
-docker/.env
+docker/.env*
 # Client
 
 # Server
-server/.env
+server/.env*

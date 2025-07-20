@@ -1,15 +1,15 @@
-const fs = require('fs');
-const path = require('path');
+const AWS = require('aws-sdk');
+const s3 = new AWS.S3();
 const bcrypt = require('bcrypt');
 const userService = require('../services/userService');
 
 // 마이페이지 정보 조회
 exports.getMyPageInfo = async (req, res) => {
   try {
-    const result = await userService.getMyPageInfo(req.user.id); // authMiddleware 가 req.user 주입
-    res.status(200).json(result);
+    const result = await userService.getMyPageInfo(req.user.id);
+    return res.status(200).json(result);
   } catch (e) {
-    res.status(e.status || 500).json({ message: e.message || '서버 오류' });
+    return res.status(e.status || 500).json({ message: e.message || '서버 오류' });
   }
 };
 
@@ -19,10 +19,12 @@ exports.updateMyPageInfo = async (req, res) => {
     const updates = {};
     const { nickname, phone } = req.body;
 
+    // 닉네임
     if (typeof nickname === 'string' && nickname.trim() !== '') {
       updates.nickname = nickname.trim();
     }
 
+    // 전화번호
     if (typeof phone === 'string' && phone.trim() !== '') {
       const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
       if (!phoneRegex.test(phone.trim())) {
@@ -31,34 +33,35 @@ exports.updateMyPageInfo = async (req, res) => {
       updates.phone = phone.trim();
     }
 
-    // 프로필 이미지 업로드 처리
+    // 프로필 이미지 S3
     if (req.file) {
-      // 기존 이미지 조회
-      const user = await userService.getUserById(req.user.id);
-      const prevPath = user.profile_image && path.join(__dirname, '../../', user.profile_image);
+      // 이전 이미지 S3 객체 삭제
 
-      // 이전 파일 존재하면 삭제
-      if (prevPath && fs.existsSync(prevPath)) {
-        fs.unlink(prevPath, (err) => {
-          if (err) console.error('이전 프로필 삭제 실패:', err);
-          else console.log('이전 프로필 삭제됨:', prevPath);
-        });
+      const user = await userService.getUserById(req.user.id);
+      if (user.profile_image?.includes(process.env.AWS_S3_BUCKET)) {
+        const Key = user.profile_image.split(`/${process.env.AWS_S3_BUCKET}/`)[1];
+        if (Key) {
+          s3.deleteObject(
+            { Bucket: process.env.AWS_S3_BUCKET, Key },
+            (err) => err && console.error('이전 S3 객체 삭제 실패:', err)
+          );
+        }
       }
 
-      // 새 이미지 경로 저장
-      updates.profile_image = `/uploads/profile/${req.file.filename}`;
+      // 새 이미지 URL 저장 (multer-s3가 주입하는 location)
+      updates.profile_image = req.file.location;
     }
 
+    // 변경사항 없는 경우
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ message: '수정할 필드가 없습니다.' });
     }
 
     await userService.updateMyPageInfo(req.user.id, updates);
-
-    res.status(200).json({ message: '회원 정보가 수정되었습니다.' });
+    return res.status(200).json({ message: '회원 정보가 수정되었습니다.' });
   } catch (e) {
     console.error('[회원수정 오류]', e);
-    res.status(e.status || 500).json({ message: e.message || '서버 오류' });
+    return res.status(e.status || 500).json({ message: e.message || '서버 오류' });
   }
 };
 
@@ -277,5 +280,71 @@ exports.getMyLectures = async (req, res) => {
     return res.status(500).json({
       message: '서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
     });
+  }
+};
+
+// 강사 설명 수정
+exports.updateInstructorIntroduction = async (req, res) => {
+  const userId = req.user.id;
+  const { introduction } = req.body;
+
+  // null, 빈 값 모두 허용 → 그대로 저장
+  const updated = await userService.updateInstructorIntroduction(userId, introduction);
+
+  if (!updated) {
+    return res.status(404).json({ message: '강사 프로필 없음' });
+  }
+
+  res.json({ introduction: updated });
+};
+
+exports.deleteMyAccount = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const result = await userService.deleteUser(userId);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('[회원 탈퇴 실패]', error);
+    return res.status(500).json({
+      message: '회원 탈퇴 실패',
+      error: error.message || String(error),
+    });
+  }
+};
+
+// 전체 수강자 조회
+exports.getMyAllStudents = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const page = parseInt(req.query.page, 10) || 1;
+    const size = parseInt(req.query.size, 10) || 10;
+
+    const result = await userService.getMyAllStudents(userId, page, size);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error('[전체 수강생 조회 오류]', e.stack || e);
+    return res.status(500).json({ message: e.message || '서버 오류' });
+  }
+};
+
+// 특정 강의 수강자 조회
+exports.getMyStudentsByLecture = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const lectureId = parseInt(req.query.lectureId, 10);
+    const page = parseInt(req.query.page, 10) || 1;
+    const size = parseInt(req.query.size, 10) || 10;
+
+    if (!lectureId) return res.status(400).json({ message: 'lectureId는 필수입니다.' });
+
+    const result = await userService.getMyStudentsByLecture(userId, lectureId, page, size);
+    return res.status(200).json(result);
+  } catch (e) {
+    console.error(
+      `[특정 강의 수강생 조회 오류] lectureId=${req.query.lectureId}, error=`,
+      e.stack || e
+    );
+    return res.status(e.status || 500).json({ message: e.message || '서버 오류' });
   }
 };

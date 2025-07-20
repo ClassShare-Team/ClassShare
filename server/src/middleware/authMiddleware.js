@@ -1,46 +1,44 @@
 const jwt = require('jsonwebtoken');
+const db = require('../db');
 const redis = require('../db/redisClient');
 
-// 기본 토큰 검증
-exports.verifyToken = (req, res, next) => {
+exports.verifyToken = async (req, res, next) => {
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
-    console.warn('verifyToken: Authorization 헤더 누락 또는 형식 오류');
+  if (!auth?.startsWith('Bearer ')) {
     return res.status(401).json({ message: '토큰이 없습니다.' });
   }
-
   const token = auth.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
+    // 블랙리스트
+    if (await redis.get(`blacklist:${token}`)) {
+      return res.status(401).json({ message: '블랙리스트 토큰입니다.' });
+    }
+
+    // 토큰 검증
+    const { id, exp } = jwt.verify(token, process.env.JWT_SECRET);
+
+    // DB 조회
+    const { rows } = await db.query(
+      `SELECT id, email, name, nickname, role, profile_image, oauth_provider, oauth_id
+         FROM users
+        WHERE id = $1`,
+      [id]
+    );
+    if (!rows.length) {
+      return res.status(401).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    // 객체 주입
+    req.user = rows[0];
+    req.token = token; // 로그아웃 시 블랙리스트 등록용
+    req.user.exp = exp;
     next();
-  } catch (e) {
-    console.error('verifyToken: 유효하지 않은 토큰', e);
+  } catch (err) {
+    console.error('[verifyToken] error:', err);
     return res.status(401).json({ message: '유효하지 않은 토큰입니다.' });
   }
 };
 
-// 블랙리스트 포함 인증 미들웨어
-exports.authMiddleware = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
-    console.warn('authMiddleware: Authorization 헤더 누락');
-    return res.status(401).json({ message: '토큰이 없습니다.' });
-  }
-
-  try { // redis.get()을 try 안쪽으로 옮김
-    const blacklisted = await redis.get(`blacklist:${token}`);
-    if (blacklisted) {
-      console.warn('authMiddleware: 블랙리스트 토큰 차단');
-      return res.status(401).json({ message: '블랙리스트 토큰입니다.' });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (e) {
-    console.error('authMiddleware: 토큰 검증 또는 Redis 오류', e);
-    res.status(401).json({ message: '인증에 실패했습니다.' });
-  }
-};
+//alias
+exports.authMiddleware = exports.verifyToken;

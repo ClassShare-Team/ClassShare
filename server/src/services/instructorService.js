@@ -1,0 +1,158 @@
+const db = require('../db');
+
+// 특정 강사의 전체 수강생 수
+exports.getTotalStudentCountByInstructor = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT COUNT(lp.id) AS total_student_count
+    FROM lectures l
+    LEFT JOIN lecture_purchases lp ON l.id = lp.lecture_id
+    WHERE l.instructor_id = $1
+  `,
+    [instructorId]
+  );
+
+  return result.rows[0];
+};
+
+// 특정 강사의 전체 리뷰 수
+exports.getTotalReviewCountByInstructor = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT COUNT(r.id) AS total_review_count
+    FROM lectures l
+    LEFT JOIN reviews r ON l.id = r.lecture_id
+    WHERE l.instructor_id = $1
+  `,
+    [instructorId]
+  );
+
+  return result.rows[0];
+};
+
+// 특정 강사 리뷰 전체 보기
+exports.getAllReviewsWithComments = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT
+      r.*,
+      u.nickname AS student_nickname,
+      l.title AS lecture_title,
+      COUNT(rl.id) AS like_count,
+      rc.content AS instructor_comment,
+      rc.created_at AS instructor_commented_at,
+      iu.nickname AS instructor_nickname
+    FROM reviews r
+    JOIN lectures l ON r.lecture_id = l.id
+    JOIN users u ON r.user_id = u.id
+    LEFT JOIN review_likes rl ON r.id = rl.review_id
+    LEFT JOIN review_comments rc ON rc.review_id = r.id
+    LEFT JOIN users iu ON rc.user_id = iu.id
+    WHERE l.instructor_id = $1
+    GROUP BY r.id, u.nickname, l.title, rc.content, rc.created_at, iu.nickname
+    ORDER BY r.created_at DESC;
+  `,
+    [instructorId]
+  );
+
+  return result.rows;
+};
+
+// 소개글 조회
+exports.getInstructorIntroduction = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT introduction
+    FROM instructor_profiles
+    WHERE instructor_id = $1
+  `,
+    [instructorId]
+  );
+
+  if (result.rows.length === 0) return null;
+  return result.rows[0].introduction;
+};
+
+// 특정 강사의 전체 강의 목록 조회
+exports.getLecturesByInstructor = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT l.id, l.title, l.description, l.price, l.category, l.thumbnail, l.created_at
+    FROM lectures l
+    WHERE l.instructor_id = $1
+    ORDER BY l.created_at DESC
+    `,
+    [instructorId]
+  );
+
+  return result.rows;
+};
+
+// 특정 강사 전체 강의 목록 조회 (페이지네이션용)
+exports.getLecturesByInstructorPaginated = async (instructorId, limit, offset) => {
+  const result = await db.query(
+    `
+    SELECT id, title, description, price, category, thumbnail, created_at
+    FROM lectures
+    WHERE instructor_id = $1
+    ORDER BY created_at DESC
+    LIMIT $2 OFFSET $3
+    `,
+    [instructorId, limit, offset]
+  );
+  return result.rows;
+};
+
+// 특정 강사 전체 강의 목록 조회 (페이지네이션용 /토탈)
+exports.getTotalLectureCountByInstructor = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT COUNT(*) AS total
+    FROM lectures
+    WHERE instructor_id = $1
+    `,
+    [instructorId]
+  );
+  return parseInt(result.rows[0].total, 10);
+};
+
+// 특정 강사 전체 리뷰 목록 조회 (페이지네이션용)
+exports.getReviewsPaginated = async (instructorId, limit, offset) => {
+  const result = await db.query(
+    `SELECT r.*, u.nickname AS student_nickname, l.title AS lecture_title
+     FROM reviews r
+     JOIN lectures l ON r.lecture_id = l.id
+     JOIN users u ON r.user_id = u.id
+     WHERE l.instructor_id = $1
+     ORDER BY r.created_at DESC
+     LIMIT $2 OFFSET $3`,
+    [instructorId, limit, offset]
+  );
+  return result.rows;
+};
+
+// 특정 강사 전체 리뷰 목록 조회 (페이지네이션용/토탈)
+exports.getTotalReviewCount = async (instructorId) => {
+  const result = await db.query(
+    `SELECT COUNT(r.id) AS total FROM reviews r
+     JOIN lectures l ON r.lecture_id = l.id
+     WHERE l.instructor_id = $1`,
+    [instructorId]
+  );
+  return parseInt(result.rows[0].total, 10);
+};
+
+// 강사 프로필이랑 닉네임 불러오기
+exports.getInstructorSimpleInfo = async (instructorId) => {
+  const result = await db.query(
+    `
+    SELECT id, nickname, profile_image
+    FROM users
+    WHERE id = $1 AND role = 'instructor'
+    `,
+    [instructorId]
+  );
+
+  if (result.rows.length === 0) return null;
+  return result.rows[0];
+};

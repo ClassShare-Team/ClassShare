@@ -1,110 +1,83 @@
 const multer = require('multer');
+const multerS3 = require('multer-s3');
+const AWS = require('aws-sdk');
 const path = require('path');
-const fs = require('fs');
 
-function ensureDir(dir) {
-  fs.mkdirSync(dir, { recursive: true });
-  return dir;
-}
-
-/* ────────────────────────────────
-   1) 프로필 사진 업로드 (profileImage)
-   경로 : server/uploads/profiles/
-──────────────────────────────── */
-const profileStorage = multer.diskStorage({
-  destination: (req, file, cb) =>
-    cb(null, ensureDir(path.join(__dirname, '..', '..', 'uploads', 'profiles'))),
-  filename: (req, file, cb) => cb(null, `profile_${Date.now()}${path.extname(file.originalname)}`),
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+  region: process.env.AWS_REGION,
 });
 
-module.exports.uploadProfileImage = multer({
-  storage: profileStorage,
-  limits: { fileSize: 1024 * 1024 * 5 }, // 5 MB
-  fileFilter: (req, file, cb) =>
+//프로필 사진
+const uploadProfileImage = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.AWS_S3_BUCKET,
+    key: (_req, file, cb) => {
+      const filename = `profiles/profile_${Date.now()}${path.extname(file.originalname)}`;
+      cb(null, filename);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (_req, file, cb) =>
+    file.mimetype.startsWith('image/')
+      ? cb(null, true)
+      : cb(new Error('이미지 파일만 업로드할 수 있습니다.')),
+});
+
+// 강의 썸네일
+const uploadThumbnail = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.AWS_S3_BUCKET,
+    acl: 'public-read',
+    key: (_req, file, cb) => {
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const filename = `thumbnails/${today}/thumb_${Date.now()}${path.extname(file.originalname)}`;
+      cb(null, filename);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (_req, file, cb) =>
     file.mimetype.startsWith('image/')
       ? cb(null, true)
       : cb(new Error('image/* 형식만 허용됩니다.')),
 });
 
-/* ────────────────────────────────
-   2) 강의 썸네일 업로드 (thumbnail)
-   경로 : server/uploads/thumbnails/YYYY-MM-DD/
-──────────────────────────────── */
-const thumbnailStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const today = new Date().toISOString().slice(0, 10);
-    cb(null, ensureDir(path.join(__dirname, '..', '..', 'uploads', 'thumbnails', today)));
-  },
-  filename: (req, file, cb) => cb(null, `thumb_${Date.now()}${path.extname(file.originalname)}`),
-});
+// 썸네일 + 영상 업로드
+const uploadLectureMedia = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.AWS_S3_BUCKET,
+    key: (_req, file, cb) => {
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const isThumb = file.fieldname === 'thumbnail';
+      const prefix = isThumb ? `thumbnails/${today}/thumb_` : `videos/${today}/video_`;
+      const rand = isThumb ? '' : `-${Math.round(Math.random() * 1e9)}`;
 
-module.exports.uploadThumbnail = multer({
-  storage: thumbnailStorage,
-  limits: { fileSize: 1024 * 1024 * 5 }, // 5 MB
-  fileFilter: (req, file, cb) =>
-    file.mimetype.startsWith('image/')
-      ? cb(null, true)
-      : cb(new Error('image/* 형식만 허용됩니다.')),
-});
-
-/* ────────────────────────────────
-   3) 강의 영상 업로드 (videos[])
-   경로 : server/uploads/videos/YYYY-MM-DD/
-──────────────────────────────── */
-const videoStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const today = new Date().toISOString().slice(0, 10);
-    cb(null, ensureDir(path.join(__dirname, '..', '..', 'uploads', 'videos', today)));
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `${unique}${path.extname(file.originalname)}`);
-  },
-});
-
-module.exports.uploadVideos = multer({
-  storage: videoStorage,
-  limits: { fileSize: 1024 * 1024 * 500 }, // 500 MB
-  fileFilter: (req, file, cb) =>
-    file.mimetype.startsWith('video/')
-      ? cb(null, true)
-      : cb(new Error('video/* 형식만 허용됩니다.')),
-});
-
-/* ────────────────────────────────
-   4) 썸네일 + 영상 동시에 받기
-   경로 : server/uploads/...
-──────────────────────────────── */
-const lectureMediaStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const today = new Date().toISOString().slice(0, 10);
-    const base =
-      file.fieldname === 'thumbnail'
-        ? path.join(__dirname, '..', '..', 'uploads', 'thumbnails', today)
-        : path.join(__dirname, '..', '..', 'uploads', 'videos', today);
-    cb(null, ensureDir(base));
-  },
-  filename: (req, file, cb) => {
-    const prefix = file.fieldname === 'thumbnail' ? 'thumb_' : '';
-    const unique =
-      Date.now() + (file.fieldname === 'videos' ? '-' + Math.round(Math.random() * 1e9) : '');
-    cb(null, `${prefix}${unique}${path.extname(file.originalname)}`);
-  },
-});
-
-module.exports.uploadLectureMedia = multer({
-  storage: lectureMediaStorage,
+      cb(null, `${prefix}${Date.now()}${rand}${path.extname(file.originalname)}`);
+    },
+  }),
   limits: {
-    fileSize: 1024 * 1024 * 500, // 영상 최대 크기 기준
+    fileSize: 2 * 1024 * 1024 * 1024, // 2GB per file
   },
-  fileFilter: (req, file, cb) => {
-    if (file.fieldname === 'thumbnail' && !file.mimetype.startsWith('image/'))
+  fileFilter: (_req, file, cb) => {
+    if (file.fieldname === 'thumbnail' && !file.mimetype.startsWith('image/')) {
       return cb(new Error('썸네일은 image/* 형식만 허용됩니다.'));
-    if (file.fieldname === 'videos' && !file.mimetype.startsWith('video/'))
+    }
+    if (file.fieldname === 'videos' && !file.mimetype.startsWith('video/')) {
       return cb(new Error('영상은 video/* 형식만 허용됩니다.'));
+    }
     cb(null, true);
   },
 }).fields([
   { name: 'thumbnail', maxCount: 1 },
   { name: 'videos', maxCount: 20 },
 ]);
+
+module.exports = {
+  uploadProfileImage,
+  uploadThumbnail,
+  uploadLectureMedia,
+};

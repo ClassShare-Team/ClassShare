@@ -7,48 +7,174 @@ const lectureService = require('../services/lectureService');
  */
 exports.createLecture = async (req, res, next) => {
   try {
-    /* 0) 필수 필드 */
-    const { title, description, price = 0 } = req.body;
+    // 원본 로그
+    console.log('[POST /lectures] req.body  ▶', req.body);
+    console.log('[POST /lectures] req.files ▶', Object.keys(req.files || {}));
 
-    // category 문자열 → 쉼표 구분, trim, 중복 제거
-    const categoryStr = (req.body.category || '')
+    // 필드 검증
+    const titleRaw = (req.body.title ?? '').trim();
+    const description = (req.body.description ?? '').trim();
+    const priceRaw = req.body.price ?? 0;
+
+    const categoryStr = (req.body.category ?? '')
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean)
       .join(',');
 
-    if (!title || !categoryStr) {
-      return res.status(400).json({ message: 'title과 category는 필수입니다.' });
+    if (!titleRaw || !categoryStr) {
+      console.warn('[POST /lectures] 필수값 누락', { title: titleRaw, category: categoryStr });
+      return res.status(400).json({ message: 'title, category는 필수입니다.' });
     }
 
-    /* 1) 파일 수집 */
+    const priceNum = Number(priceRaw);
+    if (Number.isNaN(priceNum) || priceNum < 0) {
+      return res.status(400).json({ message: 'price는 0 이상의 숫자여야 합니다.' });
+    }
+
+    // 파일 검증
     const thumbnailFile = req.files?.thumbnail?.[0] ?? null;
     const videoFiles = req.files?.videos || [];
 
-    if (!thumbnailFile) return res.status(400).json({ message: '썸네일 파일이 필요합니다.' });
-    if (videoFiles.length === 0) return res.status(400).json({ message: '강의 영상이 없습니다.' });
+    if (!thumbnailFile?.location) {
+      console.warn('[POST /lectures] 썸네일 누락 또는 업로드 실패');
+      return res.status(400).json({ message: '썸네일 파일이 필요합니다.' });
+    }
+    if (videoFiles.length === 0 || videoFiles.some((v) => !v.location)) {
+      console.warn('[POST /lectures] 영상 파일 문제');
+      return res.status(400).json({ message: '영상 파일을 1개 이상 업로드하세요.' });
+    }
 
-    /* 2) 제목 배열 normalize (1개일 때도 대응) */
+    // 영상 목록 배열 정제
     let videoTitles = req.body.titles ?? [];
     if (!Array.isArray(videoTitles)) videoTitles = [videoTitles];
-    if (videoFiles.length !== videoTitles.length)
-      return res.status(400).json({ message: '영상 수와 titles 수가 일치해야 합니다.' });
+    videoTitles = videoTitles.map((t) => (t ?? '').trim() || 'Untitled');
 
-    /* 3) 서비스 호출 */
+    if (videoFiles.length !== videoTitles.length) {
+      console.warn('[POST /lectures] 영상 수 / 제목 수 불일치', {
+        videoCount: videoFiles.length,
+        titleCount: videoTitles.length,
+      });
+      return res.status(400).json({ message: '영상 수와 titles 수가 일치해야 합니다.' });
+    }
+
+    // 서비스 호출
     const result = await lectureService.createLecture({
       instructorId: req.user.id,
-      title,
+      title: titleRaw,
       description,
-      price: Number(price) || 0,
-      category: categoryStr, // ← categoryStr로 수정
+      price: priceNum,
+      category: categoryStr,
       thumbnailFile,
       videoFiles,
       videoTitles,
     });
 
-    res.status(201).json(result);
+    console.log('[POST /lectures] 강의 생성 완료:', result.lecturePublicId);
+    return res.status(201).json(result);
+  } catch (err) {
+    console.error('[POST /lectures] 예상치 못한 오류:', err);
+    if (err?.stack) console.error(err.stack);
+    return next(err); // 전역 에러 핸들러로 전달
+  }
+};
+
+// 전체 강의 조회
+exports.getAllLectures = async (req, res) => {
+  try {
+    const lectures = await lectureService.getAllLectures();
+    return res.status(200).json(lectures);
+  } catch (err) {
+    console.error('[GET /lectures] error:', err);
+    return res.status(500).json({ message: '강의 목록을 불러오는 중 오류가 발생했습니다.' });
+  }
+};
+
+// 강의 단건 조회
+exports.getLectureById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const lecture = await lectureService.getLectureById(id);
+    if (!lecture) {
+      return res.status(404).json({ message: '강의를 찾을 수 없습니다.' });
+    }
+    res.json(lecture);
   } catch (e) {
-    console.error('[POST /lectures] error:', e);
+    console.error('[GET /lectures/:id] error:', e);
     next(e);
+  }
+};
+
+// 특정 강의 커리큘럼 조회
+exports.getCurriculumByLectureId = async (req, res) => {
+  const userId = req.user.id;
+  const lectureId = parseInt(req.params.id, 10);
+  if (isNaN(lectureId)) {
+    return res.status(400).json({ message: '유효한 강의 ID가 아닙니다.' });
+  }
+
+  try {
+    const curriculum = await lectureService.getCurriculumByLectureId(userId, lectureId);
+    return res.status(200).json(curriculum);
+  } catch (err) {
+    if (err.status === 403) {
+      return res.status(403).json({ message: '수강권 없음' });
+    }
+    console.error(`[GET /lectures/${lectureId}/curriculum] error:`, err);
+    return res.status(500).json({ message: '커리큘럼 목록을 불러오는 중 오류가 발생했습니다.' });
+  }
+};
+
+// 무료 강의 구매
+exports.purchaseLecture = async (req, res) => {
+  const lectureId = parseInt(req.params.id, 10);
+  const userId = req.user?.id;
+
+  if (isNaN(lectureId) || !userId) {
+    return res.status(400).json({ message: '잘못된 요청입니다.' });
+  }
+
+  try {
+    const result = await lectureService.purchaseLecture(userId, lectureId);
+    if (result.alreadyPurchased) {
+      return res.status(200).json({ message: '이미 구매한 강의입니다.' });
+    }
+    return res.status(201).json({ message: '결제가 완료되었습니다. 수강이 가능합니다.' });
+  } catch (err) {
+    console.error('[POST /lectures/:id/purchase] error:', err);
+    return res.status(500).json({ message: '결제 처리 중 오류가 발생했습니다.' });
+  }
+};
+
+exports.checkPurchased = async (req, res) => {
+  const { lectureId } = req.params;
+  const userId = req.user?.id;
+
+  if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+
+  try {
+    const isPurchased = await lectureService.checkLecturePurchased(lectureId, userId);
+    return res.json({ lectureId, userId, isPurchased });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: '서버 오류' });
+  }
+};
+
+// 강의 삭제
+exports.deleteLecture = async (req, res) => {
+  const lectureId = parseInt(req.params.id, 10);
+  const instructorId = req.user.id;
+
+  if (isNaN(lectureId)) {
+    return res.status(400).json({ message: '유효하지 않은 강의 ID입니다.' });
+  }
+
+  try {
+    await lectureService.deleteLecture(lectureId, instructorId);
+    return res.status(200).json({ message: '강의가 삭제되었습니다.' });
+  } catch (err) {
+    console.error('[DELETE /lectures/:id] error:', err);
+    return res.status(err.status || 500).json({ message: err.message || '서버 오류' });
   }
 };

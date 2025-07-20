@@ -1,30 +1,35 @@
 const db = require('../db');
+const ASSET_BASE_URL = process.env.ASSET_BASE_URL || '';
 
-// 마이페이지 정보 조회
 exports.getMyPageInfo = async (userId) => {
   // 기본 프로필
   const {
     rows: [user],
   } = await db.query(
     `SELECT id, email, name, nickname, role, phone, profile_image
-     FROM users
-     WHERE id = $1`,
+       FROM users
+      WHERE id = $1`,
     [userId]
   );
 
   if (!user) throw { status: 404, message: '사용자를 찾을 수 없습니다.' };
 
+  // S3 URL 보정 (이미 http 로 저장돼 있다면 건너뜀)
+  if (user.profile_image && !user.profile_image.startsWith('http')) {
+    user.profile_image = `${ASSET_BASE_URL}/${user.profile_image.replace(/^\/+/, '')}`;
+  }
+
   // 현재(만료 전) 구독 강사 목록
   const { rows: subscriptions } = await db.query(
     `SELECT
-        s.instructor_id        AS "instructorId",
-        u.nickname              ,
-        TO_CHAR(s.started_at, 'YYYY-MM-DD') AS "subscribed_at"
-     FROM subscriptions s
-     JOIN users u ON u.id = s.instructor_id
-     WHERE s.user_id = $1
-       AND s.expired_at   > NOW()          -- 만료되지 않은 구독만
-     ORDER BY s.started_at DESC`,
+        s.instructor_id                      AS "instructorId",
+        u.nickname,
+        TO_CHAR(s.started_at, 'YYYY-MM-DD')  AS "subscribed_at"
+       FROM subscriptions s
+       JOIN users u ON u.id = s.instructor_id
+      WHERE s.user_id = $1
+        AND s.expired_at > NOW()
+      ORDER BY s.started_at DESC`,
     [userId]
   );
 
@@ -45,12 +50,10 @@ exports.updateMyPageInfo = async (userId, fieldsToUpdate) => {
       fieldsToUpdate.nickname,
       userId,
     ]);
-    if (dup) {
-      throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
-    }
+    if (dup) throw { status: 409, message: '이미 사용 중인 닉네임입니다.' };
   }
 
-  // 업데이트할 필드 필터링
+  // 업데이트할 필드
   allowedFields.forEach((field) => {
     if (fieldsToUpdate[field] !== undefined) {
       values.push(fieldsToUpdate[field]);
@@ -62,12 +65,12 @@ exports.updateMyPageInfo = async (userId, fieldsToUpdate) => {
     throw { status: 400, message: '수정할 필드가 없습니다.' };
   }
 
-  // UPDATE 실행
-  values.push(userId); // 마지막은 userId
+  // UPDATE
+  values.push(userId);
   const query = `
     UPDATE users
-    SET ${updates.join(', ')}
-    WHERE id = $${values.length}
+       SET ${updates.join(', ')}
+     WHERE id = $${values.length}
   `;
 
   await db.query(query, values);
@@ -75,8 +78,20 @@ exports.updateMyPageInfo = async (userId, fieldsToUpdate) => {
 
 // 변경 전 기존 프로필 조회
 exports.getUserById = async (userId) => {
-  const { rows } = await db.query('SELECT id, profile_image FROM users WHERE id = $1', [userId]);
-  return rows[0];
+  const {
+    rows: [user],
+  } = await db.query(
+    `SELECT id, profile_image
+       FROM users
+      WHERE id = $1`,
+    [userId]
+  );
+
+  // URL 보정
+  if (user?.profile_image && !user.profile_image.startsWith('http')) {
+    user.profile_image = `${ASSET_BASE_URL}/${user.profile_image.replace(/^\/+/, '')}`;
+  }
+  return user;
 };
 
 // 비밀번호까지 포함된 사용자 조회
@@ -245,4 +260,135 @@ exports.getMyLectures = async (userId, page, size) => {
   );
 
   return { page, size, total, lectures };
+};
+
+// 강사 설명 수정
+exports.updateInstructorIntroduction = async (userId, introduction) => {
+  const result = await db.query(
+    `
+    UPDATE instructor_profiles
+    SET introduction = $1
+    WHERE instructor_id = $2
+    RETURNING introduction
+  `,
+    [introduction, userId]
+  );
+
+  if (result.rows.length === 0) return null;
+  return result.rows[0].introduction;
+};
+
+// 회원 탈퇴
+exports.deleteUser = async (userId) => {
+  const client = await db.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // CASCADE가 처리해주므로 users 하나만 삭제
+    await client.query(`DELETE FROM users WHERE id = $1`, [userId]);
+
+    await client.query('COMMIT');
+    return { success: true, message: '회원 탈퇴 완료' };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('회원 탈퇴 실패:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+// 전체 수강자 수 및 목록 조회
+exports.getMyAllStudents = async (userId, page = 1, size = 10) => {
+  const offset = (page - 1) * size;
+
+  // 전체 수강생 수 조회
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM lecture_purchases lp
+    JOIN lectures l ON lp.lecture_id = l.id
+    WHERE l.instructor_id = $1
+  `;
+  const { rows: countRows } = await db.query(countQuery, [userId]);
+  const totalCount = parseInt(countRows[0].total, 10);
+
+  // 수강생 리스트 조회
+  const studentsQuery = `
+    SELECT
+      u.id AS "userId",
+      u.nickname,
+      u.profile_image AS "profileImage",
+      l.id AS "lectureId",
+      l.title AS "lectureTitle",
+      lp.purchased_at AS "purchasedAt"
+    FROM lecture_purchases lp
+    JOIN lectures l ON lp.lecture_id = l.id
+    JOIN users u ON lp.user_id = u.id
+    WHERE l.instructor_id = $1
+    ORDER BY lp.purchased_at DESC
+    LIMIT $2 OFFSET $3
+  `;
+  const { rows: students } = await db.query(studentsQuery, [userId, size, offset]);
+
+  return {
+    page,
+    size,
+    totalCount,
+    students,
+  };
+};
+
+// 특정 강의 수강생 수 및 목록 조회
+exports.getMyStudentsByLecture = async (userId, lectureId, page = 1, size = 10) => {
+  const offset = (page - 1) * size;
+
+  // 강의가 내 강의인지 검증 + 강의 제목 가져오기
+  const lectureResult = await db.query(
+    `SELECT title FROM lectures WHERE id = $1 AND instructor_id = $2`,
+    [lectureId, userId]
+  );
+  if (lectureResult.rowCount === 0)
+    throw { status: 403, message: '해당 강의 접근 권한이 없습니다.' };
+
+  const lectureTitle = lectureResult.rows[0].title;
+
+  // 전체 수강생 수 조회
+  const countResult = await db.query(
+    `SELECT COUNT(*) AS total FROM lecture_purchases WHERE lecture_id = $1`,
+    [lectureId]
+  );
+  const totalCount = parseInt(countResult.rows[0].total, 10);
+
+  // 수강생 목록 조회
+  const { rows: studentsRaw } = await db.query(
+    `
+    SELECT
+      u.id AS "userId",
+      u.nickname,
+      u.profile_image AS "profileImage",
+      lp.purchased_at AS "purchasedAt"
+    FROM lecture_purchases lp
+    JOIN users u ON lp.user_id = u.id
+    WHERE lp.lecture_id = $1
+    ORDER BY lp.purchased_at DESC
+    LIMIT $2 OFFSET $3
+    `,
+    [lectureId, size, offset]
+  );
+
+  // 각 학생 row에 lectureTitle 포함
+  const students = studentsRaw.map((student) => ({
+    ...student,
+    lectureTitle,
+  }));
+
+  return {
+    page,
+    size,
+    totalCount,
+    lectureId,
+    lectureTitle,
+    students,
+  };
 };
