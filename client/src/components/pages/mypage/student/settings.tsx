@@ -241,23 +241,23 @@ const PasswordInputWrapper = styled.div`
 
 const PasswordInput = styled.input`
   width: 100%;
-  height: 44px;
-  padding: 0 40px 0 12px;
+  padding: 16px;
   padding-right: 40px;
-  margin-top: 8px;
+  font-size: 16px;
   border: 1px solid ${({ theme }) => theme.colors.gray300};
-  border-radius: 6px;
+  border-radius: 10px;
+  margin-top: 8px;
 `;
 
 const ToggleButton = styled.button`
   display: flex;
+  position: absolute;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  top: 0;
-  right: 12px;
   height: 100%;
-  width: 36px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
