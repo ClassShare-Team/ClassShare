@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 import { toast } from 'react-toastify';
 import { useUser } from '@/contexts/UserContext';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
@@ -15,6 +16,8 @@ const InstructorSettingsPage = () => {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(userInfo?.profile_image || '');
   const [loading, setLoading] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const formatPhone = (raw: string) =>
     raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
@@ -121,20 +124,30 @@ const InstructorSettingsPage = () => {
         </SaveButton>
 
         <Label>현재 비밀번호</Label>
-        <Input
-          type="password"
-          value={currentPassword}
-          placeholder="현재 비밀번호"
-          onChange={(e) => setCurrentPassword(e.target.value)}
-        />
+        <PasswordInputWrapper>
+          <PasswordInput
+            type={showCurrentPassword ? 'text' : 'password'}
+            value={currentPassword}
+            placeholder="현재 비밀번호"
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <ToggleButton type="button" onClick={() => setShowCurrentPassword((prev) => !prev)}>
+            {showCurrentPassword ? <FiEyeOff /> : <FiEye />}
+          </ToggleButton>
+        </PasswordInputWrapper>
 
         <Label>새 비밀번호</Label>
-        <Input
-          type="password"
-          value={newPassword}
-          placeholder="새 비밀번호"
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
+        <PasswordInputWrapper>
+          <PasswordInput
+            type={showNewPassword ? 'text' : 'password'}
+            value={newPassword}
+            placeholder="새 비밀번호"
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <ToggleButton type="button" onClick={() => setShowNewPassword((prev) => !prev)}>
+            {showNewPassword ? <FiEyeOff /> : <FiEye />}
+          </ToggleButton>
+        </PasswordInputWrapper>
 
         <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
       </Card>
@@ -218,4 +231,33 @@ const UploadButton = styled.button`
   cursor: pointer;
   font-size: 14px;
   text-align: center;
+`;
+
+const PasswordInputWrapper = styled.div`
+  position: relative;
+`;
+
+const PasswordInput = styled.input`
+  width: 100%;
+  padding: 10px;
+  padding-right: 40px;
+  margin-top: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.gray300};
+  border-radius: 6px;
+`;
+
+const ToggleButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: ${({ theme }) => theme.colors.gray400};
 `;
