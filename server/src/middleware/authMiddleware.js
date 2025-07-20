@@ -20,7 +20,7 @@ exports.verifyToken = async (req, res, next) => {
 
     // DB 조회
     const { rows } = await db.query(
-      `SELECT id, email, name, nickname, role, profile_image
+      `SELECT id, email, name, nickname, role, profile_image, oauth_provider, oauth_id
          FROM users
         WHERE id = $1`,
       [id]
