@@ -7,7 +7,6 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
-
   const { setUser } = useUser();
 
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
@@ -19,10 +18,6 @@ const InstructorSettingsPage = () => {
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-
-  //테스트
-  console.log('userInfo:', userInfo);
-  console.log('oauth_id:', userInfo?.oauth_id);
 
   const isOAuthUser = !!userInfo?.oauth_id;
 
@@ -133,51 +128,45 @@ const InstructorSettingsPage = () => {
           {loading ? '저장 중...' : '프로필 저장'}
         </SaveButton>
 
-        <Label>현재 비밀번호</Label>
-        <PasswordInputWrapper>
-          <PasswordInput
-            type={showCurrentPassword ? 'text' : 'password'}
-            value={currentPassword}
-            placeholder="현재 비밀번호"
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            disabled={isOAuthUser}
-          />
-          <ToggleButton
-            type="button"
-            onClick={() => setShowCurrentPassword((prev) => !prev)}
-            disabled={isOAuthUser}
-          >
-            {showCurrentPassword ? <FiEyeOff /> : <FiEye />}
-          </ToggleButton>
-        </PasswordInputWrapper>
+        {!isOAuthUser && (
+          <>
+            <Label>현재 비밀번호</Label>
+            <PasswordInputWrapper>
+              <PasswordInput
+                type={showCurrentPassword ? 'text' : 'password'}
+                value={currentPassword}
+                placeholder="현재 비밀번호"
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+              <ToggleButton type="button" onClick={() => setShowCurrentPassword((prev) => !prev)}>
+                {showCurrentPassword ? <FiEyeOff /> : <FiEye />}
+              </ToggleButton>
+            </PasswordInputWrapper>
 
-        <Label>새 비밀번호</Label>
-        <PasswordInputWrapper>
-          <PasswordInput
-            type={showNewPassword ? 'text' : 'password'}
-            value={newPassword}
-            placeholder="새 비밀번호"
-            onChange={(e) => setNewPassword(e.target.value)}
-            disabled={isOAuthUser}
-          />
-          <ToggleButton
-            type="button"
-            onClick={() => setShowNewPassword((prev) => !prev)}
-            disabled={isOAuthUser}
-          >
-            {showNewPassword ? <FiEyeOff /> : <FiEye />}
-          </ToggleButton>
-        </PasswordInputWrapper>
+            <Label>새 비밀번호</Label>
+            <PasswordInputWrapper>
+              <PasswordInput
+                type={showNewPassword ? 'text' : 'password'}
+                value={newPassword}
+                placeholder="새 비밀번호"
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <ToggleButton type="button" onClick={() => setShowNewPassword((prev) => !prev)}>
+                {showNewPassword ? <FiEyeOff /> : <FiEye />}
+              </ToggleButton>
+            </PasswordInputWrapper>
 
-        <SaveButton onClick={handlePasswordChange} disabled={isOAuthUser}>
-          비밀번호 변경
-        </SaveButton>
+            <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
+          </>
+        )}
       </Card>
     </Container>
   );
 };
 
 export default InstructorSettingsPage;
+
+// styled-components
 
 const Container = styled.div`
   padding: 40px;
@@ -262,7 +251,6 @@ const PasswordInputWrapper = styled.div`
 const PasswordInput = styled.input`
   width: 100%;
   padding: 10px 40px 10px 10px;
-  padding-right: 40px;
   font-size: 16px;
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 10px;
