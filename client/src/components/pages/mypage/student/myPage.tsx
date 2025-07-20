@@ -8,7 +8,7 @@ import { useUser } from '@/contexts/UserContext';
 const StudentMyPage = () => {
   const navigate = useNavigate();
   const { userInfo, loading, error } = useMyPageInfo();
-  // 회원 탈퇴 후 유저 상태 초기화 (logout으로 처리)
+  // 회원 탈퇴 후 헤더 유저 상태 초기화 (logout 처리)
   const { logout } = useUser();
 
   if (loading) return <div>로딩 중...</div>;
