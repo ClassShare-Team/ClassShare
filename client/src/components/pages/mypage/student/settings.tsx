@@ -11,17 +11,16 @@ const StudentSettingsPage = () => {
 
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [phone, setPhone] = useState(userInfo?.phone || '');
-  const [password, setPassword] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(userInfo?.profile_image || '');
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const formatPhone = (raw: string) => {
-    return raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
-  };
+  const formatPhone = (raw: string) =>
+    raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
 
   const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,7 +66,7 @@ const StudentSettingsPage = () => {
   };
 
   const handlePasswordChange = async () => {
-    if (!currentPassword.trim() || !password.trim()) {
+    if (!currentPassword.trim() || !newPassword.trim()) {
       return toast.warning('현재 비밀번호와 새 비밀번호를 모두 입력해주세요.');
     }
     try {
@@ -79,7 +78,7 @@ const StudentSettingsPage = () => {
         },
         body: JSON.stringify({
           current_password: currentPassword,
-          new_password: password,
+          new_password: newPassword,
         }),
       });
 
@@ -88,7 +87,7 @@ const StudentSettingsPage = () => {
 
       toast.success('비밀번호가 변경되었습니다.');
       setCurrentPassword('');
-      setPassword('');
+      setNewPassword('');
     } catch (err) {
       if (err instanceof Error) toast.error(err.message);
       else toast.error('알 수 없는 오류가 발생했습니다.');
@@ -160,7 +159,6 @@ const StudentSettingsPage = () => {
 };
 
 export default StudentSettingsPage;
-
 const Container = styled.div`
   padding: 40px;
   max-width: 1000px;
