@@ -7,6 +7,7 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
+
   const { setUser } = useUser();
 
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
@@ -19,6 +20,7 @@ const InstructorSettingsPage = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
+  // userInfo.oauth_id의 존재 여부로 OAuth 사용자인지 판별
   const isOAuthUser = !!userInfo?.oauth_id;
 
   const formatPhone = (raw: string) =>
@@ -128,45 +130,51 @@ const InstructorSettingsPage = () => {
           {loading ? '저장 중...' : '프로필 저장'}
         </SaveButton>
 
-        {!isOAuthUser && (
-          <>
-            <Label>현재 비밀번호</Label>
-            <PasswordInputWrapper>
-              <PasswordInput
-                type={showCurrentPassword ? 'text' : 'password'}
-                value={currentPassword}
-                placeholder="현재 비밀번호"
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-              <ToggleButton type="button" onClick={() => setShowCurrentPassword((prev) => !prev)}>
-                {showCurrentPassword ? <FiEyeOff /> : <FiEye />}
-              </ToggleButton>
-            </PasswordInputWrapper>
+        <Label>현재 비밀번호</Label>
+        <PasswordInputWrapper>
+          <PasswordInput
+            type={showCurrentPassword ? 'text' : 'password'}
+            value={currentPassword}
+            placeholder="현재 비밀번호"
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            disabled={isOAuthUser}
+          />
+          <ToggleButton
+            type="button"
+            onClick={() => setShowCurrentPassword((prev) => !prev)}
+            disabled={isOAuthUser}
+          >
+            {showCurrentPassword ? <FiEyeOff /> : <FiEye />}
+          </ToggleButton>
+        </PasswordInputWrapper>
 
-            <Label>새 비밀번호</Label>
-            <PasswordInputWrapper>
-              <PasswordInput
-                type={showNewPassword ? 'text' : 'password'}
-                value={newPassword}
-                placeholder="새 비밀번호"
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              <ToggleButton type="button" onClick={() => setShowNewPassword((prev) => !prev)}>
-                {showNewPassword ? <FiEyeOff /> : <FiEye />}
-              </ToggleButton>
-            </PasswordInputWrapper>
+        <Label>새 비밀번호</Label>
+        <PasswordInputWrapper>
+          <PasswordInput
+            type={showNewPassword ? 'text' : 'password'}
+            value={newPassword}
+            placeholder="새 비밀번호"
+            onChange={(e) => setNewPassword(e.target.value)}
+            disabled={isOAuthUser}
+          />
+          <ToggleButton
+            type="button"
+            onClick={() => setShowNewPassword((prev) => !prev)}
+            disabled={isOAuthUser}
+          >
+            {showNewPassword ? <FiEyeOff /> : <FiEye />}
+          </ToggleButton>
+        </PasswordInputWrapper>
 
-            <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
-          </>
-        )}
+        <SaveButton onClick={handlePasswordChange} disabled={isOAuthUser}>
+          비밀번호 변경
+        </SaveButton>
       </Card>
     </Container>
   );
 };
 
 export default InstructorSettingsPage;
-
-// styled-components
 
 const Container = styled.div`
   padding: 40px;
@@ -175,7 +183,6 @@ const Container = styled.div`
   background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   min-height: calc(100vh - 80px);
 `;
-
 const Card = styled.div`
   background-color: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
@@ -187,13 +194,11 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
 const Label = styled.label`
   display: block;
   margin-top: 20px;
   font-weight: bold;
 `;
-
 const Input = styled.input`
   width: 100%;
   padding: 10px;
@@ -201,7 +206,6 @@ const Input = styled.input`
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 6px;
 `;
-
 const SaveButton = styled.button`
   margin-top: 20px;
   padding: 10px 16px;
@@ -212,7 +216,6 @@ const SaveButton = styled.button`
   border-radius: 6px;
   cursor: pointer;
 `;
-
 const PreviewImage = styled.img`
   width: 120px;
   height: 120px;
@@ -221,17 +224,14 @@ const PreviewImage = styled.img`
   margin-top: 8px;
   margin-bottom: 12px;
 `;
-
 const FileUploadWrapper = styled.div`
   display: flex;
   justify-content: flex-start;
   margin-top: 8px;
 `;
-
 const HiddenFileInput = styled.input`
   display: none;
 `;
-
 const UploadButton = styled.button`
   width: 100%;
   padding: 10px 16px;
@@ -243,14 +243,13 @@ const UploadButton = styled.button`
   font-size: 14px;
   text-align: center;
 `;
-
 const PasswordInputWrapper = styled.div`
   position: relative;
 `;
-
 const PasswordInput = styled.input`
   width: 100%;
   padding: 10px 40px 10px 10px;
+  padding-right: 40px;
   font-size: 16px;
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 10px;
@@ -262,7 +261,6 @@ const PasswordInput = styled.input`
     cursor: not-allowed;
   }
 `;
-
 const ToggleButton = styled.button`
   display: flex;
   position: absolute;
