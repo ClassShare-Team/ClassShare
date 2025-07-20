@@ -257,7 +257,7 @@ const ToggleButton = styled.button`
   height: calc(100% - 16px);
   right: 12px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-45%);
   background: none;
   border: none;
   cursor: pointer;
