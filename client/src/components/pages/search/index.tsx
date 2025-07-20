@@ -29,7 +29,7 @@ const SearchPage: React.FC = () => {
   const [params] = useSearchParams();
 
   const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [matchedInst, setMatchedInst] = useState<Instructor | null>(null);
+  const [matchedInst, setMatchedInst] = useState<Instructor[]>([]);
   const [selectedCat, setSelectedCat] = useState('전체');
   const [totalPages, setTotalPages] = useState(1);
 
@@ -46,7 +46,9 @@ const SearchPage: React.FC = () => {
         const { data } = await axios.get(url);
 
         const apiLectures = data.lectures || [];
-        const instructorLectures = data.matched_instructor?.lectures || [];
+        const instructorLectures = ((data.matched_instructors || []) as Instructor[]).flatMap(
+          (inst) => inst.lectures
+        );
 
         // ✅ 중복 제거
         const combinedLectures = [...apiLectures, ...instructorLectures]
@@ -120,10 +122,12 @@ const SearchPage: React.FC = () => {
   return (
     <Wrapper>
       <ContentWrapper>
-        {matchedInst && (
+        {matchedInst.length > 0 && (
           <>
             <h2 className="search-title">👩‍🎓크리에이터</h2>
-            <div className="creator-grid">{renderInstructorCard(matchedInst)}</div>
+            <div className="creator-grid">
+              {matchedInst.map((inst) => renderInstructorCard(inst))}
+            </div>
           </>
         )}
 
