@@ -24,7 +24,6 @@ const InstructorSettingsPage = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  // userInfo.oauth_id의 존재 여부로 OAuth 사용자인지 판별
   const isOAuthUser = !!userInfo?.oauth_id;
 
   const formatPhone = (raw: string) =>
