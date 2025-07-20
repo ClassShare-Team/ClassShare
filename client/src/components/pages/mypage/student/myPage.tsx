@@ -40,6 +40,7 @@ const StudentMyPage = () => {
           <h2>{userInfo.name || '이름 없음'}</h2>
           <InfoText>닉네임: {userInfo.nickname || '닉네임 없음'}</InfoText>
           <InfoText>이메일: {userInfo.email}</InfoText>
+          <InfoText>전화번호: {userInfo.phone}</InfoText>
           <InfoText>역할: {userInfo.role === 'instructor' ? '강사' : '학생'}</InfoText>
         </ProfileSection>
 
