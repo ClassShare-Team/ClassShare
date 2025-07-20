@@ -173,6 +173,7 @@ const StudentSettingsPage = () => {
 };
 
 export default StudentSettingsPage;
+
 const Container = styled.div`
   padding: 40px;
   max-width: 1000px;
