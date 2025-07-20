@@ -254,10 +254,13 @@ const ToggleButton = styled.button`
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  height: 100%;
+  width: 24px;
+  height: 24px;
   background: none;
   border: none;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
   color: ${({ theme }) => theme.colors.gray400};
 `;
