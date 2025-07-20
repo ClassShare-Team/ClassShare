@@ -36,5 +36,6 @@ router.get('/:id', lectureController.getLectureById); // 강의 단건 조회
 router.get('/:id/curriculum', authMiddleware, lectureController.getCurriculumByLectureId); // 단건 강의 커리큘럼 조회 (목록 조회)
 router.post('/:id/purchase', authMiddleware, lectureController.purchaseLecture); // 강의 무료 구매
 router.get('/:lectureId/purchased', authMiddleware, lectureController.checkPurchased); // 구매 여부
+router.delete('/:id', authMiddleware, instructorOnly, lectureController.deleteLecture); // 강의 삭제
 
 module.exports = router;

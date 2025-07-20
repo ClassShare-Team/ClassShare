@@ -4,6 +4,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const AWS = require('aws-sdk');
 
 // 강의 생성
 exports.createLecture = async ({
@@ -235,4 +236,58 @@ exports.checkLecturePurchased = async (lectureId, userId) => {
     [lectureId, userId]
   );
   return result.rows[0].is_purchased;
+};
+
+// 강의 삭제
+exports.deleteLecture = async (lectureId, instructorId) => {
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 소유 확인
+    const { rows } = await client.query(
+      `SELECT thumbnail FROM lectures WHERE id = $1 AND instructor_id = $2`,
+      [lectureId, instructorId]
+    );
+    if (rows.length === 0) {
+      throw { status: 403, message: '해당 강의를 삭제할 권한이 없습니다.' };
+    }
+    const thumbnail = rows[0].thumbnail;
+
+    // 비디오 정보 조회 (S3 삭제용)
+    const videos = await client.query(`SELECT video_url FROM videos WHERE lecture_id = $1`, [
+      lectureId,
+    ]);
+
+    // 강의 삭제 (cascade 동작)
+    await client.query(`DELETE FROM lectures WHERE id = $1`, [lectureId]);
+
+    await client.query('COMMIT');
+
+    // S3 삭제 (비동기)
+    const s3 = new AWS.S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+      region: process.env.AWS_REGION,
+    });
+
+    const deleteObjects = [
+      { Key: new URL(thumbnail).pathname.slice(1) },
+      ...videos.rows.map((v) => ({ Key: new URL(v.video_url).pathname.slice(1) })),
+    ];
+
+    await s3
+      .deleteObjects({
+        Bucket: process.env.AWS_S3_BUCKET,
+        Delete: { Objects: deleteObjects, Quiet: false },
+      })
+      .promise();
+
+    console.log(`[deleteLecture] S3 삭제 완료`, deleteObjects);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 };

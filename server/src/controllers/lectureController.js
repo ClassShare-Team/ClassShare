@@ -160,3 +160,21 @@ exports.checkPurchased = async (req, res) => {
     return res.status(500).json({ message: '서버 오류' });
   }
 };
+
+// 강의 삭제
+exports.deleteLecture = async (req, res) => {
+  const lectureId = parseInt(req.params.id, 10);
+  const instructorId = req.user.id;
+
+  if (isNaN(lectureId)) {
+    return res.status(400).json({ message: '유효하지 않은 강의 ID입니다.' });
+  }
+
+  try {
+    await lectureService.deleteLecture(lectureId, instructorId);
+    return res.status(200).json({ message: '강의가 삭제되었습니다.' });
+  } catch (err) {
+    console.error('[DELETE /lectures/:id] error:', err);
+    return res.status(err.status || 500).json({ message: err.message || '서버 오류' });
+  }
+};
