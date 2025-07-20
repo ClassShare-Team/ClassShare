@@ -18,6 +18,7 @@ interface Lecture {
 
 const InstructorMyStudentPage = () => {
   const [students, setStudents] = useState<Student[]>([]);
+  const [studentCount, setStudentCount] = useState(0);
   const [lectureList, setLectureList] = useState<Lecture[]>([]);
   const [selectedLectureId, setSelectedLectureId] = useState<number | 'all'>('all');
   const [loading, setLoading] = useState(true);
@@ -48,8 +49,9 @@ const InstructorMyStudentPage = () => {
       if (!res.ok) throw new Error('수강생 정보를 불러오지 못했습니다.');
 
       const data = await res.json();
-      const parsed = Array.isArray(data.students) ? data.students : data;
+      const parsed = Array.isArray(data.students) ? data.students : [];
       setStudents(parsed);
+      setStudentCount(data.totalCount ?? parsed.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류 발생');
     } finally {
@@ -124,11 +126,11 @@ const InstructorMyStudentPage = () => {
               ))}
             </ButtonGroup>
 
-            <h3>수강생: {students.length}명</h3>
+            <h3>수강생: {studentCount}명</h3>
 
             <List>
               {students.map((s) => (
-                <StudentCard key={s.userId}>
+                <StudentCard key={`${s.userId}-${s.lectureId}`}>
                   <UserLogo src={s.profileImage || DefaultProfileImage} alt="profile" />
                   <NickName>{s.nickname}</NickName>
                 </StudentCard>
