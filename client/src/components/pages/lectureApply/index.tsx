@@ -80,14 +80,12 @@ const LectureApplyPage = () => {
             : [],
         }));
 
-        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`); 
+        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts/with-comments`); 
         const qnaData = await qnaRes.json();
         
-        const filteredQnas = qnaData.posts.filter((q: any) => q.category === 'qa');
-
-        const qnas = filteredQnas.map((q: any) => ({
+        const qnas = qnaData.posts.map((q: any) => ({
           id: q.id,
-          nickname: q.user_nickname, 
+          nickname: q.nickname, 
           content: q.title,
           userId: q.user_id,
           comments: q.comments ? q.comments.map((c: any) => ({ 
@@ -326,7 +324,7 @@ const LectureApplyPage = () => {
   const handleSubmitQnaComment = async (postId: number) => {
     const commentContent = qnaCommentInputs[postId]?.trim();
     if (!commentContent || !user || !accessToken) {
-      alert('댓글 내용을 입력하거나 로그인해주세요.');
+      alert('답글 내용을 입력하거나 로그인해주세요.');
       return;
     }
     try {
@@ -364,10 +362,10 @@ const LectureApplyPage = () => {
         );
         setQnaCommentInputs((prev) => ({ ...prev, [postId]: '' }));
       } else {
-        alert(result.message || '댓글 등록 실패');
+        alert(result.message || '답글 등록 실패');
       }
     } catch {
-      alert('댓글 등록 중 오류 발생');
+      alert('답글 등록 중 오류 발생');
     }
   };
 
@@ -394,10 +392,10 @@ const LectureApplyPage = () => {
             : prev
         );
       } else {
-        alert('댓글 삭제 실패');
+        alert('답글 삭제 실패');
       }
     } catch {
-      alert('댓글 삭제 중 오류 발생');
+      alert('답글 삭제 중 오류 발생');
     }
   };
 
@@ -409,7 +407,7 @@ const LectureApplyPage = () => {
     }
 
     if (user.id !== lecture?.instructor_id) {
-      alert('강사만 리뷰에 댓글을 작성할 수 있습니다.');
+      alert('강사만 리뷰에 답글을 작성할 수 있습니다.');
       return;
     }
     
@@ -418,7 +416,7 @@ const LectureApplyPage = () => {
     const url = existingComment ? `${API_URL}/reviews/comments/${existingComment.id}` : `${API_URL}/reviews/comments`;
 
     if (!commentContent && method === 'POST') {
-        alert('댓글 내용을 입력해주세요.');
+        alert('답글 내용을 입력해주세요.');
         return;
     }
 
@@ -456,10 +454,10 @@ const LectureApplyPage = () => {
         );
         setReviewCommentInputs((prev) => ({ ...prev, [reviewId]: '' }));
       } else {
-        alert(result.message || `리뷰 댓글 ${method === 'POST' ? '등록' : '수정'} 실패`);
+        alert(result.message || `리뷰 답글 ${method === 'POST' ? '등록' : '수정'} 실패`);
       }
     } catch {
-      alert(`리뷰 댓글 ${method === 'POST' ? '등록' : '수정'} 중 오류 발생`);
+      alert(`리뷰 답글 ${method === 'POST' ? '등록' : '수정'} 중 오류 발생`);
     }
   };
 
@@ -487,13 +485,12 @@ const LectureApplyPage = () => {
         );
         setReviewCommentInputs((prev) => ({ ...prev, [reviewId]: '' }));
       } else {
-        alert('리뷰 댓글 삭제 실패');
+        alert('리뷰 답글 삭제 실패');
       }
     } catch {
-      alert('리뷰 댓글 삭제 중 오류 발생');
+      alert('리뷰 답글 삭제 중 오류 발생');
     }
   };
-
 
   if (loading) return <div>Loading...</div>;
   if (!lecture) return <div>강의 정보를 불러오지 못했습니다.</div>;
@@ -562,10 +559,10 @@ const LectureApplyPage = () => {
                               [r.id!]: e.target.value,
                             }))
                           }
-                          placeholder={r.comments && r.comments.length > 0 ? "댓글 수정" : "댓글을 작성해주세요."}
+                          placeholder={r.comments && r.comments.length > 0 ? "답글 수정" : "답글을 작성해주세요."}
                         />
                         <button onClick={() => handleSubmitReviewComment(r.id!)}>
-                          {r.comments && r.comments.length > 0 ? '댓글 수정' : '댓글 등록'}
+                          {r.comments && r.comments.length > 0 ? '답글 수정' : '답글 등록'}
                         </button>
                       </div>
                     )}
@@ -632,9 +629,9 @@ const LectureApplyPage = () => {
                               [q.id!]: e.target.value,
                             }))
                           }
-                          placeholder="댓글을 작성해주세요."
+                          placeholder="답글을 작성해주세요."
                         />
-                        <button onClick={() => handleSubmitQnaComment(q.id!)}>댓글 등록</button>
+                        <button onClick={() => handleSubmitQnaComment(q.id!)}>답글 등록</button>
                       </div>
                     )}
                   </li>
