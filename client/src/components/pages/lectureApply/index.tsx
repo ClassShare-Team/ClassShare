@@ -65,16 +65,18 @@ const LectureApplyPage = () => {
       if (!id) return;
       try {
         setLoading(true);
+        console.log('Fetching lecture from:', `${API_URL}/lectures/${id}`); // API URL 확인
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
         if (!lectureRes.ok) {
-          throw new Error(`강의 요청 실패: ${lectureRes.status}`);
+          throw new Error(`강의 요청 실패: ${lectureRes.status} ${lectureRes.statusText}`);
         }
         const lectureData = await lectureRes.json();
-        console.log('lectureData:', lectureData);
+        console.log('lectureData fetched:', lectureData);
 
+        console.log('Fetching reviews from:', `${API_URL}/reviews/lectures/${id}`); // API URL 확인
         const reviewRes = await fetch(`${API_URL}/reviews/lectures/${id}`);
         if (!reviewRes.ok) {
-            throw new Error(`리뷰 요청 실패: ${reviewRes.status}`);
+            throw new Error(`리뷰 요청 실패: ${reviewRes.status} ${reviewRes.statusText}`);
         }
         const reviewData = await reviewRes.json();
         const reviews = Array.isArray(reviewData.reviews) ? reviewData.reviews.map((r: any) => ({
@@ -87,9 +89,10 @@ const LectureApplyPage = () => {
             : [],
         })) : [];
 
+        console.log('Fetching Q&A from:', `${API_URL}/qna/${id}/posts/with-comments`); // API URL 확인
         const qnaRes = await fetch(`${API_URL}/qna/${id}/posts/with-comments`);
         if (!qnaRes.ok) {
-            throw new Error(`Q&A 요청 실패: ${qnaRes.status}`);
+            throw new Error(`Q&A 요청 실패: ${qnaRes.status} ${qnaRes.statusText}`);
         }
         const qnaData = await qnaRes.json();
         
@@ -165,7 +168,7 @@ const LectureApplyPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
       });
       const data = await res.json();
@@ -204,11 +207,11 @@ const LectureApplyPage = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/reviews`, {
+      const res = await fetch(`${API_URL}/reviews`, { // 백틱 사용
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
         body: JSON.stringify({
           lectureId: lecture.id,
@@ -248,10 +251,10 @@ const LectureApplyPage = () => {
   const handleDeleteReview = async (reviewId?: number) => {
     if (!reviewId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
+      const res = await fetch(`${API_URL}/reviews/${reviewId}`, { // 백틱 사용
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
       });
       if (res.ok) {
@@ -269,11 +272,11 @@ const LectureApplyPage = () => {
   const handleSubmitQna = async () => {
     if (!qnaInput.trim() || !lecture || !accessToken || !user) return;
     try {
-      const res = await fetch(`${API_URL}/qna`, {
+      const res = await fetch(`${API_URL}/qna`, { // 백틱 사용
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
         body: JSON.stringify({
           lecture_id: lecture.id,
@@ -315,10 +318,10 @@ const LectureApplyPage = () => {
   const handleDeleteQna = async (qnaId?: number) => {
     if (!qnaId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
+      const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, { // 백틱 사용
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
       });
       if (res.ok) {
@@ -340,11 +343,11 @@ const LectureApplyPage = () => {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/qna/comments`, {
+      const res = await fetch(`${API_URL}/qna/comments`, { // 백틱 사용
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
         body: JSON.stringify({
           postId: postId,
@@ -384,10 +387,10 @@ const LectureApplyPage = () => {
   const handleDeleteQnaComment = async (postId: number, commentId?: number) => {
     if (!commentId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, {
+      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, { // 백틱 사용
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
       });
       if (res.ok) {
@@ -425,7 +428,7 @@ const LectureApplyPage = () => {
 
     const existingComment = lecture?.reviews.find(r => r.id === reviewId)?.comments?.[0];
     const method = existingComment ? 'PUT' : 'POST';
-    const url = existingComment ? `${API_URL}/reviews/comments/${existingComment.id}` : `${API_URL}/reviews/comments`;
+    const url = existingComment ? `${API_URL}/reviews/comments/${existingComment.id}` : `${API_URL}/reviews/comments`; // 백틱 사용
 
     if (!commentContent && method === 'POST') {
         alert('답글 내용을 입력해주세요.');
@@ -437,7 +440,7 @@ const LectureApplyPage = () => {
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
         body: JSON.stringify({
           reviewId: reviewId,
@@ -476,10 +479,10 @@ const LectureApplyPage = () => {
   const handleDeleteReviewComment = async (reviewId: number, commentId?: number) => {
     if (!commentId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/reviews/comments/${commentId}`, {
+      const res = await fetch(`${API_URL}/reviews/comments/${commentId}`, { // 백틱 사용
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 백틱 사용
         },
       });
       if (res.ok) {
