@@ -12,5 +12,6 @@ router.patch('/posts/:id', authMiddleware, boardController.updatePost);
 router.get('/posts/:id/comments', boardController.getComments);
 router.post('/posts/:id/comments', authMiddleware, boardController.createComment);
 router.delete('/comments/:id', authMiddleware, boardController.deleteComment);
+router.post('/comments/:id/replies', authMiddleware, boardController.createReply);
 
 module.exports = router;

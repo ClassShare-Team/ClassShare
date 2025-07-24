@@ -172,7 +172,7 @@ exports.getComments = async (req, res) => {
   try {
     const result = await db.query(
       `
-      SELECT c.id, c.content, c.created_at, u.nickname AS author
+      SELECT c.id, c.content, c.created_at, u.nickname AS author, c.parent_id
       FROM comments c
       JOIN users u ON c.user_id = u.id
       WHERE c.post_id = $1
@@ -230,5 +230,38 @@ exports.deleteComment = async (req, res) => {
   } catch (err) {
     console.error('댓글 삭제 실패:', err);
     res.status(500).json({ message: '댓글 삭제 실패' });
+  }
+};
+
+exports.createReply = async (req, res) => {
+  const parentCommentId = req.params.id;
+  const userId = req.user.id;
+  const { content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ message: '답글 내용을 입력하세요.' });
+  }
+
+  try {
+    const parentResult = await db.query(`SELECT post_id FROM comments WHERE id = $1`, [
+      parentCommentId,
+    ]);
+
+    if (parentResult.rows.length === 0) {
+      return res.status(404).json({ message: '부모 댓글이 존재하지 않습니다.' });
+    }
+
+    const postId = parentResult.rows[0].post_id;
+
+    await db.query(
+      `INSERT INTO comments (post_id, user_id, content, parent_id)
+       VALUES ($1, $2, $3, $4)`,
+      [postId, userId, content, parentCommentId]
+    );
+
+    res.status(201).json({ message: '답글이 등록되었습니다.' });
+  } catch (err) {
+    console.error('답글 작성 실패:', err);
+    res.status(500).json({ message: '답글 작성 실패' });
   }
 };
