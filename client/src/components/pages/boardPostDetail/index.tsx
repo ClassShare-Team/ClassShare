@@ -16,6 +16,7 @@ interface Comment {
   content: string;
   author: string;
   created_at: string;
+  parent_id: number | null;
 }
 
 const BoardPostDetailPage = () => {
@@ -27,6 +28,8 @@ const BoardPostDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<Comment[]>([]);
+  const [replyComment, setReplyComment] = useState('');
+  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
 
   const fetchPost = async () => {
     try {
@@ -81,6 +84,27 @@ const BoardPostDetailPage = () => {
     }
   };
 
+  const handleReplySubmit = async (commentId: number) => {
+    if (!replyComment.trim()) return;
+    const token = localStorage.getItem('accessToken');
+
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/boards/comments/${commentId}/replies`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ content: replyComment }),
+      });
+      setReplyComment('');
+      setActiveReplyId(null);
+      await fetchComments();
+    } catch (err) {
+      console.error('답글 작성 실패: ', err);
+    }
+  };
+
   const handleDeleteComment = async (commentId: number) => {
     const token = localStorage.getItem('accessToken');
 
@@ -123,17 +147,7 @@ const BoardPostDetailPage = () => {
         <Content>
           <Title>{post.title}</Title>
           <InfoText>
-            <span>
-              {new Date(post.created_at).toLocaleString('ko-KR', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-              })}{' '}
-              작성
-            </span>
+            <span>{new Date(post.created_at).toLocaleString('ko-KR')} 작성</span>
             <span>{post.author}</span>
           </InfoText>
           <Divider />
@@ -157,27 +171,91 @@ const BoardPostDetailPage = () => {
             )}
 
             <CommentList>
-              {comments.map((c) => (
-                <CommentItem key={c.id}>
-                  <CommentHeader>
-                    <span>{c.author}</span>
-                    <span>
-                      {new Date(c.created_at).toLocaleString('ko-KR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })}
-                    </span>
-                  </CommentHeader>
-                  <p>{c.content}</p>
-                  {user?.nickname === c.author && (
-                    <DeleteButton onClick={() => handleDeleteComment(c.id)}>삭제</DeleteButton>
-                  )}
-                </CommentItem>
-              ))}
+              {comments
+                .filter((c) => c.parent_id === null)
+                .map((parent) => (
+                  <div key={parent.id}>
+                    <CommentItem>
+                      <CommentHeader>
+                        <span>{parent.author}</span>
+                        <span>{new Date(parent.created_at).toLocaleString('ko-KR')}</span>
+                      </CommentHeader>
+                      <p>{parent.content}</p>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginTop: '6px',
+                        }}
+                      >
+                        <button
+                          onClick={() =>
+                            setActiveReplyId(activeReplyId === parent.id ? null : parent.id)
+                          }
+                          style={{
+                            fontSize: '12px',
+                            background: 'none',
+                            border: 'none',
+                            color: '#555',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ↳ 답글 달기
+                        </button>
+
+                        {user?.nickname === parent.author && (
+                          <DeleteButton onClick={() => handleDeleteComment(parent.id)}>
+                            삭제
+                          </DeleteButton>
+                        )}
+                      </div>
+
+                      {activeReplyId === parent.id && (
+                        <div style={{ marginTop: '8px' }}>
+                          <textarea
+                            value={replyComment}
+                            onChange={(e) => setReplyComment(e.target.value)}
+                            placeholder="답글을 입력하세요"
+                            style={{ width: '100%', minHeight: '60px', marginBottom: '6px' }}
+                          />
+                          <SubmitButton onClick={() => handleReplySubmit(parent.id)}>
+                            작성
+                          </SubmitButton>
+                        </div>
+                      )}
+                    </CommentItem>
+
+                    {comments
+                      .filter((r) => r.parent_id === parent.id)
+                      .map((reply) => (
+                        <CommentItem
+                          key={reply.id}
+                          style={{
+                            marginTop: '12px',
+                            marginLeft: '20px',
+                            marginRight: '20px',
+                            backgroundColor: '#f5f5f5',
+                            padding: '12px',
+                            borderRadius: '8px',
+                          }}
+                        >
+                          <CommentHeader>
+                            <span>{reply.author}</span>
+                            <span>{new Date(reply.created_at).toLocaleString('ko-KR')}</span>
+                          </CommentHeader>
+                          <p>{reply.content}</p>
+                          {user?.nickname === reply.author && (
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                              <DeleteButton onClick={() => handleDeleteComment(reply.id)}>
+                                삭제
+                              </DeleteButton>
+                            </div>
+                          )}
+                        </CommentItem>
+                      ))}
+                  </div>
+                ))}
             </CommentList>
           </CommentSection>
         </Content>
@@ -309,7 +387,6 @@ const CommentHeader = styled.div`
 `;
 
 const DeleteButton = styled.button`
-  margin-top: 6px;
   font-size: 12px;
   color: red;
   background: none;
