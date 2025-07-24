@@ -1,11 +1,35 @@
 import styled from 'styled-components';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const BoardCreatePage = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
+
+  useEffect(() => {
+    if (isEdit) {
+      const fetchPost = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/boards/posts/${id}`);
+          const data = await res.json();
+          setTitle(data.post.title);
+          setContent(data.post.content);
+        } catch (err) {
+          console.error('게시글 로딩 실패: ', err);
+          alert('게시글 정보를 불러오는 데 실패했습니다.');
+          navigate('/boards');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchPost();
+    }
+  }, [id]);
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) {
@@ -13,11 +37,15 @@ const BoardCreatePage = () => {
       return;
     }
 
-    try {
-      const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
+    const method = isEdit ? 'PATCH' : 'POST';
+    const url = isEdit
+      ? `${import.meta.env.VITE_API_URL}/boards/posts/${id}`
+      : `${import.meta.env.VITE_API_URL}/boards/posts`;
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/boards/posts`, {
-        method: 'POST',
+    try {
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -25,14 +53,16 @@ const BoardCreatePage = () => {
         body: JSON.stringify({ title, content }),
       });
 
-      if (!res.ok) throw new Error('작성 실패');
+      if (!res.ok) throw new Error(isEdit ? '수정 실패' : '작성 실패');
 
-      alert('게시글이 등록되었습니다.');
+      alert(isEdit ? '게시글이 수정되었습니다.' : '게시글이 등록되었습니다.');
       navigate('/boards');
     } catch (err) {
       alert('오류 발생: ' + (err as Error).message);
     }
   };
+
+  if (loading) return <div>로딩 중...</div>;
 
   return (
     <Wrapper>
@@ -52,7 +82,7 @@ const BoardCreatePage = () => {
           onChange={(e) => setContent(e.target.value)}
         />
 
-        <SubmitButton onClick={handleSubmit}>등록</SubmitButton>
+        <SubmitButton onClick={handleSubmit}>{isEdit ? '수정' : '등록'}</SubmitButton>
       </Card>
     </Wrapper>
   );

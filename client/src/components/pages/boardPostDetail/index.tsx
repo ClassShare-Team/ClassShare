@@ -152,8 +152,6 @@ const BoardPostDetailPage = () => {
           </InfoText>
           <Divider />
           <Body>{post.content}</Body>
-          <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
-
           <CommentSection>
             {user ? (
               <CommentForm>
@@ -258,6 +256,12 @@ const BoardPostDetailPage = () => {
                 ))}
             </CommentList>
           </CommentSection>
+          <ButtonGroup>
+            {user?.nickname === post.author && (
+              <EditButton onClick={() => navigate(`/boards/edit/${post.id}`)}>수정하기</EditButton>
+            )}
+            <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+          </ButtonGroup>
         </Content>
       </Main>
     </Wrapper>
@@ -315,10 +319,14 @@ const Body = styled.div`
   white-space: pre-wrap;
 `;
 
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 2rem;
+`;
+
 const BackButton = styled.button`
-  position: absolute;
-  right: 2rem;
-  bottom: 2rem;
   padding: 8px 16px;
   background-color: ${({ theme }) => theme.colors.purple100};
   color: ${({ theme }) => theme.colors.white};
@@ -328,9 +336,26 @@ const BackButton = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  white-space: nowrap;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.purple};
+  }
+`;
+
+const EditButton = styled.button`
+  padding: 8px 16px;
+  background-color: ${({ theme }) => theme.colors.gray300};
+  color: ${({ theme }) => theme.colors.black};
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.gray400};
   }
 `;
 
