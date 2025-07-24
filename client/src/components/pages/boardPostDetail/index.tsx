@@ -152,13 +152,6 @@ const BoardPostDetailPage = () => {
           </InfoText>
           <Divider />
           <Body>{post.content}</Body>
-          <ButtonGroup>
-            {user?.nickname === post.author && (
-              <EditButton onClick={() => navigate(`/boards/edit/${post.id}`)}>수정하기</EditButton>
-            )}
-            <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
-          </ButtonGroup>
-
           <CommentSection>
             {user ? (
               <CommentForm>
@@ -263,6 +256,12 @@ const BoardPostDetailPage = () => {
                 ))}
             </CommentList>
           </CommentSection>
+          <ButtonGroup>
+            {user?.nickname === post.author && (
+              <EditButton onClick={() => navigate(`/boards/edit/${post.id}`)}>수정하기</EditButton>
+            )}
+            <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+          </ButtonGroup>
         </Content>
       </Main>
     </Wrapper>
@@ -324,7 +323,7 @@ const ButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 20px;
-  margin-top: auto;
+  margin-top: 2rem;
 `;
 
 const BackButton = styled.button`
