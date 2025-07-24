@@ -153,10 +153,10 @@ const BoardPostDetailPage = () => {
           <Divider />
           <Body>{post.content}</Body>
           <ButtonGroup>
-            <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
             {user?.nickname === post.author && (
               <EditButton onClick={() => navigate(`/boards/edit/${post.id}`)}>수정하기</EditButton>
             )}
+            <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
           </ButtonGroup>
 
           <CommentSection>
@@ -325,7 +325,7 @@ const ButtonGroup = styled.div`
   right: 2rem;
   bottom: 2rem;
   display: flex;
-  gap: 12px;
+  gap: 20px;
   flex-wrap: nowrap;
 `;
 
