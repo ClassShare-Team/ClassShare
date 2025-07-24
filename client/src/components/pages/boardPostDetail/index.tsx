@@ -147,17 +147,7 @@ const BoardPostDetailPage = () => {
         <Content>
           <Title>{post.title}</Title>
           <InfoText>
-            <span>
-              {new Date(post.created_at).toLocaleString('ko-KR', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-              })}{' '}
-              작성
-            </span>
+            <span>{new Date(post.created_at).toLocaleString('ko-KR')} 작성</span>
             <span>{post.author}</span>
           </InfoText>
           <Divider />
@@ -188,31 +178,39 @@ const BoardPostDetailPage = () => {
                     <CommentItem>
                       <CommentHeader>
                         <span>{parent.author}</span>
-                        <span>
-                          {new Date(parent.created_at).toLocaleString('ko-KR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                          })}
-                        </span>
+                        <span>{new Date(parent.created_at).toLocaleString('ko-KR')}</span>
                       </CommentHeader>
                       <p>{parent.content}</p>
-                      {user?.nickname === parent.author && (
-                        <DeleteButton onClick={() => handleDeleteComment(parent.id)}>
-                          삭제
-                        </DeleteButton>
-                      )}
-                      <button
-                        onClick={() =>
-                          setActiveReplyId(activeReplyId === parent.id ? null : parent.id)
-                        }
-                        style={{ fontSize: '12px', marginTop: '6px' }}
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginTop: '6px',
+                        }}
                       >
-                        ✔ 답글 달기
-                      </button>
+                        <button
+                          onClick={() =>
+                            setActiveReplyId(activeReplyId === parent.id ? null : parent.id)
+                          }
+                          style={{
+                            fontSize: '12px',
+                            background: 'none',
+                            border: 'none',
+                            color: '#555',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ↳ 답글 달기
+                        </button>
+
+                        {user?.nickname === parent.author && (
+                          <DeleteButton onClick={() => handleDeleteComment(parent.id)}>
+                            삭제
+                          </DeleteButton>
+                        )}
+                      </div>
+
                       {activeReplyId === parent.id && (
                         <div style={{ marginTop: '8px' }}>
                           <textarea
@@ -244,16 +242,7 @@ const BoardPostDetailPage = () => {
                         >
                           <CommentHeader>
                             <span>{reply.author}</span>
-                            <span>
-                              {new Date(reply.created_at).toLocaleString('ko-KR', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false,
-                              })}
-                            </span>
+                            <span>{new Date(reply.created_at).toLocaleString('ko-KR')}</span>
                           </CommentHeader>
                           <p>{reply.content}</p>
                           {user?.nickname === reply.author && (
@@ -396,7 +385,6 @@ const CommentHeader = styled.div`
 `;
 
 const DeleteButton = styled.button`
-  margin-top: 6px;
   font-size: 12px;
   color: red;
   background: none;
