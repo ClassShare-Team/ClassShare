@@ -246,9 +246,11 @@ const BoardPostDetailPage = () => {
                           </CommentHeader>
                           <p>{reply.content}</p>
                           {user?.nickname === reply.author && (
-                            <DeleteButton onClick={() => handleDeleteComment(reply.id)}>
-                              삭제
-                            </DeleteButton>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                              <DeleteButton onClick={() => handleDeleteComment(reply.id)}>
+                                삭제
+                              </DeleteButton>
+                            </div>
                           )}
                         </CommentItem>
                       ))}
