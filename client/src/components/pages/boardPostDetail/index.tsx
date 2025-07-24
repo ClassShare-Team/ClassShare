@@ -324,7 +324,7 @@ const ButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 20px;
-  margin-top: 2rem;
+  margin-top: auto;
 `;
 
 const BackButton = styled.button`
