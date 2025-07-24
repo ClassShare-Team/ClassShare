@@ -26,7 +26,7 @@ exports.createQnaPost = async (req, res) => {
 exports.getQnaPostsByLecture = async (req, res) => {
   const { lectureId } = req.params;
   try {
-    const posts = await qnaPostService.getQnaPostsByLecture(lectureId);
+    const posts = await qnaPostService.getQnaPostsWithCommentsByLecture(lectureId);
     res.json({ posts });
   } catch (err) {
     console.error(err);
