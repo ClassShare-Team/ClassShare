@@ -19,10 +19,10 @@ interface Review {
 }
 
 interface Qna {
-  id?: number;
+  id: number;
   nickname: string;
   content: string;
-  userId?: number;
+  userId: number;
   comments?: Comment[];
   isPurchasedStudent?: boolean;
 }
@@ -75,32 +75,28 @@ const LectureApplyPage = () => {
           nickname: r.student_nickname,
           content: r.review_content,
           userId: r.student_id,
-          comments: r.comment_id
-            ? [
-                {
-                  id: r.comment_id,
-                  nickname: r.instructor_nickname,
-                  content: r.comment_content,
-                  userId: r.instructor_id,
-                },
-              ]
+          comments: r.comment_id 
+            ? [{ id: r.comment_id, nickname: r.instructor_nickname, content: r.comment_content, userId: r.instructor_id }]
             : [],
         }));
 
-        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts/with-comments`);
+        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`); 
         const qnaData = await qnaRes.json();
-        const qnas = qnaData.posts.map((q: any) => ({
+        
+        const filteredQnas = qnaData.posts.filter((q: any) => q.category === 'qa');
+
+        const qnas = filteredQnas.map((q: any) => ({
           id: q.id,
-          nickname: q.nickname,
+          nickname: q.user_nickname, 
           content: q.title,
           userId: q.user_id,
-          comments: q.comments.map((c: any) => ({
-            id: c.id,
-            nickname: c.nickname,
-            content: c.content,
-            userId: c.user_id,
-          })),
-          isPurchasedStudent: q.is_purchased_student,
+          comments: q.comments ? q.comments.map((c: any) => ({ 
+            id: c.id, 
+            nickname: c.nickname, 
+            content: c.content, 
+            userId: c.user_id 
+          })) : [],
+          isPurchasedStudent: q.is_purchased_student, 
         }));
 
         setLecture({
@@ -273,6 +269,7 @@ const LectureApplyPage = () => {
           lecture_id: lecture.id,
           title: qnaInput.trim(),
           content: '내용 없음',
+          category: 'qa'
         }),
       });
       const result = await res.json();
@@ -333,7 +330,7 @@ const LectureApplyPage = () => {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/qna/comments`, {
+      const res = await fetch(`${API_URL}/qna/comments`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -377,7 +374,7 @@ const LectureApplyPage = () => {
   const handleDeleteQnaComment = async (postId: number, commentId?: number) => {
     if (!commentId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, {
+      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, { 
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -416,25 +413,17 @@ const LectureApplyPage = () => {
       return;
     }
     
-    // Check if there's an existing comment
     const existingComment = lecture?.reviews.find(r => r.id === reviewId)?.comments?.[0];
     const method = existingComment ? 'PUT' : 'POST';
     const url = existingComment ? `${API_URL}/reviews/comments/${existingComment.id}` : `${API_URL}/reviews/comments`;
 
-    if (!commentContent && method === 'POST') { // Don't allow empty new comment
+    if (!commentContent && method === 'POST') {
         alert('댓글 내용을 입력해주세요.');
         return;
     }
-    if (!commentContent && method === 'PUT') { // Allow empty update to delete, but handle it with a delete call or specific logic if needed
-        // For now, if content is empty on update, we'll let the API handle it,
-        // but typically you'd prevent empty updates or convert to a delete.
-        // If the backend allows empty string update, it will work.
-        // Otherwise, you might want to call handleDeleteReviewComment here or prevent update.
-    }
-
 
     try {
-      const res = await fetch(url, {
+      const res = await fetch(url, { 
         method: method,
         headers: {
           'Content-Type': 'application/json',
@@ -456,9 +445,9 @@ const LectureApplyPage = () => {
                   r.id === reviewId
                     ? {
                         ...r,
-                        comments: result.id // New comment created or updated
+                        comments: result.id 
                           ? [{ id: result.id, nickname: user.nickname, content: commentContent, userId: user.id }]
-                          : [], // If update results in no comment (e.g., content becomes empty string and API deletes)
+                          : [], 
                       }
                     : r
                 ),
@@ -496,7 +485,7 @@ const LectureApplyPage = () => {
               }
             : prev
         );
-        setReviewCommentInputs((prev) => ({ ...prev, [reviewId]: '' })); // Clear input after deletion
+        setReviewCommentInputs((prev) => ({ ...prev, [reviewId]: '' }));
       } else {
         alert('리뷰 댓글 삭제 실패');
       }
