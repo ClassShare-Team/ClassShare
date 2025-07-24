@@ -66,11 +66,18 @@ const LectureApplyPage = () => {
       try {
         setLoading(true);
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
+        if (!lectureRes.ok) {
+          throw new Error(`강의 요청 실패: ${lectureRes.status}`);
+        }
         const lectureData = await lectureRes.json();
+        console.log('lectureData:', lectureData);
 
         const reviewRes = await fetch(`${API_URL}/reviews/lectures/${id}`);
+        if (!reviewRes.ok) {
+            throw new Error(`리뷰 요청 실패: ${reviewRes.status}`);
+        }
         const reviewData = await reviewRes.json();
-        const reviews = reviewData.reviews.map((r: any) => ({
+        const reviews = Array.isArray(reviewData.reviews) ? reviewData.reviews.map((r: any) => ({
           id: r.review_id,
           nickname: r.student_nickname,
           content: r.review_content,
@@ -78,24 +85,29 @@ const LectureApplyPage = () => {
           comments: r.comment_id
             ? [{ id: r.comment_id, nickname: r.instructor_nickname, content: r.comment_content, userId: r.instructor_id }]
             : [],
-        }));
+        })) : [];
 
         const qnaRes = await fetch(`${API_URL}/qna/${id}/posts/with-comments`);
+        if (!qnaRes.ok) {
+            throw new Error(`Q&A 요청 실패: ${qnaRes.status}`);
+        }
         const qnaData = await qnaRes.json();
         
-        const qnas = qnaData.posts.map((q: any) => ({
-          id: q.id,
-          nickname: q.nickname,
-          content: q.title,
-          userId: q.user_id,
-          comments: q.comments ? q.comments.map((c: any) => ({
-            id: c.id,
-            nickname: c.nickname,
-            content: c.content,
-            userId: c.user_id
-          })) : [],
-          isPurchasedStudent: q.is_purchased_student,
-        }));
+        const qnas = Array.isArray(qnaData.posts)
+          ? qnaData.posts.map((q: any) => ({
+              id: q.id,
+              nickname: q.nickname,
+              content: q.title,
+              userId: q.user_id,
+              comments: q.comments ? q.comments.map((c: any) => ({
+                id: c.id,
+                nickname: c.nickname,
+                content: c.content,
+                userId: c.user_id
+              })) : [],
+              isPurchasedStudent: q.is_purchased_student,
+            }))
+          : [];
 
         setLecture({
           id: Number(lectureData.id),
@@ -108,8 +120,8 @@ const LectureApplyPage = () => {
           reviews: reviews,
           qnas: qnas,
         });
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        console.error('강의 불러오기 중 오류 발생:', err.message || err);
         setLecture(null);
       } finally {
         setLoading(false);
