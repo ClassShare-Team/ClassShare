@@ -75,26 +75,26 @@ const LectureApplyPage = () => {
           nickname: r.student_nickname,
           content: r.review_content,
           userId: r.student_id,
-          comments: r.comment_id 
+          comments: r.comment_id
             ? [{ id: r.comment_id, nickname: r.instructor_nickname, content: r.comment_content, userId: r.instructor_id }]
             : [],
         }));
 
-        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts/with-comments`); 
+        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts/with-comments`);
         const qnaData = await qnaRes.json();
         
         const qnas = qnaData.posts.map((q: any) => ({
           id: q.id,
-          nickname: q.nickname, 
+          nickname: q.nickname,
           content: q.title,
           userId: q.user_id,
-          comments: q.comments ? q.comments.map((c: any) => ({ 
-            id: c.id, 
-            nickname: c.nickname, 
-            content: c.content, 
-            userId: c.user_id 
+          comments: q.comments ? q.comments.map((c: any) => ({
+            id: c.id,
+            nickname: c.nickname,
+            content: c.content,
+            userId: c.user_id
           })) : [],
-          isPurchasedStudent: q.is_purchased_student, 
+          isPurchasedStudent: q.is_purchased_student,
         }));
 
         setLecture({
@@ -244,7 +244,7 @@ const LectureApplyPage = () => {
       });
       if (res.ok) {
         setLecture((prev) =>
-          prev ? { ...prev, reviews: prev.reviews.filter((r) => r.id !== reviewId) } : prev
+          prev ? { ...prev, reviews: prev.reviews.filter((r) => r.id !== reviewId) } : prev // <<<<<<<<<<<<<<<< 여기가 수정되었습니다!
         );
       } else {
         alert('삭제 실패');
@@ -328,7 +328,7 @@ const LectureApplyPage = () => {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/qna/comments`, { 
+      const res = await fetch(`${API_URL}/qna/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -372,7 +372,7 @@ const LectureApplyPage = () => {
   const handleDeleteQnaComment = async (postId: number, commentId?: number) => {
     if (!commentId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, { 
+      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -410,7 +410,7 @@ const LectureApplyPage = () => {
       alert('강사만 리뷰에 답글을 작성할 수 있습니다.');
       return;
     }
-    
+
     const existingComment = lecture?.reviews.find(r => r.id === reviewId)?.comments?.[0];
     const method = existingComment ? 'PUT' : 'POST';
     const url = existingComment ? `${API_URL}/reviews/comments/${existingComment.id}` : `${API_URL}/reviews/comments`;
@@ -421,7 +421,7 @@ const LectureApplyPage = () => {
     }
 
     try {
-      const res = await fetch(url, { 
+      const res = await fetch(url, {
         method: method,
         headers: {
           'Content-Type': 'application/json',
@@ -443,9 +443,9 @@ const LectureApplyPage = () => {
                   r.id === reviewId
                     ? {
                         ...r,
-                        comments: result.id 
+                        comments: result.id
                           ? [{ id: result.id, nickname: user.nickname, content: commentContent, userId: user.id }]
-                          : [], 
+                          : [],
                       }
                     : r
                 ),
@@ -497,6 +497,9 @@ const LectureApplyPage = () => {
 
   const price = Math.floor(Number(lecture.price));
 
+  const enrollButtonClass = `enroll-btn ${!user || !accessToken ? 'disabled' : ''}`;
+  const enrollButtonLoadingClass = `enroll-btn loading-state`;
+
   return (
     <div className="lecture-wrapper">
       <div className="header-bg">
@@ -504,7 +507,7 @@ const LectureApplyPage = () => {
           <div className="title-area">
             <h1>{lecture.title}</h1>
             {lecture.instructor_nickname && (
-              <p style={{ marginTop: '8px', fontSize: '16px', color: '#555' }}>
+              <p className="instructor-info">
                 강사: <strong>{lecture.instructor_nickname}</strong>
               </p>
             )}
@@ -530,14 +533,16 @@ const LectureApplyPage = () => {
               <ul>
                 {lecture.reviews.map((r) => (
                   <li key={r.id}>
-                    <span>
-                      <strong>{r.nickname}</strong> {r.content}
-                    </span>
-                    {user?.id === r.userId && (
-                      <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
-                    )}
+                    <div className="review-item-content">
+                        <span>
+                            <strong>{r.nickname}</strong> {r.content}
+                        </span>
+                        {user?.id === r.userId && (
+                            <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
+                        )}
+                    </div>
                     {r.comments && r.comments.length > 0 && (
-                      <div className="comments-section">
+                      <div className="comments-list">
                         {r.comments.map((comment) => (
                           <div key={comment.id} className="comment-item">
                             <strong>{comment.nickname} (강사)</strong>: {comment.content}
@@ -549,7 +554,7 @@ const LectureApplyPage = () => {
                       </div>
                     )}
                     {user && user.id === lecture.instructor_id && (
-                      <div className="comment-input">
+                      <div className="comment-input-area">
                         <textarea
                           value={reviewCommentInputs[r.id!] !== undefined ? reviewCommentInputs[r.id!] : (r.comments && r.comments[0]?.content) || ''}
                           maxLength={MAX_COMMENT_LENGTH}
@@ -591,23 +596,25 @@ const LectureApplyPage = () => {
               <ul>
                 {lecture.qnas?.map((q) => (
                   <li key={q.id}>
-                    <span>
-                      <strong>
-                        {q.nickname} (
-                        {user?.id === lecture.instructor_id
-                          ? '강사'
-                          : q.isPurchasedStudent
-                          ? '수강생'
-                          : '학생'}
-                        )
-                      </strong>{' '}
-                      {q.content}
-                    </span>
-                    {user?.id === q.userId && (
-                      <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
-                    )}
+                    <div className="qna-item-content">
+                        <span>
+                            <strong>
+                            {q.nickname} (
+                            {user?.id === lecture.instructor_id
+                                ? '강사'
+                                : q.isPurchasedStudent
+                                ? '수강생'
+                                : '학생'}
+                            )
+                            </strong>{' '}
+                            {q.content}
+                        </span>
+                        {user?.id === q.userId && (
+                            <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
+                        )}
+                    </div>
                     {q.comments && q.comments.length > 0 && (
-                      <div className="comments-section">
+                      <div className="comments-list">
                         {q.comments.map((comment) => (
                           <div key={comment.id} className="comment-item">
                             <strong>{comment.nickname}</strong>: {comment.content}
@@ -619,7 +626,7 @@ const LectureApplyPage = () => {
                       </div>
                     )}
                     {user && (
-                      <div className="comment-input">
+                      <div className="comment-input-area">
                         <textarea
                           value={qnaCommentInputs[q.id!] || ''}
                           maxLength={MAX_COMMENT_LENGTH}
@@ -659,26 +666,21 @@ const LectureApplyPage = () => {
             </div>
             {purchaseChecked ? (
               <button
-                className="enroll-btn"
+                className={enrolled ? enrollButtonClass : enrollButtonClass}
                 onClick={enrolled ? handleGoToVideos : handleEnroll}
                 disabled={!user || !accessToken}
-                style={{
-                  background: !user || !accessToken ? '#bbb' : undefined,
-                  cursor: !user || !accessToken ? 'not-allowed' : undefined,
-                }}
               >
                 {enrolled ? '수강하기' : '신청하기'}
               </button>
             ) : (
               <div
-                className="enroll-btn"
-                style={{ background: '#f0f0f0', color: '#555', cursor: 'default' }}
+                className={enrollButtonLoadingClass}
               >
                 확인 중...
               </div>
             )}
             {!user || !accessToken ? (
-              <div style={{ fontSize: 13, color: '#D32F2F', marginTop: 7 }}>
+              <div className="login-prompt">
                 로그인 후 신청할 수 있습니다.
               </div>
             ) : null}

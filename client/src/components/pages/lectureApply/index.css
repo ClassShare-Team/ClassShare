@@ -113,8 +113,17 @@
   line-height: 1.5;
   word-break: break-word;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+}
+
+.review-item-content, .qna-item-content {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 5px;
 }
 
 .review-section li strong,
@@ -123,13 +132,15 @@
   color: #6f42c1;
 }
 
-.review-section button,
-.qna-section button {
+.review-section li .review-item-content button,
+.qna-section li .qna-item-content button {
   background: none;
   border: none;
   color: #d32f2f;
   font-size: 13px;
   cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 10px;
 }
 
 .review-input,
@@ -205,4 +216,83 @@
 
 .enroll-btn:hover {
   background-color: #5a34a1;
+}
+
+.comments-list {
+    width: 100%;
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px solid #eee;
+    box-sizing: border-box;
+}
+
+.comment-item {
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    word-break: break-word;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.comment-item strong {
+    margin-right: 5px;
+    color: #6f42c1;
+}
+
+.comment-item button {
+    background: none;
+    border: none;
+    color: #d32f2f;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 10px;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.comment-item button:hover {
+    text-decoration: underline;
+}
+
+.comment-input-area {
+    width: 100%;
+    margin-top: 10px;
+    padding-left: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comment-input-area textarea {
+    width: calc(100% - 20px);
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    resize: vertical;
+    min-height: 40px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.comment-input-area button {
+    align-self: flex-end;
+    background-color: #6f42c1;
+    color: white;
+    padding: 6px 15px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.comment-input-area button:hover {
+    background-color: #5a34a1;
 }
