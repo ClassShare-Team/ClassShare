@@ -244,7 +244,7 @@ const LectureApplyPage = () => {
       });
       if (res.ok) {
         setLecture((prev) =>
-          prev ? { ...prev, reviews: prev.reviews.filter((r) => r.id !== reviewId) } : prev // <<<<<<<<<<<<<<<< 여기가 수정되었습니다!
+          prev ? { ...prev, reviews: prev.reviews.filter((r) => r.id !== reviewId) } : prev
         );
       } else {
         alert('삭제 실패');
