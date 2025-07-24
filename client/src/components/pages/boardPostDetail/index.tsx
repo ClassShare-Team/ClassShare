@@ -16,6 +16,7 @@ interface Comment {
   content: string;
   author: string;
   created_at: string;
+  parent_id: number | null;
 }
 
 const BoardPostDetailPage = () => {
@@ -27,6 +28,8 @@ const BoardPostDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<Comment[]>([]);
+  const [replyComment, setReplyComment] = useState('');
+  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
 
   const fetchPost = async () => {
     try {
@@ -78,6 +81,27 @@ const BoardPostDetailPage = () => {
       localStorage.setItem('reloadBoard', 'true');
     } catch (err) {
       console.error('댓글 작성 실패:', err);
+    }
+  };
+
+  const handleReplySubmit = async (commentId: number) => {
+    if (!replyComment.trim()) return;
+    const token = localStorage.getItem('accessToken');
+
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/boards/comments/${commentId}/replies`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ content: replyComment }),
+      });
+      setReplyComment('');
+      setActiveReplyId(null);
+      await fetchComments();
+    } catch (err) {
+      console.error('답글 작성 실패: ', err);
     }
   };
 
@@ -175,6 +199,25 @@ const BoardPostDetailPage = () => {
                   <p>{c.content}</p>
                   {user?.nickname === c.author && (
                     <DeleteButton onClick={() => handleDeleteComment(c.id)}>삭제</DeleteButton>
+                  )}
+                  {!c.parent_id && (
+                    <button
+                      onClick={() => setActiveReplyId(activeReplyId === c.id ? null : c.id)}
+                      style={{ fontSize: '12px', marginTop: '6px' }}
+                    >
+                      ✔ 답글 달기
+                    </button>
+                  )}
+                  {activeReplyId === c.id && (
+                    <div style={{ marginTop: '8px' }}>
+                      <textarea
+                        value={replyComment}
+                        onChange={(e) => setReplyComment(e.target.value)}
+                        placeholder="답글을 입력하세요"
+                        style={{ width: '100%', minHeight: '60px', marginBottom: '6px' }}
+                      />
+                      <SubmitButton onClick={() => handleReplySubmit(c.id)}>작성</SubmitButton>
+                    </div>
                   )}
                 </CommentItem>
               ))}
