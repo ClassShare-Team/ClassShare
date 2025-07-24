@@ -20,7 +20,7 @@ interface Review {
 
 interface Qna {
   id: number;
-  nickname: string;
+  nickname?: string;
   content: string;
   userId: number;
   comments?: Comment[];
@@ -61,19 +61,17 @@ const LectureApplyPage = () => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    const fetchLecture = async () => {
+    const fetchLectureData = async () => {
       if (!id) return;
       try {
         setLoading(true);
-        console.log('Fetching lecture from:', `${API_URL}/lectures/${id}`); // API URL 확인
+
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
         if (!lectureRes.ok) {
           throw new Error(`강의 요청 실패: ${lectureRes.status} ${lectureRes.statusText}`);
         }
         const lectureData = await lectureRes.json();
-        console.log('lectureData fetched:', lectureData);
 
-        console.log('Fetching reviews from:', `${API_URL}/reviews/lectures/${id}`); // API URL 확인
         const reviewRes = await fetch(`${API_URL}/reviews/lectures/${id}`);
         if (!reviewRes.ok) {
             throw new Error(`리뷰 요청 실패: ${reviewRes.status} ${reviewRes.statusText}`);
@@ -89,28 +87,45 @@ const LectureApplyPage = () => {
             : [],
         })) : [];
 
-        console.log('Fetching Q&A from:', `${API_URL}/qna/${id}/posts/with-comments`); // API URL 확인
-        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts/with-comments`);
-        if (!qnaRes.ok) {
-            throw new Error(`Q&A 요청 실패: ${qnaRes.status} ${qnaRes.statusText}`);
+        const qnaPostsRes = await fetch(`${API_URL}/qna/${id}/posts`);
+        if (!qnaPostsRes.ok) {
+            throw new Error(`Q&A 게시글 요청 실패: ${qnaPostsRes.status} ${qnaPostsRes.statusText}`);
         }
-        const qnaData = await qnaRes.json();
+        const qnaPostsData = await qnaPostsRes.json();
         
-        const qnas = Array.isArray(qnaData.posts)
-          ? qnaData.posts.map((q: any) => ({
-              id: q.id,
-              nickname: q.nickname,
-              content: q.title,
-              userId: q.user_id,
-              comments: q.comments ? q.comments.map((c: any) => ({
-                id: c.id,
-                nickname: c.nickname,
-                content: c.content,
-                userId: c.user_id
-              })) : [],
-              isPurchasedStudent: q.is_purchased_student,
-            }))
-          : [];
+        let qnasWithComments: Qna[] = [];
+        if (Array.isArray(qnaPostsData)) {
+            qnasWithComments = await Promise.all(qnaPostsData.map(async (q: any) => {
+                const commentsRes = await fetch(`${API_URL}/qna/posts/${q.id}/comments`);
+                if (!commentsRes.ok) {
+                    console.warn(`Q&A 댓글 요청 실패 (postId: ${q.id}): ${commentsRes.status} ${commentsRes.statusText}`);
+                    return {
+                        id: q.id,
+                        nickname: q.nickname,
+                        content: q.title,
+                        userId: q.user_id,
+                        comments: [],
+                        isPurchasedStudent: q.is_purchased_student,
+                    };
+                }
+                const commentsData = await commentsRes.json();
+                const comments = Array.isArray(commentsData) ? commentsData.map((c: any) => ({
+                    id: c.id,
+                    nickname: c.nickname,
+                    content: c.content,
+                    userId: c.user_id
+                })) : [];
+
+                return {
+                    id: q.id,
+                    nickname: q.nickname,
+                    content: q.title,
+                    userId: q.user_id,
+                    comments: comments,
+                    isPurchasedStudent: q.is_purchased_student,
+                };
+            }));
+        }
 
         setLecture({
           id: Number(lectureData.id),
@@ -121,7 +136,7 @@ const LectureApplyPage = () => {
           instructor_nickname: lectureData.instructor_nickname,
           instructor_id: lectureData.instructor_id,
           reviews: reviews,
-          qnas: qnas,
+          qnas: qnasWithComments,
         });
       } catch (err: any) {
         console.error('강의 불러오기 중 오류 발생:', err.message || err);
@@ -131,7 +146,7 @@ const LectureApplyPage = () => {
       }
     };
 
-    fetchLecture();
+    fetchLectureData();
   }, [API_URL, id, location.key]);
 
   useEffect(() => {
@@ -168,7 +183,7 @@ const LectureApplyPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       const data = await res.json();
@@ -207,11 +222,11 @@ const LectureApplyPage = () => {
     }
 
     try {
-      const res = await fetch(`${API_URL}/reviews`, { // 백틱 사용
+      const res = await fetch(`${API_URL}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           lectureId: lecture.id,
@@ -251,10 +266,10 @@ const LectureApplyPage = () => {
   const handleDeleteReview = async (reviewId?: number) => {
     if (!reviewId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/reviews/${reviewId}`, { // 백틱 사용
+      const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       if (res.ok) {
@@ -272,11 +287,11 @@ const LectureApplyPage = () => {
   const handleSubmitQna = async () => {
     if (!qnaInput.trim() || !lecture || !accessToken || !user) return;
     try {
-      const res = await fetch(`${API_URL}/qna`, { // 백틱 사용
+      const res = await fetch(`${API_URL}/qna`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           lecture_id: lecture.id,
@@ -318,10 +333,10 @@ const LectureApplyPage = () => {
   const handleDeleteQna = async (qnaId?: number) => {
     if (!qnaId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, { // 백틱 사용
+      const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       if (res.ok) {
@@ -343,11 +358,11 @@ const LectureApplyPage = () => {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/qna/comments`, { // 백틱 사용
+      const res = await fetch(`${API_URL}/qna/posts/${postId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           postId: postId,
@@ -387,10 +402,10 @@ const LectureApplyPage = () => {
   const handleDeleteQnaComment = async (postId: number, commentId?: number) => {
     if (!commentId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, { // 백틱 사용
+      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       if (res.ok) {
@@ -428,7 +443,7 @@ const LectureApplyPage = () => {
 
     const existingComment = lecture?.reviews.find(r => r.id === reviewId)?.comments?.[0];
     const method = existingComment ? 'PUT' : 'POST';
-    const url = existingComment ? `${API_URL}/reviews/comments/${existingComment.id}` : `${API_URL}/reviews/comments`; // 백틱 사용
+    const url = existingComment ? `${API_URL}/reviews/comments/${existingComment.id}` : `${API_URL}/reviews/${reviewId}/comment`;
 
     if (!commentContent && method === 'POST') {
         alert('답글 내용을 입력해주세요.');
@@ -440,7 +455,7 @@ const LectureApplyPage = () => {
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           reviewId: reviewId,
@@ -479,10 +494,10 @@ const LectureApplyPage = () => {
   const handleDeleteReviewComment = async (reviewId: number, commentId?: number) => {
     if (!commentId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/reviews/comments/${commentId}`, { // 백틱 사용
+      const res = await fetch(`${API_URL}/reviews/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${accessToken}`, // 백틱 사용
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       if (res.ok) {
@@ -614,7 +629,7 @@ const LectureApplyPage = () => {
                     <div className="qna-item-content">
                         <span>
                             <strong>
-                            {q.nickname} (
+                            {q.nickname || `사용자 ${q.userId}`} (
                             {user?.id === lecture.instructor_id
                                 ? '강사'
                                 : q.isPurchasedStudent
