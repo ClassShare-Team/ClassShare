@@ -2,23 +2,20 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import './index.css';
 import useUserInfo from '@/components/hooks/useUserInfo';
-import DefaultProfileImage from '@/assets/UserProfileLogo.png';
+
+interface Comment {
+  id?: number;
+  nickname: string;
+  content: string;
+  userId?: number;
+}
 
 interface Review {
   id?: number;
   nickname: string;
   content: string;
   userId?: number;
-  comment?: string;
-  comment_nickname?: string;
-  comment_user_id?: number;
-}
-
-interface QnaComment {
-  id: number;
-  nickname: string;
-  content: string;
-  user_id: number;
+  comments?: Comment[];
 }
 
 interface Qna {
@@ -26,7 +23,8 @@ interface Qna {
   nickname: string;
   content: string;
   userId?: number;
-  comments?: QnaComment[];
+  comments?: Comment[];
+  isPurchasedStudent?: boolean;
 }
 
 interface Lecture {
@@ -39,12 +37,11 @@ interface Lecture {
   qnas?: Qna[];
   instructor_nickname?: string;
   instructor_id?: number;
-  instructor_profile?: string;
-  enrolledUserIds?: number[];
 }
 
 const MAX_REVIEW_LENGTH = 300;
 const MAX_QNA_LENGTH = 300;
+const MAX_COMMENT_LENGTH = 200;
 
 const LectureApplyPage = () => {
   const { id } = useParams<{ id?: string }>();
@@ -56,9 +53,9 @@ const LectureApplyPage = () => {
   const [enrolled, setEnrolled] = useState(false);
   const [purchaseChecked, setPurchaseChecked] = useState(false);
   const [reviewInput, setReviewInput] = useState('');
-  const [reviewReply, setReviewReply] = useState<Record<number, string>>({});
   const [qnaInput, setQnaInput] = useState('');
-  const [qnaReplies, setQnaReplies] = useState<Record<number, string>>({});
+  const [qnaCommentInputs, setQnaCommentInputs] = useState<{ [key: number]: string }>({});
+  const [reviewCommentInputs, setReviewCommentInputs] = useState<{ [key: number]: string }>({});
   const [loading, setLoading] = useState(true);
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -69,45 +66,53 @@ const LectureApplyPage = () => {
       try {
         setLoading(true);
         const lectureRes = await fetch(`${API_URL}/lectures/${id}`);
-        const data = await lectureRes.json();
+        const lectureData = await lectureRes.json();
 
         const reviewRes = await fetch(`${API_URL}/reviews/lectures/${id}`);
         const reviewData = await reviewRes.json();
+        const reviews = reviewData.reviews.map((r: any) => ({
+          id: r.review_id,
+          nickname: r.student_nickname,
+          content: r.review_content,
+          userId: r.student_id,
+          comments: r.comment_id
+            ? [
+                {
+                  id: r.comment_id,
+                  nickname: r.instructor_nickname,
+                  content: r.comment_content,
+                  userId: r.instructor_id,
+                },
+              ]
+            : [],
+        }));
 
-        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts`);
+        const qnaRes = await fetch(`${API_URL}/qna/${id}/posts/with-comments`);
         const qnaData = await qnaRes.json();
-
-        const studentRes = await fetch(`${API_URL}/lectures/${id}/students`);
-        const studentData = await studentRes.json();
+        const qnas = qnaData.posts.map((q: any) => ({
+          id: q.id,
+          nickname: q.nickname,
+          content: q.title,
+          userId: q.user_id,
+          comments: q.comments.map((c: any) => ({
+            id: c.id,
+            nickname: c.nickname,
+            content: c.content,
+            userId: c.user_id,
+          })),
+          isPurchasedStudent: q.is_purchased_student,
+        }));
 
         setLecture({
-          id: Number(data.id),
-          title: data.title,
-          description: data.description,
-          thumbnail: data.thumbnail,
-          price: data.price,
-          instructor_nickname: data.instructor_nickname,
-          instructor_id: data.instructor_id,
-          instructor_profile: data.instructor_profile_image || undefined,
-          reviews: reviewData.map((r: any) => ({
-            id: r.review_id,
-            nickname: r.student_nickname,
-            content: r.review_content,
-            userId: r.student_id,
-            comment: r.comment_content,
-            comment_nickname: r.instructor_nickname,
-            comment_user_id: r.instructor_id,
-          })),
-          qnas: qnaData.posts
-            .filter((q: any) => q.category === 'qa')
-            .map((q: any) => ({
-              id: q.id,
-              nickname: q.user_nickname,
-              content: q.title,
-              userId: q.user_id,
-              comments: q.comments || [],
-            })),
-          enrolledUserIds: studentData.userIds,
+          id: Number(lectureData.id),
+          title: lectureData.title,
+          description: lectureData.description,
+          thumbnail: lectureData.thumbnail,
+          price: lectureData.price,
+          instructor_nickname: lectureData.instructor_nickname,
+          instructor_id: lectureData.instructor_id,
+          reviews: reviews,
+          qnas: qnas,
         });
       } catch (err) {
         console.error(err);
@@ -118,17 +123,21 @@ const LectureApplyPage = () => {
     };
 
     fetchLecture();
-  }, [API_URL, id]);
+  }, [API_URL, id, location.key]);
 
   useEffect(() => {
     const fetchPurchaseStatus = async () => {
-      if (!id || !user || !accessToken) return;
+      if (!accessToken || !id || !user) {
+        setPurchaseChecked(true);
+        setEnrolled(false);
+        return;
+      }
       try {
         const res = await fetch(`${API_URL}/lectures/${id}/purchased`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await res.json();
-        setEnrolled(data.isPurchased === true);
+        setEnrolled(data.is_purchased === true);
       } catch (err) {
         console.error('수강 여부 확인 실패:', err);
         setEnrolled(false);
@@ -138,21 +147,289 @@ const LectureApplyPage = () => {
     };
 
     fetchPurchaseStatus();
-  }, [id, user?.id, accessToken, API_URL, location.key]);
+  }, [accessToken, user, id, API_URL, location.key]);
 
-  const handleSubmitReviewComment = async (reviewId: number) => {
-    const content = reviewReply[reviewId]?.trim();
-    if (!content || !accessToken || !lecture) return;
-
+  const handleEnroll = async () => {
+    if (!accessToken || !lecture) {
+      alert('로그인이 필요합니다');
+      return;
+    }
     try {
-      const res = await fetch(`${API_URL}/reviews/${reviewId}/comments`, {
+      const res = await fetch(`${API_URL}/lectures/${lecture.id}/purchase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ content }),
       });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || '수강 신청 완료');
+        setEnrolled(true);
+      } else {
+        alert(data.message || '수강 신청 실패');
+      }
+    } catch {
+      alert('수강 신청 오류');
+    }
+  };
+
+  const handleGoToVideos = () => {
+    if (!lecture?.id) return;
+    if (!enrolled) {
+      alert('수강 중인 사용자만 접근할 수 있습니다.');
+      return;
+    }
+    navigate(`/lecture/${lecture.id}/videos`);
+  };
+
+  const handleSubmitReview = async () => {
+    if (!reviewInput.trim() || !lecture || !user || !accessToken) return;
+
+    const hasReviewed = lecture.reviews.some((r) => r.userId === user.id);
+    if (hasReviewed) {
+      alert('이미 리뷰를 작성하셨습니다.');
+      return;
+    }
+
+    if (!enrolled) {
+      alert('수강 신청한 사용자만 리뷰를 작성할 수 있습니다.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          lectureId: lecture.id,
+          userId: user.id,
+          content: reviewInput.trim(),
+          rating: 5,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setLecture((prev) =>
+          prev
+            ? {
+                ...prev,
+                reviews: [
+                  ...prev.reviews,
+                  {
+                    id: result.id,
+                    nickname: user.nickname,
+                    content: reviewInput.trim(),
+                    userId: user.id,
+                    comments: [],
+                  },
+                ],
+              }
+            : prev
+        );
+        setReviewInput('');
+      } else {
+        alert(result.message || '리뷰 등록 실패');
+      }
+    } catch {
+      alert('리뷰 등록 중 오류 발생');
+    }
+  };
+
+  const handleDeleteReview = async (reviewId?: number) => {
+    if (!reviewId || !accessToken) return;
+    try {
+      const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (res.ok) {
+        setLecture((prev) =>
+          prev ? { ...prev, reviews: prev.reviews.filter((r) => r.id !== reviewId) } : prev
+        );
+      } else {
+        alert('삭제 실패');
+      }
+    } catch {
+      alert('삭제 중 오류 발생');
+    }
+  };
+
+  const handleSubmitQna = async () => {
+    if (!qnaInput.trim() || !lecture || !accessToken || !user) return;
+    try {
+      const res = await fetch(`${API_URL}/qna`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          lecture_id: lecture.id,
+          title: qnaInput.trim(),
+          content: '내용 없음',
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        const newQnaRole = user?.id === lecture.instructor_id ? '강사' : (enrolled ? '수강생' : '학생');
+        setLecture((prev) =>
+          prev
+            ? {
+                ...prev,
+                qnas: [
+                  ...(prev.qnas || []),
+                  {
+                    id: result.id,
+                    nickname: user.nickname,
+                    content: qnaInput.trim(),
+                    userId: user.id,
+                    comments: [],
+                    isPurchasedStudent: newQnaRole === '수강생',
+                  },
+                ],
+              }
+            : prev
+        );
+        setQnaInput('');
+      } else {
+        alert(result.message || '질문 등록 실패');
+      }
+    } catch {
+      alert('질문 등록 실패');
+    }
+  };
+
+  const handleDeleteQna = async (qnaId?: number) => {
+    if (!qnaId || !accessToken) return;
+    try {
+      const res = await fetch(`${API_URL}/qna/posts/${qnaId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (res.ok) {
+        setLecture((prev) =>
+          prev ? { ...prev, qnas: prev.qnas?.filter((q) => q.id !== qnaId) } : prev
+        );
+      } else {
+        alert('삭제 실패');
+      }
+    } catch {
+      alert('삭제 중 오류 발생');
+    }
+  };
+
+  const handleSubmitQnaComment = async (postId: number) => {
+    const commentContent = qnaCommentInputs[postId]?.trim();
+    if (!commentContent || !user || !accessToken) {
+      alert('댓글 내용을 입력하거나 로그인해주세요.');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/qna/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          postId: postId,
+          userId: user.id,
+          content: commentContent,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setLecture((prev) =>
+          prev
+            ? {
+                ...prev,
+                qnas: prev.qnas?.map((q) =>
+                  q.id === postId
+                    ? {
+                        ...q,
+                        comments: [
+                          ...(q.comments || []),
+                          { id: result.id, nickname: user.nickname, content: commentContent, userId: user.id },
+                        ],
+                      }
+                    : q
+                ),
+              }
+            : prev
+        );
+        setQnaCommentInputs((prev) => ({ ...prev, [postId]: '' }));
+      } else {
+        alert(result.message || '댓글 등록 실패');
+      }
+    } catch {
+      alert('댓글 등록 중 오류 발생');
+    }
+  };
+
+  const handleDeleteQnaComment = async (postId: number, commentId?: number) => {
+    if (!commentId || !accessToken) return;
+    try {
+      const res = await fetch(`${API_URL}/qna/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (res.ok) {
+        setLecture((prev) =>
+          prev
+            ? {
+                ...prev,
+                qnas: prev.qnas?.map((q) =>
+                  q.id === postId
+                    ? { ...q, comments: q.comments?.filter((c) => c.id !== commentId) }
+                    : q
+                ),
+              }
+            : prev
+        );
+      } else {
+        alert('댓글 삭제 실패');
+      }
+    } catch {
+      alert('댓글 삭제 중 오류 발생');
+    }
+  };
+
+  const handleSubmitReviewComment = async (reviewId: number) => {
+    const commentContent = reviewCommentInputs[reviewId]?.trim();
+    if (!commentContent || !user || !accessToken) {
+      alert('댓글 내용을 입력하거나 로그인해주세요.');
+      return;
+    }
+
+    if (user.id !== lecture?.instructor_id) {
+      alert('강사만 리뷰에 댓글을 작성할 수 있습니다.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/reviews/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          reviewId: reviewId,
+          userId: user.id,
+          content: commentContent,
+        }),
+      });
+      const result = await res.json();
       if (res.ok) {
         setLecture((prev) =>
           prev
@@ -162,67 +439,54 @@ const LectureApplyPage = () => {
                   r.id === reviewId
                     ? {
                         ...r,
-                        comment: content,
-                        comment_nickname: user?.nickname,
-                        comment_user_id: user?.id,
+                        comments: r.comments && r.comments.length > 0
+                          ? r.comments.map(c => ({...c, content: commentContent}))
+                          : [{ id: result.id, nickname: user.nickname, content: commentContent, userId: user.id }],
                       }
                     : r
                 ),
               }
             : prev
         );
-        setReviewReply((prev) => ({ ...prev, [reviewId]: '' }));
+        setReviewCommentInputs((prev) => ({ ...prev, [reviewId]: '' }));
       } else {
-        alert('답글 등록 실패');
+        alert(result.message || '리뷰 댓글 등록/수정 실패');
       }
     } catch {
-      alert('답글 등록 오류');
+      alert('리뷰 댓글 등록/수정 중 오류 발생');
     }
   };
 
-  const handleSubmitQna = async () => {
-    const content = qnaInput.trim();
-    if (!content || !accessToken || !id) return;
+  const handleDeleteReviewComment = async (reviewId: number, commentId?: number) => {
+    if (!commentId || !accessToken) return;
     try {
-      const res = await fetch(`${API_URL}/qna/${id}/posts`, {
-        method: 'POST',
+      const res = await fetch(`${API_URL}/reviews/comments/${commentId}`, {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ category: 'qa', title: content }),
       });
       if (res.ok) {
-        location.reload();
+        setLecture((prev) =>
+          prev
+            ? {
+                ...prev,
+                reviews: prev.reviews.map((r) =>
+                  r.id === reviewId
+                    ? { ...r, comments: r.comments?.filter((c) => c.id !== commentId) }
+                    : r
+                ),
+              }
+            : prev
+        );
       } else {
-        alert('질문 등록 실패');
+        alert('리뷰 댓글 삭제 실패');
       }
     } catch {
-      alert('질문 등록 오류');
+      alert('리뷰 댓글 삭제 중 오류 발생');
     }
   };
 
-  const handleSubmitQnaComment = async (postId: number) => {
-    const content = qnaReplies[postId]?.trim();
-    if (!content || !accessToken) return;
-    try {
-      const res = await fetch(`${API_URL}/qna/${id}/posts/${postId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ content }),
-      });
-      if (res.ok) {
-        location.reload();
-      } else {
-        alert('답글 등록 실패');
-      }
-    } catch {
-      alert('답글 등록 오류');
-    }
-  };
 
   if (loading) return <div>Loading...</div>;
   if (!lecture) return <div>강의 정보를 불러오지 못했습니다.</div>;
@@ -231,112 +495,191 @@ const LectureApplyPage = () => {
 
   return (
     <div className="lecture-wrapper">
-      <div className="lecture-header">
-        <img src={lecture.thumbnail} alt="썸네일" className="lecture-thumbnail" />
-        <div className="lecture-details">
-          <h1>{lecture.title}</h1>
-          <p>{lecture.description}</p>
-          <p>{price === 0 ? '무료' : `${price.toLocaleString()}원`}</p>
-          {!purchaseChecked ? (
-            <p>수강 정보 확인 중...</p>
-          ) : enrolled ? (
-            <button disabled>수강 중</button>
-          ) : (
-            <button onClick={() => navigate(`/lectures/${id}/payment`)}>수강 신청</button>
-          )}
+      <div className="header-bg">
+        <div className="title-thumbnail-area">
+          <div className="title-area">
+            <h1>{lecture.title}</h1>
+            {lecture.instructor_nickname && (
+              <p style={{ marginTop: '8px', fontSize: '16px', color: '#555' }}>
+                강사: <strong>{lecture.instructor_nickname}</strong>
+              </p>
+            )}
+          </div>
+          <div className="thumbnail-area">
+            <img src={lecture.thumbnail} alt="썸네일" className="thumbnail" />
+          </div>
         </div>
       </div>
 
-      <div className="review-section">
-        <h2>수강생 리뷰</h2>
-        {lecture.reviews.length === 0 ? (
-          <p>아직 등록된 리뷰가 없습니다.</p>
-        ) : (
-          <ul>
-            {lecture.reviews.map((r) => (
-              <li key={r.id}>
-                <strong>{r.nickname}</strong> {r.content}
-                {r.comment && (
-                  <div style={{ marginLeft: '1rem', fontSize: '14px', color: '#555' }}>
-                    <strong>
-                      [{
-                        r.comment_user_id === lecture.instructor_id
-                          ? '강사'
-                          : lecture.enrolledUserIds?.includes(r.comment_user_id!)
-                          ? '수강생'
-                          : '일반'
-                      }] {r.comment_nickname}
-                    </strong>{' '}
-                    {r.comment}
-                  </div>
-                )}
-                {user?.id === r.userId && <button onClick={() => alert('리뷰 삭제 기능')}>삭제</button>}
-                {user && !r.comment && (
-                  <div>
-                    <textarea
-                      value={reviewReply[r.id!] || ''}
-                      onChange={(e) =>
-                        setReviewReply((prev) => ({ ...prev, [r.id!]: e.target.value }))
-                      }
-                      placeholder="답글 작성"
-                    />
-                    <button onClick={() => handleSubmitReviewComment(r.id!)}>답글 등록</button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <div className="qna-section">
-        <h2>Q&A</h2>
-        {user && (
-          <div>
-            <textarea
-              value={qnaInput}
-              onChange={(e) => setQnaInput(e.target.value)}
-              placeholder="질문을 입력하세요"
-              maxLength={MAX_QNA_LENGTH}
-            />
-            <button onClick={handleSubmitQna}>질문 등록</button>
+      <div className="content-area">
+        <div className="left-content">
+          <div className="description-box">
+            <h2>강의 소개</h2>
+            <p className="description">{lecture.description}</p>
           </div>
-        )}
-        <ul>
-          {lecture.qnas?.map((qna) => (
-            <li key={qna.id}>
-              <strong>{qna.nickname}</strong> {qna.content}
+
+          <div className="review-section">
+            <h2>수강생 리뷰</h2>
+            {lecture.reviews.length === 0 ? (
+              <p>아직 등록된 리뷰가 없습니다.</p>
+            ) : (
               <ul>
-                {qna.comments?.map((c) => (
-                  <li key={c.id} style={{ marginLeft: '1rem' }}>
-                    <strong>
-                      [{
-                        c.user_id === lecture.instructor_id
-                          ? '강사'
-                          : lecture.enrolledUserIds?.includes(c.user_id)
-                          ? '수강생'
-                          : '일반'
-                      }] {c.nickname}
-                    </strong>{' '}
-                    {c.content}
+                {lecture.reviews.map((r) => (
+                  <li key={r.id}>
+                    <span>
+                      <strong>{r.nickname}</strong> {r.content}
+                    </span>
+                    {user?.id === r.userId && (
+                      <button onClick={() => handleDeleteReview(r.id)}>삭제</button>
+                    )}
+                    {r.comments && r.comments.length > 0 && (
+                      <div className="comments-section">
+                        {r.comments.map((comment) => (
+                          <div key={comment.id} className="comment-item">
+                            <strong>{comment.nickname} (강사)</strong>: {comment.content}
+                            {user?.id === comment.userId && (
+                              <button onClick={() => handleDeleteReviewComment(r.id!, comment.id)}>삭제</button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {user && user.id === lecture.instructor_id && (
+                      <div className="comment-input">
+                        <textarea
+                          value={reviewCommentInputs[r.id!] || (r.comments && r.comments[0]?.content) || ''}
+                          maxLength={MAX_COMMENT_LENGTH}
+                          onChange={(e) =>
+                            setReviewCommentInputs((prev) => ({
+                              ...prev,
+                              [r.id!]: e.target.value,
+                            }))
+                          }
+                          placeholder={r.comments && r.comments.length > 0 ? "댓글 수정" : "댓글을 작성해주세요."}
+                        />
+                        <button onClick={() => handleSubmitReviewComment(r.id!)}>
+                          {r.comments && r.comments.length > 0 ? '댓글 수정' : '댓글 등록'}
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
-              {user && (
-                <div>
-                  <textarea
-                    value={qnaReplies[qna.id!] || ''}
-                    onChange={(e) =>
-                      setQnaReplies((prev) => ({ ...prev, [qna.id!]: e.target.value }))
-                    }
-                    placeholder="답글 작성"
-                  />
-                  <button onClick={() => handleSubmitQnaComment(qna.id!)}>답글 등록</button>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+            )}
+            {user && enrolled && (
+              <div className="review-input">
+                <textarea
+                  value={reviewInput}
+                  maxLength={MAX_REVIEW_LENGTH}
+                  onChange={(e) => setReviewInput(e.target.value)}
+                  placeholder="리뷰를 작성해주세요."
+                />
+                <button onClick={handleSubmitReview}>리뷰 등록</button>
+              </div>
+            )}
+          </div>
+
+          <div className="qna-section">
+            <h2>Q&A</h2>
+            {lecture.qnas?.length === 0 ? (
+              <p>등록된 질문이 없습니다.</p>
+            ) : (
+              <ul>
+                {lecture.qnas?.map((q) => (
+                  <li key={q.id}>
+                    <span>
+                      <strong>
+                        {q.nickname} (
+                        {user?.id === lecture.instructor_id
+                          ? '강사'
+                          : q.isPurchasedStudent
+                          ? '수강생'
+                          : '학생'}
+                        )
+                      </strong>{' '}
+                      {q.content}
+                    </span>
+                    {user?.id === q.userId && (
+                      <button onClick={() => handleDeleteQna(q.id)}>삭제</button>
+                    )}
+                    {q.comments && q.comments.length > 0 && (
+                      <div className="comments-section">
+                        {q.comments.map((comment) => (
+                          <div key={comment.id} className="comment-item">
+                            <strong>{comment.nickname}</strong>: {comment.content}
+                            {user?.id === comment.userId && (
+                              <button onClick={() => handleDeleteQnaComment(q.id!, comment.id)}>삭제</button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {user && (
+                      <div className="comment-input">
+                        <textarea
+                          value={qnaCommentInputs[q.id!] || ''}
+                          maxLength={MAX_COMMENT_LENGTH}
+                          onChange={(e) =>
+                            setQnaCommentInputs((prev) => ({
+                              ...prev,
+                              [q.id!]: e.target.value,
+                            }))
+                          }
+                          placeholder="댓글을 작성해주세요."
+                        />
+                        <button onClick={() => handleSubmitQnaComment(q.id!)}>댓글 등록</button>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {user && (
+              <div className="qna-input">
+                <textarea
+                  value={qnaInput}
+                  maxLength={MAX_QNA_LENGTH}
+                  onChange={(e) => setQnaInput(e.target.value)}
+                  placeholder="질문을 작성해주세요."
+                />
+                <button onClick={handleSubmitQna}>질문 등록</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="right-content">
+          <div className="price-box">
+            <div className="price">
+              <strong>{price === 0 ? '무료' : `${price.toLocaleString()}원`}</strong>
+            </div>
+            {purchaseChecked ? (
+              <button
+                className="enroll-btn"
+                onClick={enrolled ? handleGoToVideos : handleEnroll}
+                disabled={!user || !accessToken}
+                style={{
+                  background: !user || !accessToken ? '#bbb' : undefined,
+                  cursor: !user || !accessToken ? 'not-allowed' : undefined,
+                }}
+              >
+                {enrolled ? '수강하기' : '신청하기'}
+              </button>
+            ) : (
+              <div
+                className="enroll-btn"
+                style={{ background: '#f0f0f0', color: '#555', cursor: 'default' }}
+              >
+                확인 중...
+              </div>
+            )}
+            {!user || !accessToken ? (
+              <div style={{ fontSize: 13, color: '#D32F2F', marginTop: 7 }}>
+                로그인 후 신청할 수 있습니다.
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );
