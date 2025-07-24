@@ -233,7 +233,14 @@ const BoardPostDetailPage = () => {
                       .map((reply) => (
                         <CommentItem
                           key={reply.id}
-                          style={{ marginLeft: '20px', backgroundColor: '#f5f5f5' }}
+                          style={{
+                            marginTop: '12px',
+                            marginLeft: '20px',
+                            marginRight: '20px',
+                            backgroundColor: '#f5f5f5',
+                            padding: '12px',
+                            borderRadius: '8px',
+                          }}
                         >
                           <CommentHeader>
                             <span>{reply.author}</span>
