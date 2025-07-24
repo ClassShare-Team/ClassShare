@@ -6,7 +6,7 @@ exports.purchasePointPackage = async (userId, packageId) => {
   try {
     await client.query('BEGIN');
 
-    // 1. 패키지 조회
+    // 패키지 조회
     const {
       rows: [pkg],
     } = await client.query(`SELECT amount, bonus FROM point_packages WHERE id = $1`, [packageId]);
@@ -15,13 +15,13 @@ exports.purchasePointPackage = async (userId, packageId) => {
 
     const totalPoint = pkg.amount + pkg.bonus;
 
-    // 2. 유저 포인트 업데이트
+    // 유저 포인트 업데이트
     await client.query(`UPDATE users SET point_balance = point_balance + $1 WHERE id = $2`, [
       totalPoint,
       userId,
     ]);
 
-    // 3. 포인트 내역 기록
+    // 포인트 내역 기록
     await client.query(
       `INSERT INTO point_histories (user_id, change_amount, source, detail)
        VALUES ($1, $2, '충전', $3)`,
@@ -36,4 +36,27 @@ exports.purchasePointPackage = async (userId, packageId) => {
   } finally {
     client.release();
   }
+};
+
+// 현재 포인트 조회
+exports.getCurrentPoint = async (userId) => {
+  const {
+    rows: [user],
+  } = await db.query(`SELECT point_balance FROM users WHERE id = $1`, [userId]);
+
+  if (!user) throw new Error('사용자를 찾을 수 없습니다.');
+  return user.point_balance;
+};
+
+// 포인트 내역 조회
+exports.getPointHistories = async (userId) => {
+  const { rows } = await db.query(
+    `SELECT id, change_amount, source, detail, created_at
+       FROM point_histories
+      WHERE user_id = $1
+      ORDER BY created_at DESC`,
+    [userId]
+  );
+
+  return rows;
 };
