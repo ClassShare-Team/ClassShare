@@ -181,46 +181,83 @@ const BoardPostDetailPage = () => {
             )}
 
             <CommentList>
-              {comments.map((c) => (
-                <CommentItem key={c.id}>
-                  <CommentHeader>
-                    <span>{c.author}</span>
-                    <span>
-                      {new Date(c.created_at).toLocaleString('ko-KR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      })}
-                    </span>
-                  </CommentHeader>
-                  <p>{c.content}</p>
-                  {user?.nickname === c.author && (
-                    <DeleteButton onClick={() => handleDeleteComment(c.id)}>삭제</DeleteButton>
-                  )}
-                  {!c.parent_id && (
-                    <button
-                      onClick={() => setActiveReplyId(activeReplyId === c.id ? null : c.id)}
-                      style={{ fontSize: '12px', marginTop: '6px' }}
-                    >
-                      ✔ 답글 달기
-                    </button>
-                  )}
-                  {activeReplyId === c.id && (
-                    <div style={{ marginTop: '8px' }}>
-                      <textarea
-                        value={replyComment}
-                        onChange={(e) => setReplyComment(e.target.value)}
-                        placeholder="답글을 입력하세요"
-                        style={{ width: '100%', minHeight: '60px', marginBottom: '6px' }}
-                      />
-                      <SubmitButton onClick={() => handleReplySubmit(c.id)}>작성</SubmitButton>
-                    </div>
-                  )}
-                </CommentItem>
-              ))}
+              {comments
+                .filter((c) => c.parent_id === null)
+                .map((parent) => (
+                  <div key={parent.id}>
+                    <CommentItem>
+                      <CommentHeader>
+                        <span>{parent.author}</span>
+                        <span>
+                          {new Date(parent.created_at).toLocaleString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          })}
+                        </span>
+                      </CommentHeader>
+                      <p>{parent.content}</p>
+                      {user?.nickname === parent.author && (
+                        <DeleteButton onClick={() => handleDeleteComment(parent.id)}>
+                          삭제
+                        </DeleteButton>
+                      )}
+                      <button
+                        onClick={() =>
+                          setActiveReplyId(activeReplyId === parent.id ? null : parent.id)
+                        }
+                        style={{ fontSize: '12px', marginTop: '6px' }}
+                      >
+                        ✔ 답글 달기
+                      </button>
+                      {activeReplyId === parent.id && (
+                        <div style={{ marginTop: '8px' }}>
+                          <textarea
+                            value={replyComment}
+                            onChange={(e) => setReplyComment(e.target.value)}
+                            placeholder="답글을 입력하세요"
+                            style={{ width: '100%', minHeight: '60px', marginBottom: '6px' }}
+                          />
+                          <SubmitButton onClick={() => handleReplySubmit(parent.id)}>
+                            작성
+                          </SubmitButton>
+                        </div>
+                      )}
+                    </CommentItem>
+
+                    {comments
+                      .filter((r) => r.parent_id === parent.id)
+                      .map((reply) => (
+                        <CommentItem
+                          key={reply.id}
+                          style={{ marginLeft: '20px', backgroundColor: '#f5f5f5' }}
+                        >
+                          <CommentHeader>
+                            <span>{reply.author}</span>
+                            <span>
+                              {new Date(reply.created_at).toLocaleString('ko-KR', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                              })}
+                            </span>
+                          </CommentHeader>
+                          <p>{reply.content}</p>
+                          {user?.nickname === reply.author && (
+                            <DeleteButton onClick={() => handleDeleteComment(reply.id)}>
+                              삭제
+                            </DeleteButton>
+                          )}
+                        </CommentItem>
+                      ))}
+                  </div>
+                ))}
             </CommentList>
           </CommentSection>
         </Content>
