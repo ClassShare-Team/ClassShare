@@ -71,7 +71,7 @@ const InstructorMyLecturePage = () => {
               <img src={lecture.thumbnail} alt={lecture.title} />
               <h3>{lecture.title}</h3>
               <p>{lecture.description}</p>
-              <span>{Number(lecture.price).toLocaleString()}원</span>
+              <span>{Number(lecture.price) === 0 ? '무료' : `${Number(lecture.price).toLocaleString()}원`}</span>
             </LectureCard>
           ))}
         </LectureGrid>
