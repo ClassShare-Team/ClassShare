@@ -326,6 +326,7 @@ const ButtonGroup = styled.div`
   bottom: 2rem;
   display: flex;
   gap: 12px;
+  flex-wrap: nowrap;
 `;
 
 const BackButton = styled.button`
@@ -341,6 +342,7 @@ const BackButton = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  white-space: nowrap;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.purple};
