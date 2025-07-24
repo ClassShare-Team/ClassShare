@@ -152,7 +152,12 @@ const BoardPostDetailPage = () => {
           </InfoText>
           <Divider />
           <Body>{post.content}</Body>
-          <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+          <ButtonGroup>
+            <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+            {user?.nickname === post.author && (
+              <EditButton onClick={() => navigate(`/boards/edit/${post.id}`)}>수정하기</EditButton>
+            )}
+          </ButtonGroup>
 
           <CommentSection>
             {user ? (
@@ -315,6 +320,14 @@ const Body = styled.div`
   white-space: pre-wrap;
 `;
 
+const ButtonGroup = styled.div`
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  display: flex;
+  gap: 12px;
+`;
+
 const BackButton = styled.button`
   position: absolute;
   right: 2rem;
@@ -331,6 +344,22 @@ const BackButton = styled.button`
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.purple};
+  }
+`;
+
+const EditButton = styled.button`
+  padding: 8px 16px;
+  background-color: ${({ theme }) => theme.colors.gray300};
+  color: ${({ theme }) => theme.colors.black};
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.gray400};
   }
 `;
 
