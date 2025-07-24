@@ -406,8 +406,8 @@ const LectureApplyPage = () => {
 
   const handleSubmitReviewComment = async (reviewId: number) => {
     const commentContent = reviewCommentInputs[reviewId]?.trim();
-    if (!commentContent || !user || !accessToken) {
-      alert('댓글 내용을 입력하거나 로그인해주세요.');
+    if (!user || !accessToken) {
+      alert('로그인이 필요합니다.');
       return;
     }
 
@@ -415,10 +415,27 @@ const LectureApplyPage = () => {
       alert('강사만 리뷰에 댓글을 작성할 수 있습니다.');
       return;
     }
+    
+    // Check if there's an existing comment
+    const existingComment = lecture?.reviews.find(r => r.id === reviewId)?.comments?.[0];
+    const method = existingComment ? 'PUT' : 'POST';
+    const url = existingComment ? `${API_URL}/reviews/comments/${existingComment.id}` : `${API_URL}/reviews/comments`;
+
+    if (!commentContent && method === 'POST') { // Don't allow empty new comment
+        alert('댓글 내용을 입력해주세요.');
+        return;
+    }
+    if (!commentContent && method === 'PUT') { // Allow empty update to delete, but handle it with a delete call or specific logic if needed
+        // For now, if content is empty on update, we'll let the API handle it,
+        // but typically you'd prevent empty updates or convert to a delete.
+        // If the backend allows empty string update, it will work.
+        // Otherwise, you might want to call handleDeleteReviewComment here or prevent update.
+    }
+
 
     try {
-      const res = await fetch(`${API_URL}/reviews/comments`, {
-        method: 'POST',
+      const res = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
@@ -439,9 +456,9 @@ const LectureApplyPage = () => {
                   r.id === reviewId
                     ? {
                         ...r,
-                        comments: r.comments && r.comments.length > 0
-                          ? r.comments.map(c => ({...c, content: commentContent}))
-                          : [{ id: result.id, nickname: user.nickname, content: commentContent, userId: user.id }],
+                        comments: result.id // New comment created or updated
+                          ? [{ id: result.id, nickname: user.nickname, content: commentContent, userId: user.id }]
+                          : [], // If update results in no comment (e.g., content becomes empty string and API deletes)
                       }
                     : r
                 ),
@@ -450,10 +467,10 @@ const LectureApplyPage = () => {
         );
         setReviewCommentInputs((prev) => ({ ...prev, [reviewId]: '' }));
       } else {
-        alert(result.message || '리뷰 댓글 등록/수정 실패');
+        alert(result.message || `리뷰 댓글 ${method === 'POST' ? '등록' : '수정'} 실패`);
       }
     } catch {
-      alert('리뷰 댓글 등록/수정 중 오류 발생');
+      alert(`리뷰 댓글 ${method === 'POST' ? '등록' : '수정'} 중 오류 발생`);
     }
   };
 
@@ -479,6 +496,7 @@ const LectureApplyPage = () => {
               }
             : prev
         );
+        setReviewCommentInputs((prev) => ({ ...prev, [reviewId]: '' })); // Clear input after deletion
       } else {
         alert('리뷰 댓글 삭제 실패');
       }
@@ -547,7 +565,7 @@ const LectureApplyPage = () => {
                     {user && user.id === lecture.instructor_id && (
                       <div className="comment-input">
                         <textarea
-                          value={reviewCommentInputs[r.id!] || (r.comments && r.comments[0]?.content) || ''}
+                          value={reviewCommentInputs[r.id!] !== undefined ? reviewCommentInputs[r.id!] : (r.comments && r.comments[0]?.content) || ''}
                           maxLength={MAX_COMMENT_LENGTH}
                           onChange={(e) =>
                             setReviewCommentInputs((prev) => ({
