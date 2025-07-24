@@ -321,18 +321,13 @@ const Body = styled.div`
 `;
 
 const ButtonGroup = styled.div`
-  position: absolute;
-  right: 2rem;
-  bottom: 2rem;
   display: flex;
+  justify-content: flex-end;
   gap: 20px;
-  flex-wrap: nowrap;
+  margin-top: 2rem;
 `;
 
 const BackButton = styled.button`
-  position: absolute;
-  right: 2rem;
-  bottom: 2rem;
   padding: 8px 16px;
   background-color: ${({ theme }) => theme.colors.purple100};
   color: ${({ theme }) => theme.colors.white};
