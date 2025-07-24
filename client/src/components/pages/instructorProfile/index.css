@@ -1,0 +1,231 @@
+.lec-card {
+  width: 225px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.thumbnail-wrapper {
+  width: 100%;
+  height: 160px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.card-content {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-content .title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+  line-height: 1.3;
+}
+
+.card-content .instructor {
+  font-size: 13px;
+  color: #555;
+  margin-top: 2px;
+}
+
+.card-content .price {
+  font-weight: 700;
+  color: #5c3df3;
+  font-size: 14px;
+  margin-top: auto;
+}
+
+.profile-lecture-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 32px;
+  justify-content: flex-start;
+}
+
+.instructor-profile-box {
+  width: 800px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 32px auto;
+  height: 25vh;
+}
+
+@media (max-width: 768px) {
+  .instructor-profile-box {
+    width: 90%;
+    flex-direction: column;
+    height: auto;
+    padding: 16px;
+  }
+}
+
+.profile-left {
+  flex-shrink: 0;
+  margin-right: 24px;
+}
+
+.instructor-profile {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nickname {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+.introduction {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+  font-size: 15px;
+  color: #444;
+}
+
+.stat-item {
+  font-weight: 600;
+}
+
+.review-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  min-height: 550px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-bottom: 32px;
+}
+
+.review-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.review-item {
+  display: flex;
+  flex-direction: column;
+  background: #f6f2ff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: none;
+  gap: 8px;
+}
+
+.review-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.review-nickname {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.review-lecture-title {
+  color: #888;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.review-date {
+  font-size: 12px;
+  color: #aaa;
+  margin-left: auto;
+}
+
+.review-content {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+  margin-top: 8px;
+  padding-left: 16px;
+}
+
+.lecture-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 64px;
+  margin-bottom: 24px;
+}
+
+.lecture-pagination button {
+  border: none;
+  background: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: #5c3df3;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.lecture-pagination button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.main-wrapper {
+  flex: 1;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+  box-sizing: border-box;
+}
+
+.introduction {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.5;
+  margin-top: 8px;
+}

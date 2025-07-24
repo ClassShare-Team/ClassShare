@@ -3,10 +3,13 @@ import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 import { toast } from 'react-toastify';
 import DefaultProfileImage from '@/assets/UserProfileLogo.png';
+import { useUser } from '@/contexts/UserContext';
 
 const StudentMyPage = () => {
   const navigate = useNavigate();
   const { userInfo, loading, error } = useMyPageInfo();
+  // 회원 탈퇴 후 헤더 유저 상태 초기화 (logout 처리)
+  const { logout } = useUser();
 
   if (loading) return <div>로딩 중...</div>;
   if (error) return <div>오류: {error.message}</div>;
@@ -23,8 +26,11 @@ const StudentMyPage = () => {
         },
       });
       if (!res.ok) throw new Error('회원 탈퇴 실패');
+
       toast.success('회원 탈퇴가 완료되었습니다.');
       localStorage.removeItem('accessToken');
+
+      logout();
       navigate('/');
     } catch (err) {
       if (err instanceof Error) toast.error(err.message);
@@ -40,6 +46,7 @@ const StudentMyPage = () => {
           <h2>{userInfo.name || '이름 없음'}</h2>
           <InfoText>닉네임: {userInfo.nickname || '닉네임 없음'}</InfoText>
           <InfoText>이메일: {userInfo.email}</InfoText>
+          <InfoText>전화번호: {userInfo.phone || '등록된 번호 없음'}</InfoText>
           <InfoText>역할: {userInfo.role === 'instructor' ? '강사' : '학생'}</InfoText>
         </ProfileSection>
 

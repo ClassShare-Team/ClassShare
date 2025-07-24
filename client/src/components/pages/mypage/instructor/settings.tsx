@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import useMyPageInfo from '@/components/hooks/useMyPageInfo';
 import { toast } from 'react-toastify';
 import { useUser } from '@/contexts/UserContext';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const InstructorSettingsPage = () => {
   const { userInfo } = useMyPageInfo();
@@ -15,6 +16,10 @@ const InstructorSettingsPage = () => {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(userInfo?.profile_image || '');
   const [loading, setLoading] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const isOAuthUser = !!userInfo?.oauth_id;
 
   const formatPhone = (raw: string) =>
     raw.replace(/[^\d]/g, '').replace(/^(\d{3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
@@ -78,7 +83,10 @@ const InstructorSettingsPage = () => {
           new_password: newPassword,
         }),
       });
-      if (!res.ok) throw new Error('비밀번호 변경 실패');
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || '비밀번호 변경 실패');
+
       toast.success('비밀번호가 변경되었습니다.');
       setCurrentPassword('');
       setNewPassword('');
@@ -121,22 +129,44 @@ const InstructorSettingsPage = () => {
         </SaveButton>
 
         <Label>현재 비밀번호</Label>
-        <Input
-          type="password"
-          value={currentPassword}
-          placeholder="현재 비밀번호"
-          onChange={(e) => setCurrentPassword(e.target.value)}
-        />
+        <PasswordInputWrapper>
+          <PasswordInput
+            type={showCurrentPassword ? 'text' : 'password'}
+            value={currentPassword}
+            placeholder="현재 비밀번호"
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            disabled={isOAuthUser}
+          />
+          <ToggleButton
+            type="button"
+            onClick={() => setShowCurrentPassword((prev) => !prev)}
+            disabled={isOAuthUser}
+          >
+            {showCurrentPassword ? <FiEyeOff /> : <FiEye />}
+          </ToggleButton>
+        </PasswordInputWrapper>
 
         <Label>새 비밀번호</Label>
-        <Input
-          type="password"
-          value={newPassword}
-          placeholder="새 비밀번호"
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
+        <PasswordInputWrapper>
+          <PasswordInput
+            type={showNewPassword ? 'text' : 'password'}
+            value={newPassword}
+            placeholder="새 비밀번호"
+            onChange={(e) => setNewPassword(e.target.value)}
+            disabled={isOAuthUser}
+          />
+          <ToggleButton
+            type="button"
+            onClick={() => setShowNewPassword((prev) => !prev)}
+            disabled={isOAuthUser}
+          >
+            {showNewPassword ? <FiEyeOff /> : <FiEye />}
+          </ToggleButton>
+        </PasswordInputWrapper>
 
-        <SaveButton onClick={handlePasswordChange}>비밀번호 변경</SaveButton>
+        <SaveButton onClick={handlePasswordChange} disabled={isOAuthUser}>
+          비밀번호 변경
+        </SaveButton>
       </Card>
     </Container>
   );
@@ -151,7 +181,6 @@ const Container = styled.div`
   background-color: linear-gradient(to bottom, #fef7ff, #f0f9ff);
   min-height: calc(100vh - 80px);
 `;
-
 const Card = styled.div`
   background-color: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
@@ -163,13 +192,11 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
 const Label = styled.label`
   display: block;
   margin-top: 20px;
   font-weight: bold;
 `;
-
 const Input = styled.input`
   width: 100%;
   padding: 10px;
@@ -177,7 +204,6 @@ const Input = styled.input`
   border: 1px solid ${({ theme }) => theme.colors.gray300};
   border-radius: 6px;
 `;
-
 const SaveButton = styled.button`
   margin-top: 20px;
   padding: 10px 16px;
@@ -188,7 +214,6 @@ const SaveButton = styled.button`
   border-radius: 6px;
   cursor: pointer;
 `;
-
 const PreviewImage = styled.img`
   width: 120px;
   height: 120px;
@@ -197,17 +222,14 @@ const PreviewImage = styled.img`
   margin-top: 8px;
   margin-bottom: 12px;
 `;
-
 const FileUploadWrapper = styled.div`
   display: flex;
   justify-content: flex-start;
   margin-top: 8px;
 `;
-
 const HiddenFileInput = styled.input`
   display: none;
 `;
-
 const UploadButton = styled.button`
   width: 100%;
   padding: 10px 16px;
@@ -218,4 +240,41 @@ const UploadButton = styled.button`
   cursor: pointer;
   font-size: 14px;
   text-align: center;
+`;
+const PasswordInputWrapper = styled.div`
+  position: relative;
+`;
+const PasswordInput = styled.input`
+  width: 100%;
+  padding: 10px 40px 10px 10px;
+  padding-right: 40px;
+  font-size: 16px;
+  border: 1px solid ${({ theme }) => theme.colors.gray300};
+  border-radius: 10px;
+  margin-top: 8px;
+
+  &:disabled {
+    background-color: #f0f0f0;
+    color: ${({ theme }) => theme.colors.gray400};
+    cursor: not-allowed;
+  }
+`;
+const ToggleButton = styled.button`
+  display: flex;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 16px);
+  right: 12px;
+  top: 50%;
+  transform: translateY(-40%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: ${({ theme }) => theme.colors.gray300};
+
+  &:disabled {
+    color: ${({ theme }) => theme.colors.gray400};
+  }
 `;

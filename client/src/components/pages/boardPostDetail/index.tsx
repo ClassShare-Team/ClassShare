@@ -123,7 +123,17 @@ const BoardPostDetailPage = () => {
         <Content>
           <Title>{post.title}</Title>
           <InfoText>
-            <span>{new Date(post.created_at).toLocaleString()} 작성</span>
+            <span>
+              {new Date(post.created_at).toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              })}{' '}
+              작성
+            </span>
             <span>{post.author}</span>
           </InfoText>
           <Divider />
@@ -151,7 +161,16 @@ const BoardPostDetailPage = () => {
                 <CommentItem key={c.id}>
                   <CommentHeader>
                     <span>{c.author}</span>
-                    <span>{new Date(c.created_at).toLocaleString()}</span>
+                    <span>
+                      {new Date(c.created_at).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      })}
+                    </span>
                   </CommentHeader>
                   <p>{c.content}</p>
                   {user?.nickname === c.author && (
@@ -185,7 +204,7 @@ const Main = styled.main`
 const Content = styled.div`
   position: relative;
   max-width: 800px;
-  min-height: 1200px;
+  min-height: 900px;
   margin: 0 auto;
   background: ${({ theme }) => theme.colors.white};
   padding: 2rem;

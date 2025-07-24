@@ -5,7 +5,6 @@ import UserProfileLogo from '@/assets/UserProfileLogo.png';
 import styled from 'styled-components';
 import './index.css';
 
-/* ---------- 타입 ---------- */
 interface Lecture {
   id: number;
   title: string;
@@ -21,7 +20,6 @@ interface Instructor {
   lectures: Lecture[];
 }
 
-/* ---------- 상수 ---------- */
 const categories = ['전체', '교육', '개발', '음악', '요리', '운동', '글쓰기', '예술'];
 
 const SearchPage: React.FC = () => {
@@ -29,14 +27,13 @@ const SearchPage: React.FC = () => {
   const [params] = useSearchParams();
 
   const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [matchedInst, setMatchedInst] = useState<Instructor | null>(null);
+  const [matchedInstructors, setmatchedInstructors] = useState<Instructor[]>([]);
   const [selectedCat, setSelectedCat] = useState('전체');
   const [totalPages, setTotalPages] = useState(1);
 
   const page = Number(params.get('page') || '1');
   const q = params.get('q')?.trim() || '';
 
-  /* 검색 API 호출 */
   useEffect(() => {
     if (!q) return;
 
@@ -44,11 +41,11 @@ const SearchPage: React.FC = () => {
       try {
         const url = `${import.meta.env.VITE_API_URL}/search?q=${encodeURIComponent(q)}&page=${page}`;
         const { data } = await axios.get(url);
-
         const apiLectures = data.lectures || [];
-        const instructorLectures = data.matched_instructor?.lectures || [];
+        const instructorLectures = ((data.matched_instructors || []) as Instructor[]).flatMap(
+          (inst) => inst.lectures
+        );
 
-        // ✅ 중복 제거
         const combinedLectures = [...apiLectures, ...instructorLectures]
           .map((lecture) => ({
             ...lecture,
@@ -57,7 +54,7 @@ const SearchPage: React.FC = () => {
           .filter((lec, index, self) => index === self.findIndex((l) => l.id === lec.id));
 
         setLectures(combinedLectures);
-        setMatchedInst(data.matched_instructor || null);
+        setmatchedInstructors(data.matched_instructors || []);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
         console.error('검색 실패:', err);
@@ -67,12 +64,15 @@ const SearchPage: React.FC = () => {
     fetch();
   }, [q, page]);
 
-  /* 카테고리 필터링 (강의에만 적용) */
   const displayedLectures =
     selectedCat === '전체' ? lectures : lectures.filter((l) => l.category === selectedCat);
 
-  const fmtPrice = (p: number | string) =>
-    isNaN(Number(p)) ? String(p) : Number(p).toLocaleString() + '원';
+  const fmtPrice = (p: number | string) => {
+    const num = Math.floor(Number(p));
+    if (isNaN(num)) return String(p);
+    if (num === 0) return '무료';
+    return num.toLocaleString() + '원';
+  };
 
   const handlePageChange = (newPage: number) => {
     navigate(`/search?q=${encodeURIComponent(q)}&page=${newPage}`);
@@ -81,12 +81,12 @@ const SearchPage: React.FC = () => {
   const renderInstructorCard = (inst: Instructor) => (
     <div
       className="instructor-card"
-      onClick={() => navigate(`/instructors/${inst.id}`)}
+      onClick={() => navigate(`/instructor/${inst.id}/profile`)}
       style={{ cursor: 'pointer' }}
     >
-      <div className="instructor-profile-wrapper">
+      <div className="search-instructor-profile-wrapper">
         <img
-          className="instructor-profile"
+          className="search-instructor-profile"
           src={inst.profile_image || UserProfileLogo}
           alt={inst.nickname}
         />
@@ -97,7 +97,7 @@ const SearchPage: React.FC = () => {
 
   const renderLectureCard = (lecture: Lecture) => (
     <div
-      className="card"
+      className="search-card"
       key={lecture.id}
       onClick={() => navigate(`/lectures/${lecture.id}/apply`)}
       style={{ cursor: 'pointer' }}
@@ -116,14 +116,19 @@ const SearchPage: React.FC = () => {
   return (
     <Wrapper>
       <ContentWrapper>
-        {matchedInst && (
+        {matchedInstructors.length > 0 && (
           <>
             <h2 className="search-title">👩‍🎓크리에이터</h2>
-            <div className="creator-grid">{renderInstructorCard(matchedInst)}</div>
+            <div className="creator-grid">
+              {matchedInstructors.map((inst) => renderInstructorCard(inst))}
+            </div>
           </>
         )}
 
-        <h2 className="search-title" style={{ marginTop: matchedInst ? '64px' : '0px' }}>
+        <h2
+          className="search-title"
+          style={{ marginTop: matchedInstructors.length > 0 ? '64px' : '0px' }}
+        >
           📖강의
         </h2>
 
@@ -131,7 +136,7 @@ const SearchPage: React.FC = () => {
           {categories.map((c) => (
             <button
               key={c}
-              className={`category-btn ${selectedCat === c ? 'active' : ''}`}
+              className={`search-category-btn ${selectedCat === c ? 'active' : ''}`}
               onClick={() => setSelectedCat(c)}
             >
               {c}
@@ -141,7 +146,7 @@ const SearchPage: React.FC = () => {
 
         {displayedLectures.length ? (
           <>
-            <div className="lecture-grid">{displayedLectures.map(renderLectureCard)}</div>
+            <div className="search-lecture-grid">{displayedLectures.map(renderLectureCard)}</div>
 
             <Page>
               <PageButton disabled={page === 1} onClick={() => handlePageChange(page - 1)}>
