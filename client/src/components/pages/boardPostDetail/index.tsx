@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import useUserInfo from '@/components/hooks/useUserInfo';
+import { toast } from 'react-toastify';
 
 interface Post {
   id: number;
@@ -188,14 +189,21 @@ const BoardPostDetailPage = () => {
                         }}
                       >
                         <button
-                          onClick={() =>
-                            setActiveReplyId(activeReplyId === parent.id ? null : parent.id)
-                          }
+                          onClick={() => {
+                            if (!user) {
+                              toast.error('비로그인 상태입니다. 로그인 페이지로 이동합니다.');
+                              navigate('/login');
+                              return;
+                            }
+                            setActiveReplyId(activeReplyId === parent.id ? null : parent.id);
+                          }}
                           style={{
                             fontSize: '12px',
                             background: 'none',
                             border: 'none',
                             color: '#555',
+                            marginTop: '8px',
+                            marginBottom: '8px',
                             cursor: 'pointer',
                           }}
                         >
