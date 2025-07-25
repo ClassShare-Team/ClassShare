@@ -35,6 +35,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       });
       if (!res.ok) throw new Error('Failed to fetch user data');
       const data = await res.json();
+      localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
     } catch (error) {
       console.error('유저 정보 불러오기 실패:', error);
