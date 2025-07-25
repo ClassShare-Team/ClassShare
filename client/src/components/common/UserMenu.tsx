@@ -37,7 +37,7 @@ const UserMenu = () => {
       </Wrapper>
 
       {open && (
-        <Dropdown key={user?.point_balance}>
+        <Dropdown key={`point-${user?.point_balance}`}>
           <UserInfoRow>
             <ProfileImage src={user.profile_image || UserProfileLogo} alt="profile" />
             <InfoText>
