@@ -7,6 +7,7 @@ export const NavMenu = () => {
     <MenuWrapper>
       <Dropdown label="강의" items={['교육', '개발', '음악', '요리', '운동', '예술', '글쓰기']} />
       <StyledLink to="/boards">게시판</StyledLink>
+      <StyledLink to="/points">포인트</StyledLink>
     </MenuWrapper>
   );
 };

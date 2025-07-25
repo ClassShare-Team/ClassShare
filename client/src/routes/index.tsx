@@ -15,6 +15,7 @@ import BoardPostDetailPage from '@/components/pages/boardPostDetail';
 import LectureApplyPage from '@/components/pages/lectureApply';
 import InstructorInfoPage from '@/components/pages/instructorInfo';
 import SearchPage from '@/components/pages/search';
+import PointPage from '@/components/pages/point';
 
 import StudentMyCourses from '@/components/pages/mypage/student/myCourses';
 import StudentMyPage from '@/components/pages/mypage/student/myPage';
@@ -48,6 +49,7 @@ export const AppRoutes = () => {
         <Route path="lectures/:id/apply" element={<LectureApplyPage />} />
         <Route path="instructor-info" element={<InstructorInfoPage />} />
         <Route path="search" element={<SearchPage />} />
+        <Route path="points" element={<PointPage />} />
 
         <Route path="student/mycourse" element={<StudentMyCourses />} />
         <Route path="student/mypage" element={<StudentMyPage />} />
