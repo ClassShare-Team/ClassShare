@@ -147,6 +147,7 @@ const ChargeButton = styled.button`
   color: white;
   border: none;
   border-radius: 8px;
-  max-width: 80px;
+  max-width: 200px;
+  align-self: center;
   cursor: pointer;
 `;
