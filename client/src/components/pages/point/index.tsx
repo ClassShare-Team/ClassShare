@@ -93,6 +93,9 @@ export default PointPage;
 
 const Container = styled.div`
   padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Card = styled.section`
