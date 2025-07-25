@@ -61,9 +61,12 @@ const PointPage = () => {
 
       toast.success(`${data.total_point.toLocaleString()}포인트 충전되었습니다.`);
 
+      const addedPoint = Number(data.total_point) || 0;
+      const currentBalance = Number(user.point_balance) || 0;
+
       const updatedUser = {
         ...user,
-        point_balance: user.point_balance + data.total_point,
+        point_balance: currentBalance + addedPoint,
       };
 
       setUser(updatedUser);
