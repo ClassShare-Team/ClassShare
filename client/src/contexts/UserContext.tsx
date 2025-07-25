@@ -17,6 +17,7 @@ interface UserContextType {
   setAccessToken: (token: string | null) => void;
   login: (token: string, userData: User) => void;
   logout: () => void;
+  refetchUser: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -25,30 +26,34 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
+  const fetchUser = async (token: string | null) => {
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch user data');
+      const data = await res.json();
+      setUser(data.user);
+    } catch (error) {
+      console.error('유저 정보 불러오기 실패:', error);
+      setUser(null);
+      setAccessToken(null);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
+    }
+  };
+
+  const refetchUser = async () => {
+    await fetchUser(accessToken);
+  };
+
   useEffect(() => {
     const storedToken = localStorage.getItem('accessToken');
     setAccessToken(storedToken);
 
-    if (!storedToken) return;
-
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${storedToken}` },
-        });
-        if (!res.ok) throw new Error('Failed to fetch user data');
-        const data = await res.json();
-        setUser(data.user);
-      } catch (error) {
-        console.error('유저 정보 불러오기 실패:', error);
-        setUser(null);
-        setAccessToken(null);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-      }
-    };
-
-    fetchUser();
+    if (storedToken) fetchUser(storedToken);
 
     const handleStorageChange = () => {
       const updatedToken = localStorage.getItem('accessToken');
@@ -64,7 +69,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(null);
           }
         } catch (e) {
-          console.error('Local Storage에서 user 정보 패싱 실패:', e);
+          console.error('localStorage에서 user 정보 파싱 실패:', e);
           setUser(null);
         }
       } else {
@@ -73,9 +78,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const login = (token: string, userData: User) => {
@@ -94,7 +97,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, accessToken, setAccessToken, login, logout }}>
+    <UserContext.Provider
+      value={{ user, setUser, accessToken, setAccessToken, login, logout, refetchUser }}
+    >
       {children}
     </UserContext.Provider>
   );
@@ -102,6 +107,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useUser = () => {
   const context = useContext(UserContext);
-  if (!context) throw new Error('useUser는 UserProvider 내부에서 사용되어야 합니다.');
+  if (!context) throw new Error('useUser가 UserProvider 내부에서 사용되지 않음');
   return context;
 };

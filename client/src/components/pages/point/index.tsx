@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { useUser } from '@/contexts/UserContext';
 
 interface PointPackage {
   id: number;
@@ -14,6 +15,7 @@ const PointPage = () => {
   const [packages, setPackages] = useState<PointPackage[]>([]);
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const { refetchUser } = useUser();
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -53,6 +55,7 @@ const PointPage = () => {
       if (!res.ok) throw new Error(data.message || '충전 실패');
 
       toast.success(`${data.total_point.toLocaleString()}포인트 충전되었습니다.`);
+      await refetchUser();
     } catch (err: unknown) {
       if (err instanceof Error) toast.error(err.message);
       else toast.error('충전 중 오류가 발생했습니다.');
