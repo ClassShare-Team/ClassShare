@@ -96,9 +96,10 @@ const PointPage = () => {
                   onChange={() => setSelectedPackageId(pkg.id)}
                 />
                 <ChargePoint>
-                  <div>
-                    {pkg.price.toLocaleString()} P (+ {pkg.bonus.toLocaleString()}P)
-                  </div>
+                  <ChargeTopSection>
+                    <strong>{pkg.amount.toLocaleString()}P</strong>
+                    {pkg.bonus > 0 && <BonusText>(+{pkg.bonus.toLocaleString()}P)</BonusText>}
+                  </ChargeTopSection>
                   <TotalText>Total: {total.toLocaleString()}P</TotalText>
                 </ChargePoint>
               </label>
@@ -106,6 +107,7 @@ const PointPage = () => {
           );
         })}
       </PackageList>
+
       <ChargeButton onClick={handlePurchase} disabled={loading}>
         {loading ? '충전 중' : '충전하기'}
       </ChargeButton>
@@ -143,6 +145,17 @@ const ChargePoint = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+`;
+
+const ChargeTopSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const BonusText = styled.span`
+  color: red;
+  font-size: 14px;
 `;
 
 const TotalText = styled.div`
