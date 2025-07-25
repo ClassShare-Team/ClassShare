@@ -15,7 +15,7 @@ const PointPage = () => {
   const [packages, setPackages] = useState<PointPackage[]>([]);
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const { refetchUser } = useUser();
+  const { user, refetchUser } = useUser();
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -56,6 +56,8 @@ const PointPage = () => {
 
       toast.success(`${data.total_point.toLocaleString()}포인트 충전되었습니다.`);
       await refetchUser();
+      //테스트
+      console.log('포인트 갱신 후 유저:', user);
     } catch (err: unknown) {
       if (err instanceof Error) toast.error(err.message);
       else toast.error('충전 중 오류가 발생했습니다.');
