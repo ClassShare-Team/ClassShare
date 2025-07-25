@@ -73,9 +73,9 @@ const PointPage = () => {
               $active={pkg.id === selectedPackageId}
               onClick={() => setSelectedPackageId(pkg.id)}
             >
-              <div>{pkg.price.toLocaleString()}포인트 결제</div>
-              <div> → {total.toLocaleString()}포인트 충전</div>
-              <small>(+{pkg.bonus.toLocaleString()} 보너스 지급)</small>
+              <div>{Number(pkg.price).toLocaleString()} 포인트 결제</div>
+              <div> → {total.toLocaleString()} 포인트 충전</div>
+              <small>(+{pkg.bonus.toLocaleString()} 보너스 포인트 지급)</small>
             </PackageItem>
           );
         })}
