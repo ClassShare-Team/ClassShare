@@ -191,13 +191,7 @@ const BoardPostDetailPage = () => {
                         <button
                           onClick={() => {
                             if (!user) {
-                              toast.error(
-                                <>
-                                  ClassShare에 가입된 사용자만 답글을 작성할 수 있습니다.
-                                  <br />
-                                  로그인 페이지로 이동합니다.
-                                </>
-                              );
+                              toast.warn(<>로그인 후 이용 가능합니다.</>);
                               navigate('/login');
                               return;
                             }
