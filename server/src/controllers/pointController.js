@@ -39,3 +39,14 @@ exports.getMyPointHistories = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// 패키지 내역 조회
+exports.getPointPackages = async (req, res) => {
+  try {
+    const packages = await pointService.getAllPointPackages();
+    res.json({ packages });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: '포인트 패키지 조회 실패' });
+  }
+};

@@ -60,3 +60,13 @@ exports.getPointHistories = async (userId) => {
 
   return rows;
 };
+
+// 패키지 조회
+exports.getAllPointPackages = async () => {
+  const { rows } = await db.query(`
+    SELECT id, name, price, amount, bonus
+    FROM point_packages
+    ORDER BY price ASC
+  `);
+  return rows;
+};
