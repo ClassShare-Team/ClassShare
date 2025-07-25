@@ -87,16 +87,42 @@ exports.createQnaComment = async (req, res) => {
   const { content } = req.body;
   const userId = req.user.id;
 
-  const post = await db.query(`SELECT category FROM posts WHERE id = $1`, [postId]);
-  if (post.rowCount === 0) return res.status(404).json({ message: '게시글 없음' });
-  if (post.rows[0].category !== 'qa') return res.status(400).json({ message: 'Q&A 글이 아님' });
+  // postId 유효성 검사
+  if (!postId || isNaN(Number(postId))) {
+    return res.status(400).json({ message: '유효하지 않은 게시글 ID입니다.' });
+  }
 
-  const role = await db.query(`SELECT role FROM users WHERE id = $1`, [userId]);
-  if (role.rows[0]?.role !== 'instructor')
-    return res.status(403).json({ message: '강사만 작성 가능' });
+  // 댓글 내용 유효성 검사
+  if (!content || content.trim() === '') {
+    return res.status(400).json({ message: '댓글 내용을 입력해주세요.' });
+  }
 
-  await qnaPostService.createQnaComment({ postId, userId, content });
-  res.status(201).json({ message: '댓글 작성 완료' });
+  try {
+    // Q&A 게시글인지 확인
+    const post = await db.query(`SELECT category FROM posts WHERE id = $1`, [postId]);
+    if (post.rowCount === 0) return res.status(404).json({ message: '게시글 없음' });
+    if (post.rows[0].category !== 'qa') {
+      return res.status(400).json({ message: 'Q&A 글이 아님' });
+    }
+
+    // 사용자 권한 확인 (강사만 작성 가능)
+    const role = await db.query(`SELECT role FROM users WHERE id = $1`, [userId]);
+    if (role.rows[0]?.role !== 'instructor') {
+      return res.status(403).json({ message: '강사만 작성 가능' });
+    }
+
+    // 댓글 작성
+    await qnaPostService.createQnaComment({
+      postId: Number(postId),
+      userId,
+      content: content.trim(),
+    });
+
+    return res.status(201).json({ message: '댓글 작성 완료' });
+  } catch (err) {
+    console.error('Q&A 댓글 작성 오류:', err);
+    return res.status(500).json({ message: '서버 오류로 댓글 작성에 실패했습니다.' });
+  }
 };
 
 // 댓글 삭제 (본인만)
