@@ -169,7 +169,7 @@ const RadioInput = styled.input.attrs({ type: 'radio' })`
   appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid black;
+  border: 1px solid black;
   border-radius: 50%;
   margin-right: 8px;
   cursor: pointer;
