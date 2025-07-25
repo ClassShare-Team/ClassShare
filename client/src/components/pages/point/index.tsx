@@ -129,7 +129,7 @@ const PackageItem = styled.div<{ $active: boolean }>`
   padding: 20px;
   border-radius: 12px;
   cursor: pointer;
-  min-width: 160px;
+  min-width: 60px;
   text-align: center;
   transition: all 0.2s ease;
 `;
