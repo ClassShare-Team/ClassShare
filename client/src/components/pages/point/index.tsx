@@ -82,28 +82,33 @@ const PointPage = () => {
 
   return (
     <Container>
-      <Card>
-        <Title>포인트 충전</Title>
-        <Package>
-          {packages.map((pkg) => {
-            const total = pkg.amount + pkg.bonus;
-            return (
-              <PackageItem
-                key={pkg.id}
-                $active={pkg.id === selectedPackageId}
-                onClick={() => setSelectedPackageId(pkg.id)}
-              >
-                <div>{Number(pkg.price).toLocaleString()} 포인트 결제 시</div>
-                <ChargeText> {total.toLocaleString()} 포인트 충전</ChargeText>
-                <small>(+{pkg.bonus.toLocaleString()} 보너스 포인트 지급)</small>
-              </PackageItem>
-            );
-          })}
-        </Package>
-        <ChargeButton onClick={handlePurchase} disabled={loading}>
-          {loading ? '충전 중' : '충전하기'}
-        </ChargeButton>
-      </Card>
+      <Title>충전할 포인트</Title>
+      <PackageList>
+        {packages.map((pkg) => {
+          const total = pkg.amount + pkg.bonus;
+          return (
+            <PackageOption key={pkg.id}>
+              <label>
+                <RadioInput
+                  type="radio"
+                  name="point-package"
+                  checked={pkg.id === selectedPackageId}
+                  onChange={() => setSelectedPackageId(pkg.id)}
+                />
+                <ChargePoint>
+                  <div>
+                    {pkg.price.toLocaleString()} P (+ {pkg.bonus.toLocaleString()}P)
+                  </div>
+                  <TotalText>Total: {total.toLocaleString()}P</TotalText>
+                </ChargePoint>
+              </label>
+            </PackageOption>
+          );
+        })}
+      </PackageList>
+      <ChargeButton onClick={handlePurchase} disabled={loading}>
+        {loading ? '충전 중' : '충전하기'}
+      </ChargeButton>
     </Container>
   );
 };
@@ -112,55 +117,41 @@ export default PointPage;
 
 const Container = styled.div`
   padding: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-`;
-
-const Card = styled.section`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 800px;
   max-width: 500px;
-  width: 100%;
-  background: ${({ theme }) => theme.colors.white};
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
-  padding: 2.5rem;
-  margin-left: 1.5rem;
+  margin: 0 auto;
 `;
 
-const Title = styled.h1`
-  font-size: 24px;
+const Title = styled.h2`
+  font-size: 20px;
   font-weight: bold;
+  margin-bottom: 16px;
 `;
 
-const Package = styled.div`
-  margin-top: 24px;
+const PackageList = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 12px;
 `;
 
-const PackageItem = styled.div<{ $active: boolean }>`
-  border: 2px solid ${({ $active, theme }) => ($active ? theme.colors.purple : '#ccc')};
-  background-color: ${({ $active }) => ($active ? '#f8f0ff' : '#fff')};
-  box-shadow: ${({ $active }) => ($active ? '0 0 12px rgba(128, 0, 255, 0.3)' : 'none')};
-  padding: 20px;
-  border-radius: 12px;
-  cursor: pointer;
-  min-width: 160px;
-  text-align: center;
-  transition: all 0.2s ease;
+const PackageOption = styled.div`
+  border: 1px solid #000;
+  border-radius: 8px;
+  padding: 16px;
 `;
 
-const ChargeText = styled.div`
-  color: red;
+const ChargePoint = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const TotalText = styled.div`
   font-weight: bold;
+  color: #444;
+`;
+
+const RadioInput = styled.input`
+  margin-right: 12px;
 `;
 
 const ChargeButton = styled.button`
@@ -171,7 +162,6 @@ const ChargeButton = styled.button`
   color: white;
   border: none;
   border-radius: 8px;
-  max-width: 200px;
-  align-self: center;
   cursor: pointer;
+  width: 100%;
 `;
