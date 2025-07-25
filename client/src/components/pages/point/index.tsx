@@ -15,7 +15,7 @@ const PointPage = () => {
   const [packages, setPackages] = useState<PointPackage[]>([]);
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const { user, refetchUser } = useUser();
+  const { user, setUser } = useUser();
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -37,6 +37,11 @@ const PointPage = () => {
       return;
     }
 
+    if (!user || !setUser) {
+      toast.error('유저 정보를 불러올 수 없습니다. 다시 로그인해주세요.');
+      return;
+    }
+
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
@@ -55,9 +60,14 @@ const PointPage = () => {
       if (!res.ok) throw new Error(data.message || '충전 실패');
 
       toast.success(`${data.total_point.toLocaleString()}포인트 충전되었습니다.`);
-      await refetchUser();
-      //테스트
-      console.log('포인트 갱신 후 유저:', user);
+
+      const updatedUser = {
+        ...user,
+        point_balance: data.total_point,
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
     } catch (err: unknown) {
       if (err instanceof Error) toast.error(err.message);
       else toast.error('충전 중 오류가 발생했습니다.');
