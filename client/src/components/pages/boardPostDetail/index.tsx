@@ -191,7 +191,13 @@ const BoardPostDetailPage = () => {
                         <button
                           onClick={() => {
                             if (!user) {
-                              toast.error('비로그인 상태입니다.\n로그인 페이지로 이동합니다.');
+                              toast.error(
+                                <>
+                                  ClassShare에 가입된 사용자만 답글을 작성할 수 있습니다.
+                                  <br />
+                                  로그인 페이지로 이동합니다.
+                                </>
+                              );
                               navigate('/login');
                               return;
                             }
