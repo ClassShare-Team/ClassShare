@@ -89,21 +89,19 @@ const PointPage = () => {
             const total = pkg.amount + pkg.bonus;
             return (
               <PackageOption key={pkg.id}>
-                <label>
+                <ChargeSection>
                   <RadioInput
-                    type="radio"
-                    name="point-package"
                     checked={pkg.id === selectedPackageId}
                     onChange={() => setSelectedPackageId(pkg.id)}
                   />
-                  <ChargePoint>
+                  <ChargeInfo>
                     <ChargeTopSection>
                       <strong>{pkg.amount.toLocaleString()}P</strong>
                       {pkg.bonus > 0 && <BonusText>(+{pkg.bonus.toLocaleString()}P)</BonusText>}
                     </ChargeTopSection>
-                    <TotalText>Total: {total.toLocaleString()}P</TotalText>
-                  </ChargePoint>
-                </label>
+                  </ChargeInfo>
+                  <TotalText>Total: {total.toLocaleString()}P</TotalText>
+                </ChargeSection>
               </PackageOption>
             );
           })}
@@ -132,7 +130,7 @@ const Card = styled.section`
   flex-direction: column;
   flex: 1;
   min-height: 800px;
-  min-width: 1000px;
+  min-width: 840px;
   background: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
@@ -154,16 +152,46 @@ const PackageList = styled.div`
 
 const PackageOption = styled.div`
   padding: 16px 0;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.gray200};
+  border-bottom: 1px solid #ddd;
   &:last-child {
     border-bottom: none;
   }
 `;
 
-const ChargePoint = styled.div`
+const ChargeSection = styled.label`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const RadioInput = styled.input.attrs({ type: 'radio' })`
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid ${({ theme }) => theme.colors.purple};
+  border-radius: 50%;
+  margin-right: 8px;
+  cursor: pointer;
+  position: relative;
+
+  &:checked::before {
+    content: '';
+    display: block;
+    width: 10px;
+    height: 10px;
+    background: ${({ theme }) => theme.colors.purple};
+    border-radius: 50%;
+    position: absolute;
+    top: 4px;
+    left: 4px;
+  }
+`;
+
+const ChargeInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  flex: 1;
 `;
 
 const ChargeTopSection = styled.div`
@@ -180,10 +208,7 @@ const BonusText = styled.span`
 const TotalText = styled.div`
   font-weight: bold;
   color: #444;
-`;
-
-const RadioInput = styled.input`
-  margin-right: 12px;
+  white-space: nowrap;
 `;
 
 const ChargeButton = styled.button`
