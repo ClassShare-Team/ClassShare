@@ -130,7 +130,7 @@ const Card = styled.section`
   flex-direction: column;
   flex: 1;
   min-height: 800px;
-  min-width: 600px;
+  min-width: 840px;
   background: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
@@ -147,6 +147,7 @@ const Title = styled.h2`
 
 const PackageList = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
 `;
 
@@ -169,7 +170,7 @@ const RadioInput = styled.input.attrs({ type: 'radio' })`
   appearance: none;
   width: 20px;
   height: 20px;
-  border: 1px solid black;
+  border: 2px solid black;
   border-radius: 50%;
   margin-right: 8px;
   cursor: pointer;
