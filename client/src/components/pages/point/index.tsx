@@ -82,35 +82,37 @@ const PointPage = () => {
 
   return (
     <Container>
-      <Title>충전할 포인트</Title>
-      <PackageList>
-        {packages.map((pkg) => {
-          const total = pkg.amount + pkg.bonus;
-          return (
-            <PackageOption key={pkg.id}>
-              <label>
-                <RadioInput
-                  type="radio"
-                  name="point-package"
-                  checked={pkg.id === selectedPackageId}
-                  onChange={() => setSelectedPackageId(pkg.id)}
-                />
-                <ChargePoint>
-                  <ChargeTopSection>
-                    <strong>{pkg.amount.toLocaleString()}P</strong>
-                    {pkg.bonus > 0 && <BonusText>(+{pkg.bonus.toLocaleString()}P)</BonusText>}
-                  </ChargeTopSection>
-                  <TotalText>Total: {total.toLocaleString()}P</TotalText>
-                </ChargePoint>
-              </label>
-            </PackageOption>
-          );
-        })}
-      </PackageList>
+      <Card>
+        <Title>충전할 포인트</Title>
+        <PackageList>
+          {packages.map((pkg) => {
+            const total = pkg.amount + pkg.bonus;
+            return (
+              <PackageOption key={pkg.id}>
+                <label>
+                  <RadioInput
+                    type="radio"
+                    name="point-package"
+                    checked={pkg.id === selectedPackageId}
+                    onChange={() => setSelectedPackageId(pkg.id)}
+                  />
+                  <ChargePoint>
+                    <ChargeTopSection>
+                      <strong>{pkg.amount.toLocaleString()}P</strong>
+                      {pkg.bonus > 0 && <BonusText>(+{pkg.bonus.toLocaleString()}P)</BonusText>}
+                    </ChargeTopSection>
+                    <TotalText>Total: {total.toLocaleString()}P</TotalText>
+                  </ChargePoint>
+                </label>
+              </PackageOption>
+            );
+          })}
+        </PackageList>
 
-      <ChargeButton onClick={handlePurchase} disabled={loading}>
-        {loading ? '충전 중' : '충전하기'}
-      </ChargeButton>
+        <ChargeButton onClick={handlePurchase} disabled={loading}>
+          {loading ? '충전 중' : '충전하기'}
+        </ChargeButton>
+      </Card>
     </Container>
   );
 };
@@ -121,6 +123,20 @@ const Container = styled.div`
   padding: 40px;
   max-width: 500px;
   margin: 0 auto;
+`;
+
+const Card = styled.section`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 800px;
+  min-width: 600px;
+  background: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
+  padding: 2.5rem;
+  margin-left: 1.5rem;
+  width: 100%;
 `;
 
 const Title = styled.h2`
