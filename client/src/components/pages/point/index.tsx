@@ -130,7 +130,7 @@ const Card = styled.section`
   flex-direction: column;
   flex: 1;
   min-height: 800px;
-  min-width: 840px;
+  min-width: 600px;
   background: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
@@ -169,7 +169,7 @@ const RadioInput = styled.input.attrs({ type: 'radio' })`
   appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid ${({ theme }) => theme.colors.purple};
+  border: 2px solid black;
   border-radius: 50%;
   margin-right: 8px;
   cursor: pointer;
@@ -183,8 +183,9 @@ const RadioInput = styled.input.attrs({ type: 'radio' })`
     background: ${({ theme }) => theme.colors.purple};
     border-radius: 50%;
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 `;
 
@@ -220,5 +221,6 @@ const ChargeButton = styled.button`
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  width: 100%;
+  width: 300px;
+  align-self: center;
 `;
