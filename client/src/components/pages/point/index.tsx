@@ -18,7 +18,7 @@ const PointPage = () => {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/purchase`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/points/purchase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
