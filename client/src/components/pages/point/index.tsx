@@ -63,26 +63,28 @@ const PointPage = () => {
 
   return (
     <Container>
-      <Title>포인트 충전</Title>
-      <Package>
-        {packages.map((pkg) => {
-          const total = pkg.amount + pkg.bonus;
-          return (
-            <PackageItem
-              key={pkg.id}
-              $active={pkg.id === selectedPackageId}
-              onClick={() => setSelectedPackageId(pkg.id)}
-            >
-              <div>{Number(pkg.price).toLocaleString()} 포인트 결제 시</div>
-              <ChargeText> {total.toLocaleString()} 포인트 충전</ChargeText>
-              <small>(+{pkg.bonus.toLocaleString()} 보너스 포인트 지급)</small>
-            </PackageItem>
-          );
-        })}
-      </Package>
-      <ChargeButton onClick={handlePurchase} disabled={loading}>
-        {loading ? '충전 중' : '충전하기'}
-      </ChargeButton>
+      <Card>
+        <Title>포인트 충전</Title>
+        <Package>
+          {packages.map((pkg) => {
+            const total = pkg.amount + pkg.bonus;
+            return (
+              <PackageItem
+                key={pkg.id}
+                $active={pkg.id === selectedPackageId}
+                onClick={() => setSelectedPackageId(pkg.id)}
+              >
+                <div>{Number(pkg.price).toLocaleString()} 포인트 결제 시</div>
+                <ChargeText> {total.toLocaleString()} 포인트 충전</ChargeText>
+                <small>(+{pkg.bonus.toLocaleString()} 보너스 포인트 지급)</small>
+              </PackageItem>
+            );
+          })}
+        </Package>
+        <ChargeButton onClick={handlePurchase} disabled={loading}>
+          {loading ? '충전 중' : '충전하기'}
+        </ChargeButton>
+      </Card>
     </Container>
   );
 };
@@ -93,6 +95,19 @@ const Container = styled.div`
   padding: 40px;
 `;
 
+const Card = styled.section`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 800px;
+  background: ${({ theme }) => theme.colors.white};
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
+  padding: 2.5rem;
+  margin-left: 1.5rem;
+  width: 100%;
+`;
+
 const Title = styled.h1`
   font-size: 24px;
   font-weight: bold;
@@ -101,6 +116,8 @@ const Title = styled.h1`
 const Package = styled.div`
   margin-top: 24px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 16px;
   flex-wrap: wrap;
 `;
