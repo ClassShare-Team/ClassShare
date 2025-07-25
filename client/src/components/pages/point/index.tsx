@@ -120,9 +120,11 @@ const PointPage = () => {
 export default PointPage;
 
 const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
   padding: 40px;
-  max-width: 500px;
-  margin: 0 auto;
 `;
 
 const Card = styled.section`
