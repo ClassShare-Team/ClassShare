@@ -73,8 +73,8 @@ const PointPage = () => {
               $active={pkg.id === selectedPackageId}
               onClick={() => setSelectedPackageId(pkg.id)}
             >
-              <div>{Number(pkg.price).toLocaleString()} 포인트 결제</div>
-              <div> → {total.toLocaleString()} 포인트 충전</div>
+              <div>{Number(pkg.price).toLocaleString()} 포인트 결제 시</div>
+              <ChargeText> {total.toLocaleString()} 포인트 충전</ChargeText>
               <small>(+{pkg.bonus.toLocaleString()} 보너스 포인트 지급)</small>
             </PackageItem>
           );
@@ -115,6 +115,11 @@ const PackageItem = styled.div<{ $active: boolean }>`
   min-width: 160px;
   text-align: center;
   transition: all 0.2s ease;
+`;
+
+const ChargeText = styled.div`
+  color: red;
+  font-weight: bold;
 `;
 
 const ChargeButton = styled.button`
