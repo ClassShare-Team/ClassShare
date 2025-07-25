@@ -130,7 +130,7 @@ const Card = styled.section`
   flex-direction: column;
   flex: 1;
   min-height: 800px;
-  min-width: 600px;
+  min-width: 1000px;
   background: ${({ theme }) => theme.colors.white};
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px 0 rgba(49, 72, 187, 0.09);
