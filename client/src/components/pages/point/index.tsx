@@ -63,10 +63,11 @@ const PointPage = () => {
 
       const addedPoint = Number(data.total_point) || 0;
       const currentBalance = Number(user.point_balance) || 0;
+      const newBalance = currentBalance + addedPoint;
 
       const updatedUser = {
         ...user,
-        point_balance: currentBalance + addedPoint,
+        point_balance: newBalance,
       };
 
       setUser(updatedUser);
