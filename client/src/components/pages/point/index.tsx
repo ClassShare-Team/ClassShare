@@ -150,13 +150,14 @@ const Title = styled.h2`
 const PackageList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
 `;
 
 const PackageOption = styled.div`
-  border: 1px solid #000;
-  border-radius: 8px;
-  padding: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.gray200};
+  &:last-child {
+    border-bottom: none;
+  }
 `;
 
 const ChargePoint = styled.div`
