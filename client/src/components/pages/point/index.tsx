@@ -8,7 +8,7 @@ const PointPage = () => {
 
   const handlePurchase = async () => {
     if (!selectedPackage) {
-      toast.warn('패키지를 선택해주세요.');
+      toast.warn('충전 패키지를 선택해주세요.');
       return;
     }
 
