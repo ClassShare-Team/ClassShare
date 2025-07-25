@@ -129,7 +129,7 @@ const PackageItem = styled.div<{ $active: boolean }>`
   padding: 20px;
   border-radius: 12px;
   cursor: pointer;
-  min-width: 60px;
+  min-width: 160px;
   text-align: center;
   transition: all 0.2s ease;
 `;
@@ -147,5 +147,6 @@ const ChargeButton = styled.button`
   color: white;
   border: none;
   border-radius: 8px;
+  max-width: 80px;
   cursor: pointer;
 `;
