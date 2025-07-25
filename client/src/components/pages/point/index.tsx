@@ -1,15 +1,36 @@
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-const packages = [5000, 10000, 20000, 50000, 100000];
+interface PointPackage {
+  id: number;
+  name: string;
+  price: number;
+  amount: number;
+  bonus: number;
+}
 
 const PointPage = () => {
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [packages, setPackages] = useState<PointPackage[]>([]);
+  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/points/packages`);
+        const data = await res.json();
+        setPackages(data.packages);
+      } catch (err) {
+        console.error('패키지 불러오기 실패', err);
+        toast.error('패키지 불러오기 실패');
+      }
+    };
+    fetchPackages();
+  }, []);
+
   const handlePurchase = async () => {
-    if (!selectedAmount) {
+    if (!selectedPackageId) {
       toast.warn('충전 패키지를 선택해주세요');
       return;
     }
@@ -24,7 +45,7 @@ const PointPage = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ package_id: `package_${selectedAmount}` }),
+        body: JSON.stringify({ package_id: selectedPackageId }),
       });
 
       const data = await res.json();
@@ -40,27 +61,21 @@ const PointPage = () => {
     }
   };
 
-  const calculateBonusPoint = (amount: number) => {
-    const bonus = amount * 0.1;
-    const total = amount + bonus;
-    return { bonus, total };
-  };
-
   return (
     <Container>
       <Title>포인트 충전</Title>
       <Package>
-        {packages.map((amount) => {
-          const { bonus, total } = calculateBonusPoint(amount);
+        {packages.map((pkg) => {
+          const total = pkg.amount + pkg.bonus;
           return (
             <PackageItem
-              key={amount}
-              $active={amount === selectedAmount}
-              onClick={() => setSelectedAmount(amount)}
+              key={pkg.id}
+              $active={pkg.id === selectedPackageId}
+              onClick={() => setSelectedPackageId(pkg.id)}
             >
-              <div>{amount.toLocaleString()}포인트 결제</div>
+              <div>{pkg.price.toLocaleString()}원 결제</div>
               <div> → {total.toLocaleString()}포인트 지급</div>
-              <small>(+{bonus.toLocaleString()}보너스 포인트 지급)</small>
+              <small>(+{pkg.bonus.toLocaleString()} 보너스)</small>
             </PackageItem>
           );
         })}
