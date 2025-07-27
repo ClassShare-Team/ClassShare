@@ -21,25 +21,18 @@ const useMyPageInfo = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
         });
 
-        if (!res.ok) {
-          throw new Error('유저 정보를 불러오지 못했습니다.');
-        }
+        if (!res.ok) throw new Error('유저 정보를 불러오지 못했습니다.');
 
-        const rawData = await res.json();
-        const data: UserInfo = rawData.user;
+        const data: UserInfo = await res.json();
         setUserInfo(data);
       } catch (err) {
-        if (err instanceof Error) {
-          setError(err);
-        } else {
-          setError(new Error('알 수 없는 오류가 발생했습니다.'));
-        }
+        setError(err instanceof Error ? err : new Error('알 수 없는 오류'));
       } finally {
         setLoading(false);
       }
