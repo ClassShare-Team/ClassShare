@@ -55,6 +55,7 @@ const StudentSettingsPage = () => {
         },
       });
       const userData = await userRes.json();
+      console.log(userData);
       setUser(userData.user);
       toast.success('프로필이 수정되었습니다.');
       window.location.reload();
