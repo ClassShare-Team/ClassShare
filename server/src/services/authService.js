@@ -162,7 +162,7 @@ exports.handleGoogleOAuth = async (code) => {
         nickname: user.nickname,
         role: user.role,
         profile_image: user.profile_image,
-        point: user.point,
+        point: user.point_balance,
       },
       profileComplete: !!(user.nickname && user.role),
     };
@@ -216,7 +216,7 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
     } = await client.query(
       `INSERT INTO users (email, name, nickname, role, profile_image, oauth_provider, oauth_id, is_verified)
        VALUES ($1, $2, $3, $4, $5, 'google', $6, TRUE)
-       RETURNING id, public_id, role, point`,
+       RETURNING id, public_id, role, point_balance`,
       [email, name, nickname, role, profile_image, oauthId]
     );
 
@@ -246,7 +246,7 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
         nickname,
         role,
         profile_image,
-        point: user.point,
+        point: user.point_balance,
       },
       profileComplete: true,
     };
@@ -262,7 +262,7 @@ exports.finalizeGoogleUser = async ({ tempToken, nickname, role }) => {
 exports.login = async (email, password) => {
   const { rows } = await db.query(
     `
-    SELECT id, email, password, name, nickname, role, profile_image, public_id, oauth_id, point
+    SELECT id, email, password, name, nickname, role, profile_image, public_id, oauth_id, point_balance
     FROM users
     WHERE email = $1 AND oauth_provider IS NULL
   `,
@@ -293,7 +293,7 @@ exports.login = async (email, password) => {
       nickname: user.nickname,
       role: user.role,
       profile_image: user.profile_image,
-      point: user.point,
+      point: user.point_balance,
     },
   };
 };
