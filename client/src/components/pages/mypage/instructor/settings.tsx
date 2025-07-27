@@ -57,8 +57,8 @@ const InstructorSettingsPage = () => {
       });
       const userData = await userRes.json();
       setUser(userData.user);
-
       toast.success('프로필이 수정되었습니다.');
+      window.location.reload();
     } catch (err) {
       if (err instanceof Error) toast.error(err.message);
       else toast.error('알 수 없는 오류가 발생했습니다.');
