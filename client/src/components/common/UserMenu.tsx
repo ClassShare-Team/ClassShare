@@ -42,7 +42,9 @@ const UserMenu = () => {
             <ProfileImage src={user.profile_image || UserProfileLogo} alt="profile" />
             <InfoText>
               <UserName>{user.name || '이름 없음'}</UserName>
-              <UserPoint>남은 포인트: {(user.point_balance ?? 0).toLocaleString()}P</UserPoint>
+              <UserPoint>
+                남은 포인트: {Math.floor(user.point_balance ?? 0).toLocaleString()}P
+              </UserPoint>
             </InfoText>
           </UserInfoRow>
 
