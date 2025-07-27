@@ -426,7 +426,6 @@ const LectureApplyPage = () => {
       const res = await fetch(`${API_URL}/qna/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
       });
